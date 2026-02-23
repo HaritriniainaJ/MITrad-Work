@@ -1,0 +1,579 @@
+import { useState, useMemo } from 'react';
+import { useAuth } from '@/context/AuthContext';
+import { useDisplayMode } from '@/context/DisplayModeContext';
+import { useFilteredTrades } from '@/hooks/useFilteredTrades';
+import { StorageManager } from '@/lib/storage';
+import { Trade, ALL_PAIRS, ALL_SESSIONS, ALL_SETUPS, ALL_EMOTIONS } from '@/types/trading';
+import GlassCard from '@/components/GlassCard';
+import { Download, Trash2, X, Pencil, Save, ImageIcon, ZoomIn } from 'lucide-react';
+import { useConfirm } from '@/components/ConfirmModal';
+import { ZoomableImage } from '@/components/ImageLightbox';
+import { toast } from 'sonner';
+
+function QualityBar({ value, onChange }: { value: number; onChange?: (v: number) => void }) {
+  const color = value <= 3 ? '#ef4444' : value <= 6 ? '#f59e0b' : '#00d4aa';
+  const percent = ((value - 1) / 9) * 100;
+  return (
+    <div className="flex items-center gap-4">
+      <div className="relative flex-1 h-2 rounded-full bg-white/10">
+        <div
+          className="absolute left-0 top-0 h-2 rounded-full transition-all duration-300"
+          style={{ width: `${percent}%`, background: `linear-gradient(90deg, #1A6BFF, ${color})` }}
+        />
+        <input
+          type="range" min={1} max={10} step={1} value={value}
+          disabled={!onChange}
+          onChange={e => onChange?.(parseInt(e.target.value))}
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-default"
+          style={{ margin: 0 }}
+        />
+        <div
+          className="absolute top-1/2 -translate-y-1/2 w-5 h-5 rounded-full border-2 border-white shadow-lg transition-all duration-300 pointer-events-none"
+          style={{
+            left: `calc(${percent}% - 10px)`,
+            background: `linear-gradient(135deg, #1A6BFF, ${color})`,
+            boxShadow: `0 0 12px ${color}88`,
+          }}
+        />
+      </div>
+      <div
+        className="shrink-0 w-12 h-8 rounded-lg flex items-center justify-center text-sm font-bold transition-all duration-300"
+        style={{ background: `${color}22`, border: `1px solid ${color}55`, color }}
+      >
+        {value}/10
+      </div>
+    </div>
+  );
+}
+
+export default function TradeHistory() {
+  const { user, accounts } = useAuth();
+  const { formatResult } = useDisplayMode();
+  // Modale de confirmation stylée glassmorphism (remplace window.confirm)
+  const [confirm, ConfirmModal] = useConfirm();
+
+  const [filters, setFilters] = useState({
+    pair: '', session: '', direction: '', setup: '', emotion: '', status: ''
+  });
+  const [page, setPage]                   = useState(1);
+  const [selectedTrade, setSelectedTrade] = useState<Trade | null>(null);
+  const [editingTrade, setEditingTrade]   = useState<Trade | null>(null);
+  const [zoomImg, setZoomImg]             = useState<string | null>(null);
+  const [refreshKey, setRefreshKey]       = useState(0);
+  const perPage = 20;
+
+  // ── Branché sur le sidebar dropdown ─────────────────────────
+  const allTrades = useFilteredTrades(refreshKey);
+
+  const filtered = useMemo(() => allTrades.filter(t => {
+    if (filters.pair      && t.pair      !== filters.pair)      return false;
+    if (filters.session   && t.session   !== filters.session)   return false;
+    if (filters.direction && t.direction !== filters.direction) return false;
+    if (filters.setup     && t.setup     !== filters.setup)     return false;
+    if (filters.emotion   && t.emotion   !== filters.emotion)   return false;
+    if (filters.status    && t.status    !== filters.status)    return false;
+    return true;
+  }), [allTrades, filters]);
+
+  const paginated  = filtered.slice((page - 1) * perPage, page * perPage);
+  const totalPages = Math.ceil(filtered.length / perPage);
+
+  const getQualityNum = (q: Trade['quality']): number =>
+    typeof q === 'number' ? q : q === 'A+' ? 10 : q === 'A' ? 8 : q === 'B' ? 6 : 4;
+
+  const autoCalc = (t: Partial<Trade>): Partial<Trade> => {
+    const entry   = Number(t.entryPrice) || 0;
+    const sl      = Number(t.stopLoss)   || 0;
+    const exit    = Number(t.exitPrice)  || 0;
+    const cap     = user?.capital || 10000;
+    if (!entry || !sl || !exit) return t;
+    const slDist  = Math.abs(entry - sl);
+    if (slDist === 0) return t;
+    const pnlDist = (t.direction === 'BUY' ? exit - entry : entry - exit);
+    const resultR      = pnlDist / slDist;
+    const resultDollar = resultR * cap * 0.01;
+    return { ...t, resultR: Math.round(resultR * 100) / 100, resultDollar: Math.round(resultDollar * 100) / 100 };
+  };
+
+  const exportCSV = () => {
+    const csv  = StorageManager.tradesToCSV(filtered);
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = 'trades.csv'; a.click();
+    URL.revokeObjectURL(url);
+    toast.success('CSV exporté !');
+  };
+
+  const deleteTrade = async (id: string) => {
+    const ok = await confirm({ title: 'Supprimer ce trade', message: 'Cette action est irréversible. Le trade sera définitivement supprimé.', confirmText: 'Supprimer', variant: 'danger' });
+    if (!ok) return;
+    StorageManager.deleteTrade(id);
+    setSelectedTrade(null);
+    setEditingTrade(null);
+    setRefreshKey(k => k + 1);
+    toast.success('Trade supprimé');
+  };
+
+  const startEdit = (trade: Trade, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setEditingTrade({ ...trade });
+    setSelectedTrade(null);
+  };
+
+  const setEditField = (key: keyof Trade, value: unknown) =>
+    setEditingTrade(prev => {
+      if (!prev) return null;
+      const updated = { ...prev, [key]: value };
+      if (['entryPrice', 'stopLoss', 'exitPrice', 'direction'].includes(key as string)) {
+        return autoCalc(updated) as Trade;
+      }
+      return updated;
+    });
+
+  const handleEditScreenshot = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { toast.error('Taille max : 5MB'); return; }
+    const reader = new FileReader();
+    reader.onload = () => setEditField('screenshot', reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const saveEdit = () => {
+    if (!editingTrade) return;
+    StorageManager.updateTrade(editingTrade.id, editingTrade);
+    setEditingTrade(null);
+    setRefreshKey(k => k + 1);
+    toast.success('Trade mis à jour !');
+  };
+
+  const allSetups = useMemo(() => {
+    const custom = user?.customSetups || [];
+    return [...new Set([...ALL_SETUPS, ...custom])];
+  }, [user]);
+
+  const FilterSelect = ({
+    label, value, onChange, options
+  }: { label: string; value: string; onChange: (v: string) => void; options: string[] }) => (
+    <select
+      value={value}
+      onChange={e => { onChange(e.target.value); setPage(1); }}
+      className="select-dark text-xs py-2"
+    >
+      <option value="">{label}</option>
+      {options.map(o => <option key={o} value={o}>{o}</option>)}
+    </select>
+  );
+
+  return (
+    <div className="space-y-6">
+
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold gradient-text">Historique</h1>
+          <p className="text-muted-foreground text-sm mt-1">{filtered.length} trade{filtered.length > 1 ? 's' : ''}</p>
+        </div>
+        <button onClick={exportCSV} className="gradient-btn px-4 py-2 text-sm flex items-center gap-2">
+          <Download size={14} /> Exporter CSV
+        </button>
+      </div>
+
+      <GlassCard className="animate-fade-up">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+          <FilterSelect label="Toutes paires"   value={filters.pair}      onChange={v => setFilters(p => ({ ...p, pair: v }))}      options={ALL_PAIRS} />
+          <FilterSelect label="Sessions"         value={filters.session}   onChange={v => setFilters(p => ({ ...p, session: v }))}   options={ALL_SESSIONS} />
+          <FilterSelect label="Direction"        value={filters.direction} onChange={v => setFilters(p => ({ ...p, direction: v }))} options={['BUY', 'SELL']} />
+          <FilterSelect label="Setups"           value={filters.setup}     onChange={v => setFilters(p => ({ ...p, setup: v }))}     options={allSetups} />
+          <FilterSelect label="Émotion"          value={filters.emotion}   onChange={v => setFilters(p => ({ ...p, emotion: v }))}   options={ALL_EMOTIONS} />
+          <FilterSelect label="Statut"           value={filters.status}    onChange={v => setFilters(p => ({ ...p, status: v }))}    options={['WIN', 'LOSS', 'BE', 'RUNNING']} />
+          <button
+            onClick={() => { setFilters({ pair: '', session: '', direction: '', setup: '', emotion: '', status: '' }); setPage(1); }}
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors py-2 hover:bg-accent/30 rounded-lg"
+          >
+            Réinitialiser
+          </button>
+        </div>
+      </GlassCard>
+
+      <GlassCard className="animate-fade-up overflow-x-auto p-0">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-border">
+              {['Date', 'Paire', 'Dir.', 'Session', 'Setup', 'Qualité', 'Résultat', 'Statut', 'Actions'].map(h => (
+                <th key={h} className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {paginated.map(t => (
+              <tr
+                key={t.id}
+                className="border-b border-border/50 hover:bg-accent/30 transition-colors cursor-pointer"
+                onClick={() => setSelectedTrade(t)}
+              >
+                <td className="px-4 py-3 text-xs text-muted-foreground">
+                  {new Date(t.date).toLocaleDateString('fr', { month: 'short', day: 'numeric' })}
+                </td>
+                <td className="px-4 py-3 font-medium text-foreground">{t.pair}</td>
+                <td className="px-4 py-3">
+                  <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${t.direction === 'BUY' ? 'badge-buy' : 'badge-sell'}`}>
+                    {t.direction}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-xs text-muted-foreground">{t.session}</td>
+                <td className="px-4 py-3 text-xs text-muted-foreground">{t.setup}</td>
+                <td className="px-4 py-3">
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded-md ${
+                    getQualityNum(t.quality) >= 8 ? 'bg-success/20 text-success' :
+                    getQualityNum(t.quality) >= 5 ? 'bg-warning/20 text-warning' :
+                    'bg-destructive/20 text-destructive'
+                  }`}>
+                    {getQualityNum(t.quality)}/10
+                  </span>
+                </td>
+                <td className={`px-4 py-3 metric-value text-sm ${t.resultR >= 0 ? 'text-success' : 'text-destructive'}`}>
+                  {formatResult(t.resultR, t.resultDollar, user?.capital)}
+                </td>
+                <td className="px-4 py-3">
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded ${
+                    t.status === 'WIN' ? 'badge-win' : t.status === 'LOSS' ? 'badge-loss' : 'badge-be'
+                  }`}>
+                    {t.status}
+                  </span>
+                </td>
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-1">
+                    {t.screenshot && (
+                      <span title="Capture disponible">
+                        <ImageIcon size={12} className="text-primary/60" />
+                      </span>
+                    )}
+                    <button
+                      onClick={e => startEdit(t, e)}
+                      className="flex items-center gap-1 text-xs text-primary hover:text-white hover:bg-primary px-2 py-1 rounded-lg transition-all duration-200 font-medium"
+                    >
+                      <Pencil size={12} /> Modifier
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {paginated.length === 0 && (
+          <p className="text-center text-muted-foreground py-12 text-sm">T'as pas tradé. C'est bien ou t'as raté des setups ?</p>
+        )}
+      </GlassCard>
+
+      {totalPages > 1 && (
+        <div className="flex justify-center gap-2 flex-wrap">
+          {Array.from({ length: totalPages }, (_, i) => (
+            <button
+              key={i}
+              onClick={() => setPage(i + 1)}
+              className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${
+                page === i + 1
+                  ? 'gradient-primary text-white shadow-lg'
+                  : 'bg-accent text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {i + 1}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* ── MODALE DÉTAIL ─────────────────────────────────── */}
+      {selectedTrade && !editingTrade && (
+        <div className="modal-overlay" onClick={() => setSelectedTrade(null)}>
+          <div className="modal-content glass p-6 max-w-lg w-full max-h-[85vh] overflow-y-auto scrollbar-thin" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-5">
+              <h3 className="font-bold text-foreground text-lg gradient-text">
+                {selectedTrade.pair} — {selectedTrade.direction}
+              </h3>
+              <button onClick={() => setSelectedTrade(null)} className="text-muted-foreground hover:text-foreground">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="space-y-3 text-sm">
+              {[
+                { label: 'Date',    val: new Date(selectedTrade.date).toLocaleString('fr') },
+                { label: 'Session', val: selectedTrade.session },
+                { label: 'Setup',   val: selectedTrade.setup },
+                { label: 'Émotion', val: selectedTrade.emotion },
+                { label: 'Entrée',  val: selectedTrade.entryPrice },
+                { label: 'SL',      val: selectedTrade.stopLoss },
+                { label: 'TP',      val: selectedTrade.takeProfit },
+                { label: 'Sortie',  val: selectedTrade.exitPrice || '—' },
+                { label: 'Durée',   val: `${selectedTrade.duration} min` },
+              ].map(({ label, val }) => (
+                <div key={label} className="flex justify-between py-1 border-b border-border/30">
+                  <span className="text-muted-foreground">{label}</span>
+                  <span className="text-foreground font-medium">{String(val)}</span>
+                </div>
+              ))}
+              <div className="flex justify-between py-1 border-b border-border/30">
+                <span className="text-muted-foreground">Qualité</span>
+                <span className="text-foreground font-bold">{getQualityNum(selectedTrade.quality)}/10</span>
+              </div>
+              <div className="flex justify-between py-1 border-b border-border/30">
+                <span className="text-muted-foreground">Résultat</span>
+                <span className={`metric-value ${selectedTrade.resultR >= 0 ? 'text-success' : 'text-destructive'}`}>
+                  {formatResult(selectedTrade.resultR, selectedTrade.resultDollar, user?.capital)}
+                </span>
+              </div>
+              <div className="flex justify-between py-1 border-b border-border/30">
+                <span className="text-muted-foreground">Statut</span>
+                <span className={`text-xs font-bold px-2 py-0.5 rounded ${
+                  selectedTrade.status === 'WIN' ? 'badge-win' : selectedTrade.status === 'LOSS' ? 'badge-loss' : 'badge-be'
+                }`}>{selectedTrade.status}</span>
+              </div>
+              {selectedTrade.entryNote && (
+                <div className="pt-1">
+                  <p className="text-muted-foreground text-xs mb-1">Note d'entrée</p>
+                  <p className="text-foreground bg-accent/30 rounded-lg p-3 text-sm">{selectedTrade.entryNote}</p>
+                </div>
+              )}
+              {selectedTrade.exitNote && (
+                <div className="pt-1">
+                  <p className="text-muted-foreground text-xs mb-1">Note de sortie</p>
+                  <p className="text-foreground bg-accent/30 rounded-lg p-3 text-sm">{selectedTrade.exitNote}</p>
+                </div>
+              )}
+              {selectedTrade.screenshot && (
+                <div className="pt-2">
+                  <p className="text-muted-foreground text-xs mb-2">Capture</p>
+                  <div className="relative group cursor-pointer" onClick={() => setZoomImg(selectedTrade.screenshot)}>
+                    <img src={selectedTrade.screenshot} alt="Capture" className="rounded-xl w-full object-cover max-h-60 transition-transform group-hover:scale-[1.01]" />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl">
+                      <ZoomIn size={32} className="text-white" />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button onClick={() => startEdit(selectedTrade)} className="gradient-btn flex-1 py-2.5 text-sm flex items-center justify-center gap-2">
+                <Pencil size={14} /> Modifier
+              </button>
+              <button onClick={() => deleteTrade(selectedTrade.id)} className="flex-1 py-2.5 rounded-lg border border-destructive/30 text-destructive text-sm hover:bg-destructive/10 transition-colors">
+                <Trash2 size={14} className="inline mr-1" /> Supprimer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODALE ÉDITION ────────────────────────────────── */}
+      {editingTrade && (
+        <div className="modal-overlay" onClick={() => setEditingTrade(null)}>
+          <div className="modal-content glass p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto scrollbar-thin" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="font-bold text-foreground text-lg gradient-text">Modifier le trade</h3>
+              <button onClick={() => setEditingTrade(null)} className="text-muted-foreground hover:text-foreground"><X size={20} /></button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs text-muted-foreground">Date & Heure</label>
+                <input type="datetime-local"
+                  value={editingTrade.date ? new Date(editingTrade.date).toISOString().slice(0, 16) : ''}
+                  onChange={e => setEditField('date', new Date(e.target.value).toISOString())}
+                  className="input-dark mt-1" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-muted-foreground">Paire</label>
+                  <select value={editingTrade.pair} onChange={e => setEditField('pair', e.target.value)} className="select-dark mt-1">
+                    {ALL_PAIRS.map(p => <option key={p} value={p}>{p}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">Direction</label>
+                  <div className="flex gap-2 mt-1">
+                    {(['BUY', 'SELL'] as const).map(d => (
+                      <button key={d} type="button" onClick={() => setEditField('direction', d)}
+                        className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${
+                          editingTrade.direction === d
+                            ? d === 'BUY' ? 'badge-buy border border-current' : 'badge-sell border border-current'
+                            : 'bg-accent text-muted-foreground hover:bg-accent/60'
+                        }`}>
+                        {d === 'BUY' ? 'ACHAT' : 'VENTE'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-muted-foreground">Session</label>
+                  <select value={editingTrade.session} onChange={e => setEditField('session', e.target.value)} className="select-dark mt-1">
+                    {ALL_SESSIONS.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">Setup</label>
+                  <select value={editingTrade.setup} onChange={e => setEditField('setup', e.target.value)} className="select-dark mt-1">
+                    {allSetups.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-muted-foreground">Émotion</label>
+                  <select value={editingTrade.emotion} onChange={e => setEditField('emotion', e.target.value)} className="select-dark mt-1">
+                    {ALL_EMOTIONS.map(em => <option key={em} value={em}>{em}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">Statut</label>
+                  <select value={editingTrade.status} onChange={e => setEditField('status', e.target.value as Trade['status'])} className="select-dark mt-1">
+                    <option value="WIN">Win</option>
+                    <option value="LOSS">Loss</option>
+                    <option value="BE">Breakeven</option>
+                    <option value="RUNNING">En cours</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">Qualité du trade</label>
+                <div className="mt-2">
+                  <QualityBar value={getQualityNum(editingTrade.quality)} onChange={v => setEditField('quality', v)} />
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="text-xs text-muted-foreground">Prix d'entrée</label>
+                  <input type="number" step="any" value={editingTrade.entryPrice}
+                    onChange={e => setEditField('entryPrice', parseFloat(e.target.value) || 0)} className="input-dark mt-1" />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">Stop Loss</label>
+                  <input type="number" step="any" value={editingTrade.stopLoss}
+                    onChange={e => setEditField('stopLoss', parseFloat(e.target.value) || 0)} className="input-dark mt-1" />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">Take Profit</label>
+                  <input type="number" step="any" value={editingTrade.takeProfit}
+                    onChange={e => setEditField('takeProfit', parseFloat(e.target.value) || 0)} className="input-dark mt-1" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-muted-foreground">Prix de sortie</label>
+                  <input type="number" step="any" value={editingTrade.exitPrice || ''}
+                    onChange={e => setEditField('exitPrice', parseFloat(e.target.value) || undefined)} className="input-dark mt-1" />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">Taille de lot</label>
+                  <input type="number" step="any" value={editingTrade.lotSize || ''}
+                    onChange={e => setEditField('lotSize', parseFloat(e.target.value) || 0)} className="input-dark mt-1" />
+                </div>
+              </div>
+              <div className="p-3 rounded-xl bg-accent/40 border border-border/50 space-y-2">
+                <p className="text-xs text-muted-foreground font-medium">Résultats (recalculés automatiquement)</p>
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className="text-xs text-muted-foreground">Résultat R</label>
+                    <input type="number" step="any" value={editingTrade.resultR}
+                      onChange={e => setEditField('resultR', parseFloat(e.target.value) || 0)} className="input-dark mt-1 text-sm" />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">Résultat $</label>
+                    <input type="number" step="any" value={editingTrade.resultDollar}
+                      onChange={e => setEditField('resultDollar', parseFloat(e.target.value) || 0)} className="input-dark mt-1 text-sm" />
+                  </div>
+                  <div className="flex items-end">
+                    <div className={`w-full text-center py-2 rounded-lg text-sm font-bold ${
+                      editingTrade.resultR >= 0 ? 'bg-success/20 text-success' : 'bg-destructive/20 text-destructive'
+                    }`}>
+                      {editingTrade.resultR >= 0 ? '+' : ''}{editingTrade.resultR?.toFixed(2)}R
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">Note d'entrée</label>
+                <textarea value={editingTrade.entryNote}
+                  onChange={e => setEditField('entryNote', e.target.value)}
+                  className="input-dark mt-1 min-h-[70px] resize-none" placeholder="Justifie ton entrée. Pas d'excuse." />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">Note de sortie</label>
+                <textarea value={editingTrade.exitNote}
+                  onChange={e => setEditField('exitNote', e.target.value)}
+                  className="input-dark mt-1 min-h-[70px] resize-none" placeholder="Résultat ? Sois honnête." />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">Lien TradingView</label>
+                <input type="url" value={editingTrade.tradingViewLink || ''}
+                  onChange={e => setEditField('tradingViewLink', e.target.value)}
+                  className="input-dark mt-1" placeholder="https://..." />
+              </div>
+              {accounts.length > 1 && (
+                <div>
+                  <label className="text-xs text-muted-foreground">Compte</label>
+                  <div className="flex flex-col gap-2 mt-2">
+                    {accounts.map(acc => (
+                      <label key={acc.id} className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                        editingTrade.accountId === acc.id ? 'border-primary/50 bg-primary/10' : 'border-border/50 hover:border-border'
+                      }`}>
+                        <input type="radio" name="editAccount" checked={editingTrade.accountId === acc.id}
+                          onChange={() => setEditField('accountId', acc.id)} className="accent-primary" />
+                        <div>
+                          <p className="text-sm font-medium text-foreground">{acc.name}</p>
+                          <p className="text-xs text-muted-foreground">{acc.broker} · {acc.type}</p>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div>
+                <label className="text-xs text-muted-foreground">Capture d'écran</label>
+                {editingTrade.screenshot && (
+                  <div className="relative group mt-2 cursor-pointer" onClick={() => setZoomImg(editingTrade.screenshot!)}>
+                    <img src={editingTrade.screenshot} alt="Capture"
+                      className="rounded-xl w-full max-h-48 object-cover border border-border/30 transition-transform group-hover:scale-[1.01]" />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl">
+                      <ZoomIn size={28} className="text-white" />
+                    </div>
+                    <button type="button"
+                      onClick={e => { e.stopPropagation(); setEditField('screenshot', ''); }}
+                      className="absolute top-2 right-2 w-7 h-7 rounded-full bg-destructive flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                      <X size={12} />
+                    </button>
+                  </div>
+                )}
+                <input type="file" accept="image/*" onChange={handleEditScreenshot}
+                  className="input-dark mt-2 text-xs file:mr-3 file:rounded-lg file:border-0 file:gradient-primary file:text-white file:px-3 file:py-1 file:text-xs file:cursor-pointer" />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button onClick={() => setEditingTrade(null)}
+                className="flex-1 py-2.5 rounded-lg border border-border text-muted-foreground text-sm hover:text-foreground hover:bg-accent transition-colors">
+                Annuler
+              </button>
+              <button onClick={saveEdit} className="flex-1 gradient-btn py-2.5 text-sm flex items-center justify-center gap-2">
+                <Save size={14} /> Enregistrer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modale confirmation suppression */}
+      {ConfirmModal}
+
+      {/* ── ZOOM IMAGE ──────────────────────────────────── */}
+      {zoomImg && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90" onClick={() => setZoomImg(null)}>
+          <button className="absolute top-4 right-4 text-white hover:text-gray-300" onClick={() => setZoomImg(null)}>
+            <X size={32} />
+          </button>
+          <img src={zoomImg} alt="Zoom" className="max-w-[95vw] max-h-[90vh] object-contain rounded-xl shadow-2xl" />
+        </div>
+      )}
+    </div>
+  );
+}

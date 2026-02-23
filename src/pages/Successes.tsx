@@ -1,0 +1,583 @@
+import { useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
+import { useAuth } from '@/context/AuthContext';
+import GlassCard from '@/components/GlassCard';
+import {
+  Plus, Trash2, ImagePlus, X, Pencil, Save,
+  ZoomIn, ChevronLeft, ChevronRight, Trophy,
+  CalendarDays, StickyNote, Star, Image as ImageIcon,
+} from 'lucide-react';
+import { toast } from 'sonner';
+import { useConfirm } from '@/components/ConfirmModal';
+
+interface Success {
+  id: string;
+  title: string;
+  date: string;
+  note: string;
+  images: string[];
+}
+
+// ── CSS injecté une seule fois ────────────────────────────────────────────────
+const STYLES = `
+@keyframes su-fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes su-scaleIn {
+  from { opacity: 0; transform: scale(.93); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.su-fade-up  { animation: su-fadeUp  .38s cubic-bezier(.16,1,.3,1) both; }
+.su-scale-in { animation: su-scaleIn .26s cubic-bezier(.16,1,.3,1) both; }
+.su-s1 { animation-delay: .04s; }
+.su-s2 { animation-delay: .09s; }
+.su-s3 { animation-delay: .14s; }
+.su-s4 { animation-delay: .19s; }
+`;
+if (typeof document !== 'undefined' && !document.getElementById('su-styles')) {
+  const s = document.createElement('style');
+  s.id = 'su-styles';
+  s.textContent = STYLES;
+  document.head.appendChild(s);
+}
+
+// ── Lightbox — rendue via Portal directement dans document.body ───────────────
+// Raison : si rendue à l'intérieur d'un parent avec overflow:hidden ou
+// z-index limité, la lightbox sera clippée/bloquée dans ce conteneur.
+// createPortal() l'échappe complètement du DOM parent.
+function Lightbox({ images, index, onClose }: {
+  images: string[];
+  index: number;
+  onClose: () => void;
+}) {
+  const [current, setCurrent] = useState(index);
+  const prev = () => setCurrent(i => (i - 1 + images.length) % images.length);
+  const next = () => setCurrent(i => (i + 1) % images.length);
+
+  const overlayStyle: React.CSSProperties = {
+    position: 'fixed',
+    inset: 0,
+    zIndex: 99999,
+    background: 'rgba(0,0,0,.88)',
+    backdropFilter: 'blur(14px)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  };
+
+  const btnStyle: React.CSSProperties = {
+    width: 40, height: 40, borderRadius: '50%',
+    background: 'rgba(255,255,255,.15)',
+    border: 'none', cursor: 'pointer',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    color: '#fff', flexShrink: 0,
+    transition: 'background .18s, transform .15s',
+  };
+
+  const content = (
+    <div style={overlayStyle} onClick={onClose}>
+      {/* Fermer */}
+      <button
+        onClick={onClose}
+        style={{ ...btnStyle, position: 'absolute', top: 16, right: 16 }}
+        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,.28)'; }}
+        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,.15)'; }}
+      >
+        <X size={18} />
+      </button>
+
+      {/* Zone image — stopPropagation pour ne pas fermer en cliquant l'image */}
+      <div
+        className="su-scale-in"
+        style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '0 20px', maxWidth: '100%' }}
+        onClick={e => e.stopPropagation()}
+      >
+        {images.length > 1 && (
+          <button onClick={prev} style={btnStyle}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,.28)'; e.currentTarget.style.transform = 'scale(1.08)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,.15)'; e.currentTarget.style.transform = 'scale(1)'; }}
+          >
+            <ChevronLeft size={22} />
+          </button>
+        )}
+
+        {/* Image : max 78vw × 78vh — jamais plein écran, jamais dans le box */}
+        <img
+          src={images[current]}
+          alt=""
+          style={{
+            maxWidth: '78vw',
+            maxHeight: '78vh',
+            width: 'auto',
+            height: 'auto',
+            objectFit: 'contain',
+            borderRadius: 14,
+            boxShadow: '0 30px 70px rgba(0,0,0,.7)',
+            display: 'block',
+          }}
+        />
+
+        {images.length > 1 && (
+          <button onClick={next} style={btnStyle}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,.28)'; e.currentTarget.style.transform = 'scale(1.08)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,.15)'; e.currentTarget.style.transform = 'scale(1)'; }}
+          >
+            <ChevronRight size={22} />
+          </button>
+        )}
+      </div>
+
+      {images.length > 1 && (
+        <div style={{
+          position: 'absolute', bottom: 20, left: '50%', transform: 'translateX(-50%)',
+          background: 'rgba(255,255,255,.18)', backdropFilter: 'blur(6px)',
+          borderRadius: 999, padding: '3px 14px', fontSize: 12, color: '#fff',
+        }}>
+          {current + 1} / {images.length}
+        </div>
+      )}
+    </div>
+  );
+
+  // Portal → rendu directement dans body, échappe tout parent DOM
+  return createPortal(content, document.body);
+}
+
+// ── Galerie compacte côté droit de la carte ───────────────────────────────────
+function CompactGallery({ images }: { images: string[] }) {
+  const [lightbox, setLightbox] = useState<number | null>(null);
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
+
+  if (images.length === 0) return null;
+
+  return (
+    <>
+      <div
+        style={{
+          flexShrink: 0,
+          width: images.length === 1 ? 100 : 152,
+          borderRadius: 12,
+          overflow: 'hidden', // overflow:hidden ici — mais Lightbox échappe via Portal
+          boxShadow: '0 4px 20px rgba(0,0,0,.25), 0 1px 4px rgba(0,0,0,.15)',
+          border: '1px solid rgba(255,255,255,.07)',
+        }}
+      >
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: `repeat(${images.length === 1 ? 1 : 2}, 1fr)`,
+          gap: 2,
+        }}>
+          {images.map((img, idx) => (
+            <div
+              key={idx}
+              onClick={() => setLightbox(idx)}
+              onMouseEnter={() => setHoveredIdx(idx)}
+              onMouseLeave={() => setHoveredIdx(null)}
+              style={{
+                position: 'relative',
+                aspectRatio: '1 / 1',
+                cursor: 'pointer',
+                overflow: 'hidden',
+              }}
+            >
+              <img
+                src={img}
+                alt=""
+                style={{
+                  width: '100%', height: '100%',
+                  objectFit: 'contain',
+                  background: 'rgba(0,0,0,.22)',
+                  display: 'block',
+                  transform: hoveredIdx === idx ? 'scale(1.05)' : 'scale(1)',
+                  transition: 'transform .22s',
+                }}
+              />
+              <div style={{
+                position: 'absolute', inset: 0,
+                background: 'rgba(0,0,0,.4)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                opacity: hoveredIdx === idx ? 1 : 0,
+                transition: 'opacity .18s',
+              }}>
+                <ZoomIn size={15} color="#fff" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Portal lightbox — rendu dans body, pas dans ce div */}
+      {lightbox !== null && (
+        <Lightbox images={images} index={lightbox} onClose={() => setLightbox(null)} />
+      )}
+    </>
+  );
+}
+
+// ── Galerie dans le modal (pleine largeur) ────────────────────────────────────
+function ModalGallery({
+  images,
+  onRemove,
+  onAdd,
+}: {
+  images: string[];
+  onRemove: (idx: number) => void;
+  onAdd: (b64: string) => void;
+}) {
+  const [lightbox, setLightbox] = useState<number | null>(null);
+
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    Array.from(e.target.files || []).forEach(file => {
+      if (file.size > 5 * 1024 * 1024) { toast.error('Max 5 Mo par image'); return; }
+      const reader = new FileReader();
+      reader.onload = () => onAdd(reader.result as string);
+      reader.readAsDataURL(file);
+    });
+    if (e.target) e.target.value = '';
+  };
+
+  return (
+    <div className="space-y-2">
+      {images.length > 0 && (
+        <div className={`grid gap-2 ${
+          images.length === 1 ? 'grid-cols-1' :
+          images.length === 2 ? 'grid-cols-2' : 'grid-cols-3'
+        }`}>
+          {images.map((img, idx) => (
+            <div
+              key={idx}
+              className="relative group/mi rounded-xl overflow-hidden border border-border/20 shadow-md hover:shadow-lg transition-all"
+              style={{ aspectRatio: '4 / 3' }}
+            >
+              <img
+                src={img}
+                alt=""
+                onClick={() => setLightbox(idx)}
+                style={{ width: '100%', height: '100%', objectFit: 'contain', background: 'rgba(0,0,0,.1)', cursor: 'pointer', display: 'block' }}
+              />
+              <div
+                onClick={() => setLightbox(idx)}
+                className="absolute inset-0 bg-black/35 flex items-center justify-center opacity-0 group-hover/mi:opacity-100 transition-opacity cursor-pointer"
+              >
+                <ZoomIn size={18} className="text-white" />
+              </div>
+              <button
+                onClick={e => { e.stopPropagation(); onRemove(idx); }}
+                className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-destructive flex items-center justify-center opacity-0 group-hover/mi:opacity-100 transition-opacity z-10 hover:scale-110"
+              >
+                <X size={10} className="text-white" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <label className="flex items-center gap-2 px-3 py-2.5 rounded-xl border border-dashed border-border/50 cursor-pointer hover:bg-accent/30 hover:border-primary/40 transition-all w-full">
+        <ImagePlus size={15} className="text-muted-foreground shrink-0" />
+        <span className="text-sm text-muted-foreground">
+          {images.length === 0 ? 'Ajouter des images (max 5 Mo)' : "Ajouter d'autres images"}
+        </span>
+        <input type="file" accept="image/*" multiple onChange={handleFile} className="hidden" />
+      </label>
+
+      {lightbox !== null && (
+        <Lightbox images={images} index={lightbox} onClose={() => setLightbox(null)} />
+      )}
+    </div>
+  );
+}
+
+// ── Modal formulaire ──────────────────────────────────────────────────────────
+// BUG MODAL FERMETURE : handleSubmit appelle onSave() PUIS onClose().
+// onClose() est appelé ici-même, pas délégué au parent — garanti de toujours
+// se fermer après la sauvegarde, quelle que soit la logique parent.
+function SuccessModal({
+  initial,
+  onSave,
+  onClose,
+}: {
+  initial?: Success;
+  onSave: (data: Omit<Success, 'id'>) => void;
+  onClose: () => void;
+}) {
+  const [title, setTitle]   = useState(initial?.title  ?? '');
+  const [date, setDate]     = useState(initial?.date   ?? new Date().toISOString().split('T')[0]);
+  const [note, setNote]     = useState(initial?.note   ?? '');
+  const [images, setImages] = useState<string[]>(initial?.images ?? []);
+
+  // Refs pour lire les valeurs les plus récentes sans recréer handleSubmit
+  const rTitle  = useRef(title);  rTitle.current  = title;
+  const rDate   = useRef(date);   rDate.current   = date;
+  const rNote   = useRef(note);   rNote.current   = note;
+  const rImages = useRef(images); rImages.current = images;
+
+  const handleSubmit = () => {
+    if (!rTitle.current.trim()) { toast.error('Le titre est requis'); return; }
+    // 1. Sauvegarder
+    onSave({
+      title:  rTitle.current.trim(),
+      date:   rDate.current,
+      note:   rNote.current.trim(),
+      images: rImages.current,
+    });
+    // 2. Fermer — appelé ICI, toujours, après onSave
+    onClose();
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div
+        className="modal-content glass p-6 max-w-lg w-full mx-4 max-h-[92vh] overflow-y-auto su-scale-in"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex justify-between items-center mb-5">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center">
+              <Trophy size={16} className="text-primary" />
+            </div>
+            <h3 className="font-bold text-foreground text-lg">
+              {initial ? 'Modifier le succès' : 'Nouveau succès'}
+            </h3>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1.5 font-medium">
+              <Star size={11} className="text-primary/70" /> Titre *
+            </label>
+            <input
+              value={title}
+              onChange={e => setTitle(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+              className="input-dark w-full"
+              placeholder="Ex : Premier mois rentable"
+              autoFocus
+            />
+          </div>
+
+          <div>
+            <label className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1.5 font-medium">
+              <CalendarDays size={11} className="text-primary/70" /> Date
+            </label>
+            <input
+              type="date"
+              value={date}
+              onChange={e => setDate(e.target.value)}
+              className="input-dark w-full"
+            />
+          </div>
+
+          <div>
+            <label className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1.5 font-medium">
+              <StickyNote size={11} className="text-primary/70" /> Notes
+            </label>
+            <textarea
+              value={note}
+              onChange={e => setNote(e.target.value)}
+              className="input-dark w-full min-h-[88px] resize-none"
+              placeholder="Décris ce que tu as accompli, comment tu te sens..."
+            />
+          </div>
+
+          <div>
+            <label className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1.5 font-medium">
+              <ImageIcon size={11} className="text-primary/70" /> Images
+            </label>
+            <ModalGallery
+              images={images}
+              onRemove={idx => setImages(prev => prev.filter((_, i) => i !== idx))}
+              onAdd={b64 => setImages(prev => [...prev, b64])}
+            />
+          </div>
+        </div>
+
+        <div className="flex gap-3 mt-6">
+          <button
+            onClick={onClose}
+            className="flex-1 py-2.5 rounded-xl border border-border text-muted-foreground text-sm hover:text-foreground hover:bg-accent/30 transition-all"
+          >
+            Annuler
+          </button>
+          <button
+            onClick={handleSubmit}
+            className="flex-1 gradient-btn py-2.5 text-sm flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform"
+          >
+            <Save size={14} />
+            {initial ? 'Enregistrer' : 'Ajouter le succès'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Carte succès ──────────────────────────────────────────────────────────────
+function SuccessCard({ item, onEdit, onDelete, index }: {
+  item: Success; onEdit: () => void; onDelete: () => void; index: number;
+}) {
+  const stagger = ['su-s1', 'su-s2', 'su-s3', 'su-s4'][Math.min(index, 3)];
+  return (
+    <GlassCard className={`su-fade-up ${stagger} overflow-visible`}>
+      <div className="flex gap-4 items-start">
+        {/* Colonne gauche — texte */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-2 mb-1.5">
+            <div className="flex items-start gap-2.5 min-w-0">
+              <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                <Trophy size={14} className="text-primary" />
+              </div>
+              <div className="min-w-0">
+                <h4 className="font-bold text-foreground text-base leading-snug">{item.title}</h4>
+                <p className="flex items-center gap-1 text-xs text-primary/60 mt-0.5">
+                  <CalendarDays size={11} />
+                  {new Date(item.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1 shrink-0">
+              <button onClick={onEdit} title="Modifier"
+                className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all hover:scale-110">
+                <Pencil size={14} />
+              </button>
+              <button onClick={onDelete} title="Supprimer"
+                className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all hover:scale-110">
+                <Trash2 size={14} />
+              </button>
+            </div>
+          </div>
+          {item.note && (
+            <p className="text-sm text-muted-foreground leading-relaxed ml-9">{item.note}</p>
+          )}
+        </div>
+
+        {/* Colonne droite — galerie compacte */}
+        {item.images.length > 0 && <CompactGallery images={item.images} />}
+      </div>
+    </GlassCard>
+  );
+}
+
+// ── Page principale ───────────────────────────────────────────────────────────
+export default function Successes() {
+  // Modale de confirmation glassmorphism
+  const [confirm, ConfirmModal] = useConfirm();
+  const { user } = useAuth();
+  const storageKey = `mitrad_successes_${user!.email}`;
+
+  const [items, setItems] = useState<Success[]>(() => {
+    try { return JSON.parse(localStorage.getItem(storageKey) || '[]'); }
+    catch { return []; }
+  });
+
+  const [showAdd, setShowAdd]       = useState(false);
+  const [editTarget, setEditTarget] = useState<Success | null>(null);
+  const [addKey, setAddKey]         = useState(0);
+  const [editKey, setEditKey]       = useState(0);
+
+  const itemsRef = useRef(items);
+  itemsRef.current = items;
+
+  const persist = (updated: Success[]) => {
+    setItems(updated);
+    localStorage.setItem(storageKey, JSON.stringify(updated));
+  };
+
+  // handleAdd/handleUpdate : NE ferment plus le modal eux-mêmes.
+  // C'est handleSubmit() dans SuccessModal qui appelle onClose() après onSave().
+  // Cela garantit la fermeture dans tous les cas.
+  const handleAdd = (data: Omit<Success, 'id'>) => {
+    persist([{ id: `success-${Date.now()}`, ...data }, ...itemsRef.current]);
+    toast.success('🏆 Succès ajouté !');
+    setShowAdd(false);
+  };
+
+  const handleUpdate = (id: string, data: Omit<Success, 'id'>) => {
+    persist(itemsRef.current.map(s => s.id === id ? { ...s, ...data } : s));
+    toast.success('✅ Succès mis à jour');
+    setEditTarget(null);
+  };
+
+  const handleDelete = async (id: string) => {
+    const ok = await confirm({ message: 'Supprimer ce succès ?', variant: 'danger', confirmText: 'Supprimer' });
+    if (!ok) return;
+    persist(itemsRef.current.filter(s => s.id !== id));
+    toast.success('Supprimé');
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between flex-wrap gap-4 su-fade-up">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold gradient-text flex items-center gap-2">
+            <Trophy size={24} className="text-primary" /> Mes Succès
+          </h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            Célèbre chaque victoire · {items.length} succès enregistré{items.length !== 1 ? 's' : ''}
+          </p>
+        </div>
+        <button
+          onClick={() => { setAddKey(k => k + 1); setShowAdd(true); }}
+          className="gradient-btn px-4 py-2 text-sm flex items-center gap-2 hover:scale-[1.03] transition-transform"
+        >
+          <Plus size={15} /> Ajouter un succès
+        </button>
+      </div>
+
+      <div className="space-y-4">
+        {items.map((item, idx) => (
+          <SuccessCard
+            key={item.id}
+            item={item}
+            index={idx}
+            onEdit={() => { setEditKey(k => k + 1); setEditTarget(item); }}
+            onDelete={() => handleDelete(item.id)}
+          />
+        ))}
+      </div>
+
+      {items.length === 0 && (
+        <GlassCard className="text-center py-16 su-fade-up su-s2">
+          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+            <Trophy size={28} className="text-primary" />
+          </div>
+          <p className="text-foreground font-semibold text-base">Aucun succès enregistré</p>
+          <p className="text-muted-foreground text-sm mt-1 max-w-xs mx-auto">
+            Célèbre tes victoires, même les petites — elles comptent toutes.
+          </p>
+          <button
+            onClick={() => { setAddKey(k => k + 1); setShowAdd(true); }}
+            className="gradient-btn px-5 py-2 text-sm mt-5 inline-flex items-center gap-2 hover:scale-[1.03] transition-transform"
+          >
+            <Star size={14} /> Mon premier succès
+          </button>
+        </GlassCard>
+      )}
+
+      {showAdd && (
+        <SuccessModal
+          key={`add-${addKey}`}
+          onSave={handleAdd}
+          onClose={() => setShowAdd(false)}
+        />
+      )}
+
+      {editTarget && (
+        <SuccessModal
+          key={`edit-${editTarget.id}-${editKey}`}
+          initial={editTarget}
+          onSave={data => handleUpdate(editTarget.id, data)}
+          onClose={() => setEditTarget(null)}
+        />
+      )}
+      {ConfirmModal}
+    </div>
+  );
+}
