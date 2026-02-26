@@ -18,10 +18,10 @@ import TradeHistory from "@/pages/TradeHistory";
 import Analytics from "@/pages/Analytics";
 import CalendarPage from "@/pages/CalendarPage";
 import DailyAnalysis from "@/pages/DailyAnalysis";
-import Leaderboard from "@/pages/Leaderboard";
+// import Leaderboard from "@/pages/Leaderboard";
 import Profile from "@/pages/Profile";
 import CoachAlphaPage from "@/pages/CoachAlphaPage";
-import Calculator from "@/pages/Calculator";
+// import Calculator from "@/pages/Calculator";
 import Settings from "@/pages/Settings";
 import TradingPlan from "@/pages/TradingPlan";
 import Successes from "@/pages/Successes";
@@ -56,10 +56,10 @@ function AppRoutes() {
       <Route path="/analytics"      element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
       <Route path="/calendar"       element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
       <Route path="/daily-analysis" element={<ProtectedRoute><DailyAnalysis /></ProtectedRoute>} />
-      <Route path="/leaderboard"    element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
+      {/* <Route path="/leaderboard"    element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} /> */}
       <Route path="/profile"        element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       <Route path="/coach"          element={<ProtectedRoute><CoachAlphaPage /></ProtectedRoute>} />
-      <Route path="/calculator"     element={<ProtectedRoute><Calculator /></ProtectedRoute>} />
+      {/* <Route path="/calculator"     element={<ProtectedRoute><Calculator /></ProtectedRoute>} /> */}
       <Route path="/settings"       element={<ProtectedRoute><Settings /></ProtectedRoute>} />
       <Route path="/trading-plan"   element={<ProtectedRoute><TradingPlan /></ProtectedRoute>} />
       <Route path="/successes"      element={<ProtectedRoute><Successes /></ProtectedRoute>} />

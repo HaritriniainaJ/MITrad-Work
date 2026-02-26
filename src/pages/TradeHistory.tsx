@@ -1,14 +1,16 @@
-import { useState, useMemo } from 'react';
+﻿import { useState, useMemo } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useDisplayMode } from '@/context/DisplayModeContext';
 import { useFilteredTrades } from '@/hooks/useFilteredTrades';
-import { StorageManager } from '@/lib/storage';
 import { Trade, ALL_PAIRS, ALL_SESSIONS, ALL_SETUPS, ALL_EMOTIONS } from '@/types/trading';
 import GlassCard from '@/components/GlassCard';
-import { Download, Trash2, X, Pencil, Save, ImageIcon, ZoomIn } from 'lucide-react';
+import { Download, Trash2, X, Pencil, Save, ImageIcon, ZoomIn, AlertTriangle } from 'lucide-react';
 import { useConfirm } from '@/components/ConfirmModal';
 import { ZoomableImage } from '@/components/ImageLightbox';
+import { updateTrade, deleteTrade as deleteTadeApi } from '@/lib/api';
 import { toast } from 'sonner';
+import { StorageManager } from '@/lib/storage';
+
 
 function QualityBar({ value, onChange }: { value: number; onChange?: (v: number) => void }) {
   const color = value <= 3 ? '#ef4444' : value <= 6 ? '#f59e0b' : '#00d4aa';
@@ -47,9 +49,8 @@ function QualityBar({ value, onChange }: { value: number; onChange?: (v: number)
 }
 
 export default function TradeHistory() {
-  const { user, accounts } = useAuth();
+  const { user, accounts, activeAccount } = useAuth();
   const { formatResult } = useDisplayMode();
-  // Modale de confirmation stylée glassmorphism (remplace window.confirm)
   const [confirm, ConfirmModal] = useConfirm();
 
   const [filters, setFilters] = useState({
@@ -62,7 +63,6 @@ export default function TradeHistory() {
   const [refreshKey, setRefreshKey]       = useState(0);
   const perPage = 20;
 
-  // ── Branché sur le sidebar dropdown ─────────────────────────
   const allTrades = useFilteredTrades(refreshKey);
 
   const filtered = useMemo(() => allTrades.filter(t => {
@@ -82,37 +82,83 @@ export default function TradeHistory() {
     typeof q === 'number' ? q : q === 'A+' ? 10 : q === 'A' ? 8 : q === 'B' ? 6 : 4;
 
   const autoCalc = (t: Partial<Trade>): Partial<Trade> => {
-    const entry   = Number(t.entryPrice) || 0;
-    const sl      = Number(t.stopLoss)   || 0;
-    const exit    = Number(t.exitPrice)  || 0;
-    const cap     = user?.capital || 10000;
-    if (!entry || !sl || !exit) return t;
-    const slDist  = Math.abs(entry - sl);
-    if (slDist === 0) return t;
-    const pnlDist = (t.direction === 'BUY' ? exit - entry : entry - exit);
-    const resultR      = pnlDist / slDist;
-    const resultDollar = resultR * cap * 0.01;
-    return { ...t, resultR: Math.round(resultR * 100) / 100, resultDollar: Math.round(resultDollar * 100) / 100 };
+    const entry = Number(t.entryPrice) || 0;
+    const sl    = Number(t.stopLoss)   || 0;
+    const exit  = Number(t.exitPrice)  || 0;
+    const acc   = accounts.find(a => String(a.id) === String(t.accountId || (t as any).trading_account_id));
+    const cap   = Number(acc?.capital) || user?.capital || 10000;
+    const riskDollar = cap * 0.01;
+    const slDist = Math.abs(entry - sl);
+
+    if (!entry || !sl || slDist === 0) return t;
+
+    if (exit) {
+      const pnlDist = (t.direction === 'BUY' ? exit - entry : entry - exit);
+      const resultR = Math.round((pnlDist / slDist) * 100) / 100;
+      return { ...t, resultR, resultDollar: Math.round(resultR * riskDollar * 100) / 100 };
+    }
+
+    if (t.status === 'WIN') {
+      const tp     = Number(t.takeProfit) || 0;
+      const tpDist = Math.abs(tp - entry);
+      if (tp && tpDist > 0) {
+        const resultR = Math.round((tpDist / slDist) * 100) / 100;
+        return { ...t, resultR, resultDollar: Math.round(resultR * riskDollar * 100) / 100, exitPrice: tp };
+      }
+    }
+    if (t.status === 'LOSS') {
+      return { ...t, resultR: -1, resultDollar: Math.round(-riskDollar * 100) / 100, exitPrice: sl };
+    }
+    if (t.status === 'BE') {
+      return { ...t, resultR: 0, resultDollar: 0, exitPrice: entry };
+    }
+
+    return t;
   };
 
-  const exportCSV = () => {
-    const csv  = StorageManager.tradesToCSV(filtered);
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href = url; a.download = 'trades.csv'; a.click();
-    URL.revokeObjectURL(url);
-    toast.success('CSV exporté !');
+  const exportExcel = async () => {
+    const XLSX = await import('xlsx');
+    const wsData = [
+      ['MITRAD JOURNAL - HISTORIQUE DES TRADES'],
+      [],
+      ['Date', 'Paire', 'Direction', 'Session', 'Setup', 'Ã‰motion', 'QualitÃ©',
+       'EntrÃ©e', 'SL', 'TP', 'Sortie', 'Lot', 'RÃ©sultat R', 'RÃ©sultat $', 'Statut', 'Note entrÃ©e', 'Note sortie'],
+      ...filtered.map(t => [
+        t.date ? new Date(t.date).toLocaleDateString('fr-FR') : '',
+        t.pair, t.direction, t.session, t.setup, t.emotion, t.quality,
+        t.entryPrice, t.stopLoss, t.takeProfit, t.exitPrice ?? '',
+        t.lotSize, t.resultR, t.resultDollar, t.status,
+        t.entryNote ?? '', t.exitNote ?? '',
+      ])
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    ws['!cols'] = [
+      { wch: 12 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 10 },
+      { wch: 12 }, { wch: 8 },  { wch: 10 }, { wch: 10 }, { wch: 10 },
+      { wch: 10 }, { wch: 8 },  { wch: 12 }, { wch: 12 }, { wch: 10 },
+      { wch: 30 }, { wch: 30 },
+    ];
+    ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 16 } }];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Trades');
+    XLSX.writeFile(wb, `MITrad_${new Date().toLocaleDateString('fr-FR').replace(/\//g, '-')}.xlsx`);
+    toast.success('Excel exportÃ© !');
   };
 
   const deleteTrade = async (id: string) => {
-    const ok = await confirm({ title: 'Supprimer ce trade', message: 'Cette action est irréversible. Le trade sera définitivement supprimé.', confirmText: 'Supprimer', variant: 'danger' });
+    const ok = await confirm({ title: 'Supprimer ce trade', message: 'Cette action est irrÃ©versible.', confirmText: 'Supprimer', variant: 'danger' });
     if (!ok) return;
-    StorageManager.deleteTrade(id);
-    setSelectedTrade(null);
-    setEditingTrade(null);
-    setRefreshKey(k => k + 1);
-    toast.success('Trade supprimé');
+    try {
+      const trade = allTrades.find(t => t.id === id);
+      if (!trade) return;
+      await deleteTadeApi(trade.trading_account_id, Number(id));
+      setSelectedTrade(null);
+      setEditingTrade(null);
+      setRefreshKey(k => k + 1);
+      toast.success('Trade supprimÃ©');
+    } catch {
+      toast.error('Erreur suppression');
+    }
   };
 
   const startEdit = (trade: Trade, e?: React.MouseEvent) => {
@@ -125,9 +171,33 @@ export default function TradeHistory() {
     setEditingTrade(prev => {
       if (!prev) return null;
       const updated = { ...prev, [key]: value };
+
       if (['entryPrice', 'stopLoss', 'exitPrice', 'direction'].includes(key as string)) {
         return autoCalc(updated) as Trade;
       }
+
+      if (key === 'status') {
+        const entry      = Number(updated.entryPrice);
+        const sl         = Number(updated.stopLoss);
+        const tp         = Number(updated.takeProfit);
+        const capital    = user?.capital || 10000;
+        const slDist     = Math.abs(entry - sl);
+        const tpDist     = Math.abs(tp - entry);
+        const riskDollar = capital * 0.01;
+
+        if (value === 'WIN' && tp && slDist > 0) {
+          const resultR      = Math.round((tpDist / slDist) * 100) / 100;
+          const resultDollar = Math.round(resultR * riskDollar * 100) / 100;
+          return { ...updated, resultR, resultDollar, exitPrice: tp };
+        }
+        if (value === 'LOSS' && sl && slDist > 0) {
+          return { ...updated, resultR: -1, resultDollar: Math.round(-riskDollar * 100) / 100, exitPrice: sl };
+        }
+        if (value === 'BE') {
+          return { ...updated, resultR: 0, resultDollar: 0, exitPrice: entry };
+        }
+      }
+
       return updated;
     });
 
@@ -140,18 +210,53 @@ export default function TradeHistory() {
     reader.readAsDataURL(file);
   };
 
-  const saveEdit = () => {
+  const saveEdit = async () => {
     if (!editingTrade) return;
-    StorageManager.updateTrade(editingTrade.id, editingTrade);
-    setEditingTrade(null);
-    setRefreshKey(k => k + 1);
-    toast.success('Trade mis à jour !');
+    try {
+      await updateTrade(editingTrade.trading_account_id, editingTrade.id, {
+        date:              editingTrade.date,
+        pair:              editingTrade.pair,
+        direction:         editingTrade.direction,
+        session:           editingTrade.session,
+        setup:             editingTrade.setup,
+        emotion:           editingTrade.emotion,
+        quality:           typeof editingTrade.quality === 'number' ? editingTrade.quality : 7,
+        entry_price:       editingTrade.entryPrice,
+        stop_loss:         editingTrade.stopLoss,
+        take_profit:       editingTrade.takeProfit,
+        lot_size:          editingTrade.lotSize,
+        exit_price:        editingTrade.exitPrice ?? null,
+        result_r:          editingTrade.resultR,
+        result_dollar:     editingTrade.resultDollar,
+        status:            editingTrade.status,
+        duration:          editingTrade.duration,
+        entry_note:        editingTrade.entryNote,
+        exit_note:         editingTrade.exitNote,
+        trading_view_link: editingTrade.tradingViewLink ?? '',
+        screenshot:        editingTrade.screenshot ?? '',
+        plan_respected:    editingTrade.planRespected ?? null,
+        is_imported:       false,
+      });
+      setEditingTrade(null);
+      setRefreshKey(k => k + 1);
+      toast.success('Trade mis Ã  jour !');
+    } catch {
+      toast.error('Erreur mise Ã  jour');
+    }
   };
 
   const allSetups = useMemo(() => {
     const custom = user?.customSetups || [];
     return [...new Set([...ALL_SETUPS, ...custom])];
   }, [user]);
+
+  // Compte du trade en cours d'Ã©dition (lecture seule)
+  const editingAccount = useMemo(() => {
+    if (!editingTrade) return null;
+    return accounts.find(a =>
+      String(a.id) === String(editingTrade.accountId || (editingTrade as any).trading_account_id)
+    ) || activeAccount || accounts[0];
+  }, [editingTrade, accounts, activeAccount]);
 
   const FilterSelect = ({
     label, value, onChange, options
@@ -174,7 +279,7 @@ export default function TradeHistory() {
           <h1 className="text-2xl md:text-3xl font-bold gradient-text">Historique</h1>
           <p className="text-muted-foreground text-sm mt-1">{filtered.length} trade{filtered.length > 1 ? 's' : ''}</p>
         </div>
-        <button onClick={exportCSV} className="gradient-btn px-4 py-2 text-sm flex items-center gap-2">
+        <button onClick={exportExcel} className="gradient-btn px-4 py-2 text-sm flex items-center gap-2">
           <Download size={14} /> Exporter CSV
         </button>
       </div>
@@ -185,13 +290,13 @@ export default function TradeHistory() {
           <FilterSelect label="Sessions"         value={filters.session}   onChange={v => setFilters(p => ({ ...p, session: v }))}   options={ALL_SESSIONS} />
           <FilterSelect label="Direction"        value={filters.direction} onChange={v => setFilters(p => ({ ...p, direction: v }))} options={['BUY', 'SELL']} />
           <FilterSelect label="Setups"           value={filters.setup}     onChange={v => setFilters(p => ({ ...p, setup: v }))}     options={allSetups} />
-          <FilterSelect label="Émotion"          value={filters.emotion}   onChange={v => setFilters(p => ({ ...p, emotion: v }))}   options={ALL_EMOTIONS} />
+          <FilterSelect label="Ã‰motion"          value={filters.emotion}   onChange={v => setFilters(p => ({ ...p, emotion: v }))}   options={ALL_EMOTIONS} />
           <FilterSelect label="Statut"           value={filters.status}    onChange={v => setFilters(p => ({ ...p, status: v }))}    options={['WIN', 'LOSS', 'BE', 'RUNNING']} />
           <button
             onClick={() => { setFilters({ pair: '', session: '', direction: '', setup: '', emotion: '', status: '' }); setPage(1); }}
             className="text-xs text-muted-foreground hover:text-foreground transition-colors py-2 hover:bg-accent/30 rounded-lg"
           >
-            Réinitialiser
+            RÃ©initialiser
           </button>
         </div>
       </GlassCard>
@@ -200,7 +305,7 @@ export default function TradeHistory() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border">
-              {['Date', 'Paire', 'Dir.', 'Session', 'Setup', 'Qualité', 'Résultat', 'Statut', 'Actions'].map(h => (
+              {['Date', 'Paire', 'Dir.', 'Session', 'Setup', 'QualitÃ©', 'RÃ©sultat', 'Statut', 'Actions'].map(h => (
                 <th key={h} className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">{h}</th>
               ))}
             </tr>
@@ -222,8 +327,19 @@ export default function TradeHistory() {
                   </span>
                 </td>
                 <td className="px-4 py-3 text-xs text-muted-foreground">{t.session}</td>
-                <td className="px-4 py-3 text-xs text-muted-foreground">{t.setup}</td>
+                <td className="px-4 py-3 text-xs text-muted-foreground">
+                  {t.is_imported && !t.setup ? (
+                    <span title="A completer" className="flex items-center gap-1 text-amber-400">
+                      <AlertTriangle size={12} /> <span className="text-xs">A dÃ©finir</span>
+                    </span>
+                  ) : t.setup}
+                </td>
                 <td className="px-4 py-3">
+                  {t.is_imported && t.quality == null ? (
+                    <span title="A completer" className="flex items-center gap-1 text-amber-400">
+                      <AlertTriangle size={12} /> <span className="text-xs">A dÃ©finir</span>
+                    </span>
+                  ) : (
                   <span className={`text-xs font-bold px-2 py-0.5 rounded-md ${
                     getQualityNum(t.quality) >= 8 ? 'bg-success/20 text-success' :
                     getQualityNum(t.quality) >= 5 ? 'bg-warning/20 text-warning' :
@@ -231,9 +347,10 @@ export default function TradeHistory() {
                   }`}>
                     {getQualityNum(t.quality)}/10
                   </span>
+                  )}
                 </td>
-                <td className={`px-4 py-3 metric-value text-sm ${t.resultR >= 0 ? 'text-success' : 'text-destructive'}`}>
-                  {formatResult(t.resultR, t.resultDollar, user?.capital)}
+                <td className={`px-4 py-3 metric-value text-sm ${t.resultR != null && t.resultR >= 0 ? 'text-success' : 'text-destructive'}`}>
+                  {formatResult(t.resultR, t.resultDollar, Number(accounts.find(a => String(a.id) === String(t.accountId || (t as any).trading_account_id))?.capital) || activeAccount?.capital || 10000)}
                 </td>
                 <td className="px-4 py-3">
                   <span className={`text-xs font-bold px-2 py-0.5 rounded ${
@@ -262,7 +379,7 @@ export default function TradeHistory() {
           </tbody>
         </table>
         {paginated.length === 0 && (
-          <p className="text-center text-muted-foreground py-12 text-sm">T'as pas tradé. C'est bien ou t'as raté des setups ?</p>
+          <p className="text-center text-muted-foreground py-12 text-sm">T'as pas tradÃ©. C'est bien ou t'as ratÃ© des setups ?</p>
         )}
       </GlassCard>
 
@@ -284,13 +401,13 @@ export default function TradeHistory() {
         </div>
       )}
 
-      {/* ── MODALE DÉTAIL ─────────────────────────────────── */}
+      {/* â”€â”€ MODALE DÃ‰TAIL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {selectedTrade && !editingTrade && (
         <div className="modal-overlay" onClick={() => setSelectedTrade(null)}>
           <div className="modal-content glass p-6 max-w-lg w-full max-h-[85vh] overflow-y-auto scrollbar-thin" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-5">
               <h3 className="font-bold text-foreground text-lg gradient-text">
-                {selectedTrade.pair} — {selectedTrade.direction}
+                {selectedTrade.pair} â€” {selectedTrade.direction}
               </h3>
               <button onClick={() => setSelectedTrade(null)} className="text-muted-foreground hover:text-foreground">
                 <X size={20} />
@@ -300,13 +417,14 @@ export default function TradeHistory() {
               {[
                 { label: 'Date',    val: new Date(selectedTrade.date).toLocaleString('fr') },
                 { label: 'Session', val: selectedTrade.session },
-                { label: 'Setup',   val: selectedTrade.setup },
-                { label: 'Émotion', val: selectedTrade.emotion },
-                { label: 'Entrée',  val: selectedTrade.entryPrice },
+                { label: 'Setup',   val: selectedTrade.setup || 'ï¿½ Non dï¿½fini' },
+
+                { label: 'Ã‰motion', val: selectedTrade.emotion },
+                { label: 'EntrÃ©e',  val: selectedTrade.entryPrice },
                 { label: 'SL',      val: selectedTrade.stopLoss },
                 { label: 'TP',      val: selectedTrade.takeProfit },
-                { label: 'Sortie',  val: selectedTrade.exitPrice || '—' },
-                { label: 'Durée',   val: `${selectedTrade.duration} min` },
+                { label: 'Sortie',  val: selectedTrade.exitPrice || 'â€”' },
+                { label: 'DurÃ©e',   val: `${selectedTrade.duration} min` },
               ].map(({ label, val }) => (
                 <div key={label} className="flex justify-between py-1 border-b border-border/30">
                   <span className="text-muted-foreground">{label}</span>
@@ -314,14 +432,14 @@ export default function TradeHistory() {
                 </div>
               ))}
               <div className="flex justify-between py-1 border-b border-border/30">
-                <span className="text-muted-foreground">Qualité</span>
-                <span className="text-foreground font-bold">{getQualityNum(selectedTrade.quality)}/10</span>
+                <span className="text-muted-foreground">QualitÃ©</span>
+                {selectedTrade.is_imported && selectedTrade.quality == null ? (<span className="flex items-center gap-1 text-amber-400 text-xs font-bold"><AlertTriangle size={12} /> ï¿½ dï¿½finir</span>) : (<span className="text-foreground font-bold">{getQualityNum(selectedTrade.quality)}/10</span>)}
               </div>
               <div className="flex justify-between py-1 border-b border-border/30">
-                <span className="text-muted-foreground">Résultat</span>
-                <span className={`metric-value ${selectedTrade.resultR >= 0 ? 'text-success' : 'text-destructive'}`}>
-                  {formatResult(selectedTrade.resultR, selectedTrade.resultDollar, user?.capital)}
-                </span>
+                <span className="text-muted-foreground">RÃ©sultat</span>
+                <span className={`metric-value ${selectedTrade.resultR != null && selectedTrade.resultR >= 0 ? "text-success" : "text-destructive"}`}>{formatResult(selectedTrade.resultR, selectedTrade.resultDollar, Number(accounts.find(a => String(a.id) === String(selectedTrade.accountId || (selectedTrade as any).trading_account_id))?.capital) || activeAccount?.capital || 10000)}</span>
+
+
               </div>
               <div className="flex justify-between py-1 border-b border-border/30">
                 <span className="text-muted-foreground">Statut</span>
@@ -329,9 +447,20 @@ export default function TradeHistory() {
                   selectedTrade.status === 'WIN' ? 'badge-win' : selectedTrade.status === 'LOSS' ? 'badge-loss' : 'badge-be'
                 }`}>{selectedTrade.status}</span>
               </div>
+              {/* Plan respectÃ© */}
+              <div className="flex justify-between py-1 border-b border-border/30">
+                <span className="text-muted-foreground">Plan respectÃ©</span>
+                <span className={`text-xs font-bold px-2 py-0.5 rounded ${
+                  selectedTrade.planRespected === true  ? 'bg-success/20 text-success' :
+                  selectedTrade.planRespected === false ? 'bg-destructive/20 text-destructive' :
+                  'bg-accent/40 text-muted-foreground'
+                }`}>
+                  {selectedTrade.planRespected === true ? 'âœ… Oui' : selectedTrade.planRespected === false ? 'âŒ Non' : 'â€” NSP'}
+                </span>
+              </div>
               {selectedTrade.entryNote && (
                 <div className="pt-1">
-                  <p className="text-muted-foreground text-xs mb-1">Note d'entrée</p>
+                  <p className="text-muted-foreground text-xs mb-1">Note d'entrÃ©e</p>
                   <p className="text-foreground bg-accent/30 rounded-lg p-3 text-sm">{selectedTrade.entryNote}</p>
                 </div>
               )}
@@ -365,7 +494,7 @@ export default function TradeHistory() {
         </div>
       )}
 
-      {/* ── MODALE ÉDITION ────────────────────────────────── */}
+      {/* â”€â”€ MODALE Ã‰DITION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {editingTrade && (
         <div className="modal-overlay" onClick={() => setEditingTrade(null)}>
           <div className="modal-content glass p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto scrollbar-thin" onClick={e => e.stopPropagation()}>
@@ -374,6 +503,23 @@ export default function TradeHistory() {
               <button onClick={() => setEditingTrade(null)} className="text-muted-foreground hover:text-foreground"><X size={20} /></button>
             </div>
             <div className="space-y-4">
+
+              {/* â”€â”€ Compte â€” lecture seule â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+              {editingAccount && (
+                <div>
+                  <label className="text-xs text-muted-foreground">Compte</label>
+                  <div className="flex items-center gap-3 p-3 rounded-xl mt-1"
+                    style={{ background: 'rgba(26,107,255,0.08)', border: '1px solid rgba(26,107,255,0.2)' }}>
+                    <div className="w-2 h-2 rounded-full bg-primary shrink-0" />
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{editingAccount.name}</p>
+                      <p className="text-xs text-muted-foreground">{editingAccount.broker} Â· {editingAccount.type}</p>
+                    </div>
+                    <span className="ml-auto text-[10px] text-primary/70 font-medium">Compte actif</span>
+                  </div>
+                </div>
+              )}
+
               <div>
                 <label className="text-xs text-muted-foreground">Date & Heure</label>
                 <input type="datetime-local"
@@ -411,16 +557,44 @@ export default function TradeHistory() {
                     {ALL_SESSIONS.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>
-                <div>
-                  <label className="text-xs text-muted-foreground">Setup</label>
-                  <select value={editingTrade.setup} onChange={e => setEditField('setup', e.target.value)} className="select-dark mt-1">
-                    {allSetups.map(s => <option key={s} value={s}>{s}</option>)}
-                  </select>
-                </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">Setup</label>
+                    <div className="flex gap-2 mt-1">
+                      <select
+                        value={allSetups.includes(editingTrade.setup) ? editingTrade.setup : '__custom__'}
+                        onChange={e => {
+                          if (e.target.value !== '__custom__') setEditField('setup', e.target.value);
+                        }}
+                        className="select-dark flex-1"
+                      >
+                        {allSetups.map(s => <option key={s} value={s}>{s}</option>)}
+                        <option value="__custom__">âž• Autre setup...</option>
+                      </select>
+                    </div>
+                    {(!allSetups.includes(editingTrade.setup) || editingTrade.setup === '__custom__') && (
+                      <input
+                        type="text"
+                        autoFocus
+                        value={editingTrade.setup === '__custom__' ? '' : editingTrade.setup}
+                        placeholder="Nom de votre setup (ex: BOS + FVG)"
+                        className="input-dark mt-2"
+                        onChange={e => setEditField('setup', e.target.value)}
+                        onBlur={e => {
+                          const val = e.target.value.trim();
+                          if (val && !allSetups.includes(val)) {
+                            const custom = user?.customSetups || [];
+                            StorageManager.updateUser(user!.email, {
+                              customSetups: [...custom, val],
+                            });
+                          }
+                        }}
+                      />
+                    )}
+                  </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-muted-foreground">Émotion</label>
+                  <label className="text-xs text-muted-foreground">Ã‰motion</label>
                   <select value={editingTrade.emotion} onChange={e => setEditField('emotion', e.target.value)} className="select-dark mt-1">
                     {ALL_EMOTIONS.map(em => <option key={em} value={em}>{em}</option>)}
                   </select>
@@ -436,14 +610,14 @@ export default function TradeHistory() {
                 </div>
               </div>
               <div>
-                <label className="text-xs text-muted-foreground">Qualité du trade</label>
+                <label className="text-xs text-muted-foreground">QualitÃ© du trade</label>
                 <div className="mt-2">
                   <QualityBar value={getQualityNum(editingTrade.quality)} onChange={v => setEditField('quality', v)} />
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="text-xs text-muted-foreground">Prix d'entrée</label>
+                  <label className="text-xs text-muted-foreground">Prix d'entrÃ©e</label>
                   <input type="number" step="any" value={editingTrade.entryPrice}
                     onChange={e => setEditField('entryPrice', parseFloat(e.target.value) || 0)} className="input-dark mt-1" />
                 </div>
@@ -471,15 +645,15 @@ export default function TradeHistory() {
                 </div>
               </div>
               <div className="p-3 rounded-xl bg-accent/40 border border-border/50 space-y-2">
-                <p className="text-xs text-muted-foreground font-medium">Résultats (recalculés automatiquement)</p>
+                <p className="text-xs text-muted-foreground font-medium">RÃ©sultats (recalculÃ©s automatiquement)</p>
                 <div className="grid grid-cols-3 gap-3">
                   <div>
-                    <label className="text-xs text-muted-foreground">Résultat R</label>
+                    <label className="text-xs text-muted-foreground">RÃ©sultat R</label>
                     <input type="number" step="any" value={editingTrade.resultR}
                       onChange={e => setEditField('resultR', parseFloat(e.target.value) || 0)} className="input-dark mt-1 text-sm" />
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground">Résultat $</label>
+                    <label className="text-xs text-muted-foreground">RÃ©sultat $</label>
                     <input type="number" step="any" value={editingTrade.resultDollar}
                       onChange={e => setEditField('resultDollar', parseFloat(e.target.value) || 0)} className="input-dark mt-1 text-sm" />
                   </div>
@@ -492,17 +666,43 @@ export default function TradeHistory() {
                   </div>
                 </div>
               </div>
+
+              {/* â”€â”€ Plan respectÃ© â€” toggle Ã©ditable â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
               <div>
-                <label className="text-xs text-muted-foreground">Note d'entrée</label>
+                <label className="text-xs text-muted-foreground">Plan de trading respectÃ© ?</label>
+                <div className="flex gap-2 mt-2">
+                  {([
+                    { value: true,  label: 'âœ… Oui', active: 'bg-success/20 border-success/50 text-success' },
+                    { value: false, label: 'âŒ Non',  active: 'bg-destructive/20 border-destructive/50 text-destructive' },
+                    { value: null,  label: 'â€” NSP',   active: 'bg-accent/60 border-border text-muted-foreground' },
+                  ] as const).map(opt => (
+                    <button
+                      key={String(opt.value)}
+                      type="button"
+                      onClick={() => setEditField('planRespected', opt.value)}
+                      className={`flex-1 py-2 rounded-lg text-xs font-bold border transition-all ${
+                        editingTrade.planRespected === opt.value
+                          ? opt.active
+                          : 'bg-accent/20 border-border/30 text-muted-foreground hover:bg-accent/40'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs text-muted-foreground">Note d'entrÃ©e</label>
                 <textarea value={editingTrade.entryNote}
                   onChange={e => setEditField('entryNote', e.target.value)}
-                  className="input-dark mt-1 min-h-[70px] resize-none" placeholder="Justifie ton entrée. Pas d'excuse." />
+                  className="input-dark mt-1 min-h-[70px] resize-none" placeholder="Justifie ton entrÃ©e. Pas d'excuse." />
               </div>
               <div>
                 <label className="text-xs text-muted-foreground">Note de sortie</label>
                 <textarea value={editingTrade.exitNote}
                   onChange={e => setEditField('exitNote', e.target.value)}
-                  className="input-dark mt-1 min-h-[70px] resize-none" placeholder="Résultat ? Sois honnête." />
+                  className="input-dark mt-1 min-h-[70px] resize-none" placeholder="RÃ©sultat ? Sois honnÃªte." />
               </div>
               <div>
                 <label className="text-xs text-muted-foreground">Lien TradingView</label>
@@ -510,27 +710,8 @@ export default function TradeHistory() {
                   onChange={e => setEditField('tradingViewLink', e.target.value)}
                   className="input-dark mt-1" placeholder="https://..." />
               </div>
-              {accounts.length > 1 && (
-                <div>
-                  <label className="text-xs text-muted-foreground">Compte</label>
-                  <div className="flex flex-col gap-2 mt-2">
-                    {accounts.map(acc => (
-                      <label key={acc.id} className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
-                        editingTrade.accountId === acc.id ? 'border-primary/50 bg-primary/10' : 'border-border/50 hover:border-border'
-                      }`}>
-                        <input type="radio" name="editAccount" checked={editingTrade.accountId === acc.id}
-                          onChange={() => setEditField('accountId', acc.id)} className="accent-primary" />
-                        <div>
-                          <p className="text-sm font-medium text-foreground">{acc.name}</p>
-                          <p className="text-xs text-muted-foreground">{acc.broker} · {acc.type}</p>
-                        </div>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              )}
               <div>
-                <label className="text-xs text-muted-foreground">Capture d'écran</label>
+                <label className="text-xs text-muted-foreground">Capture d'Ã©cran</label>
                 {editingTrade.screenshot && (
                   <div className="relative group mt-2 cursor-pointer" onClick={() => setZoomImg(editingTrade.screenshot!)}>
                     <img src={editingTrade.screenshot} alt="Capture"
@@ -562,10 +743,9 @@ export default function TradeHistory() {
         </div>
       )}
 
-      {/* Modale confirmation suppression */}
       {ConfirmModal}
 
-      {/* ── ZOOM IMAGE ──────────────────────────────────── */}
+      {/* â”€â”€ ZOOM IMAGE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {zoomImg && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90" onClick={() => setZoomImg(null)}>
           <button className="absolute top-4 right-4 text-white hover:text-gray-300" onClick={() => setZoomImg(null)}>
@@ -577,3 +757,12 @@ export default function TradeHistory() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

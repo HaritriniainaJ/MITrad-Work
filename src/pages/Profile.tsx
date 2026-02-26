@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { StorageManager } from '@/lib/storage';
+import { getAccounts, createAccount, deleteAccount } from '@/lib/api';
 import { calculateBadges } from '@/lib/badgeEngine';
 import { AFRICAN_COUNTRIES, COUNTRY_FLAGS, EXPERIENCE_OPTIONS, STYLE_OPTIONS } from '@/types/trading';
 import GlassCard from '@/components/GlassCard';
@@ -11,6 +12,8 @@ import {
   Award,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useFilteredTrades } from '@/hooks/useFilteredTrades';
+
 
 // ── Counter animé ────────────────────────────────────────────────────────────
 function AnimatedCounter({ value, suffix = '', decimals = 0 }: { value: number; suffix?: string; decimals?: number }) {
@@ -57,8 +60,12 @@ export default function Profile() {
   const [form, setForm] = useState({ ...user! });
   const [showAccounts, setShowAccounts] = useState(false);
 
-  const trades  = useMemo(() => StorageManager.getUserTrades(user!.email), [user]);
-  const accounts = useMemo(() => StorageManager.getAccounts(user!.email), [user]);
+const trades = useFilteredTrades();
+const [accounts, setAccounts] = useState([]);
+
+  useEffect(() => {
+    getAccounts().then(data => setAccounts(data));
+  }, []);
   const closed  = trades.filter(t => t.status !== 'RUNNING');
   const wins    = closed.filter(t => t.status === 'WIN');
   const losses  = closed.filter(t => t.status === 'LOSS');
@@ -327,6 +334,19 @@ export default function Profile() {
           >
             {showAccounts ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             {showAccounts ? 'Masquer' : 'Afficher'}
+          </button>
+          <button
+            onClick={async () => {
+              const name = prompt('Nom du compte :');
+              if (!name) return;
+              const capitalStr = prompt('Capital de départ ($) :', '10000');
+              const capital = parseFloat(capitalStr || '10000') || 10000;
+              const account = await createAccount(name, capital);
+              setAccounts(prev => [...prev, account]);
+            }}
+            className="text-xs gradient-btn px-3 py-1"
+          >
+            + Nouveau compte
           </button>
         </div>
 

@@ -1,13 +1,14 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { StorageManager } from '@/lib/storage';
+import { createTrade } from "@/lib/api";
 import { Trade, ALL_PAIRS, ALL_SESSIONS, ALL_SETUPS, ALL_EMOTIONS } from '@/types/trading';
 import { ZoomableImage } from '@/components/ImageLightbox';
 import GlassCard from '@/components/GlassCard';
-import { Plus, X, ZoomIn } from 'lucide-react';
 import { toast } from 'sonner';
+import { refreshTrades } from '@/hooks/useFilteredTrades';
+import { Plus, X, ZoomIn, ChevronDown } from 'lucide-react';
 
-// ── Slider qualité réutilisable ──────────────────────────────────
+// ── Slider qualité réutilisable ───────────────────────────────────────────────
 function QualitySlider({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   const color = value <= 3 ? '#ef4444' : value <= 6 ? '#f59e0b' : '#00d4aa';
   const percent = ((value - 1) / 9) * 100;
@@ -63,33 +64,40 @@ export default function NewTrade() {
     resultR: '',
     resultDollar: '',
     status: 'RUNNING' as Trade['status'],
+    planRespected: null as boolean | null,
     entryNote: '',
     exitNote: '',
     tradingViewLink: '',
     screenshot: '',
     accountId: activeAccount?.id || accounts[0]?.id || '',
   });
-
+  const [showAccountPicker, setShowAccountPicker] = useState(false);
   const [newSetupName, setNewSetupName] = useState('');
   const [showNewSetup, setShowNewSetup]  = useState(false);
   const [zoomImg, setZoomImg]            = useState<string | null>(null);
 
+  useEffect(() => {
+    if (!form.accountId && accounts.length > 0) {
+      setField('accountId', activeAccount?.id || accounts[0]?.id);
+    }
+  }, [accounts, activeAccount]);
+
   const setField = (key: string, value: unknown) =>
     setForm(prev => ({ ...prev, [key]: value }));
 
-  // ── Setups combinés (défaut + custom) ───────────────────────
+  // ── Setups combinés (défaut + custom) ────────────────────────────────────
   const allSetups = useMemo(() => {
     const custom = user?.customSetups || [];
     return [...new Set([...ALL_SETUPS, ...custom])];
   }, [user]);
 
-  // ── Paires combinées (défaut + custom utilisateur) ───────────
+  // ── Paires combinées (défaut + custom utilisateur) ────────────────────────
   const allPairs = useMemo(() => {
     const custom = user?.customPairs || [];
     return [...new Set([...ALL_PAIRS, ...custom])];
   }, [user]);
 
-  // ── Ajouter une paire personnalisée ─────────────────────────
+  // ── Ajouter une paire personnalisée ──────────────────────────────────────
   const [showNewPair, setShowNewPair] = useState(false);
   const [newPairName, setNewPairName] = useState('');
 
@@ -105,40 +113,75 @@ export default function NewTrade() {
     toast.success(`Paire "${name}" ajoutée !`);
   };
 
-  // ── Calculs automatiques en temps réel ──────────────────────
+  // ── Calculs automatiques en temps réel ───────────────────────────────────
   const calc = useMemo(() => {
-    const entry  = parseFloat(form.entryPrice);
-    const sl     = parseFloat(form.stopLoss);
-    const tp     = parseFloat(form.takeProfit);
-    const exit   = parseFloat(form.exitPrice);
-    const capital = user?.capital || 10000;
+    const entry   = parseFloat(form.entryPrice);
+    const sl      = parseFloat(form.stopLoss);
+    const tp      = parseFloat(form.takeProfit);
+    const exit    = parseFloat(form.exitPrice);
+    const isBuy   = form.direction === 'BUY';
+
+    const selectedAccount = accounts.find(a => a.id == form.accountId);
+    const capital = Number(selectedAccount?.capital) || user?.capital || 10000;
+    const riskPercent = 0.01;
+    const riskDollar = capital * riskPercent;
+
     if (isNaN(entry) || isNaN(sl) || sl === entry) return null;
 
-    const slDist = Math.abs(entry - sl);
-    const tpDist = !isNaN(tp) ? Math.abs(tp - entry) : 0;
-    const rr     = slDist > 0 ? tpDist / slDist : 0;
-    const riskDollar = capital * 0.01;
+    const slValid = isBuy ? sl < entry : sl > entry;
+    const tpValid = !isNaN(tp) ? (isBuy ? tp > entry : tp < entry) : true;
 
-    // Calcul auto résultat si prix de sortie renseigné
+    const isJPY   = form.pair.includes('JPY');
+    const pipSize = isJPY ? 0.01 : 0.0001;
+    const slDist  = Math.abs(entry - sl);
+    const tpDist  = !isNaN(tp) ? Math.abs(tp - entry) : 0;
+    const slPips  = Math.round(slDist / pipSize);
+    const tpPips  = Math.round(tpDist / pipSize);
+    const rr      = slDist > 0 && tpDist > 0 ? tpDist / slDist : 0;
+
+    const pipValuePerLot = isJPY ? 1000 * pipSize : 10;
+    const lotSize = slPips > 0 ? Math.round((riskDollar / (slPips * pipValuePerLot)) * 100) / 100 : 0;
+
     let autoR: number | null = null;
     let autoDollar: number | null = null;
     let autoPct: number | null = null;
     if (!isNaN(exit) && exit > 0) {
-      const pnlDist = form.direction === 'BUY' ? exit - entry : entry - exit;
+      const pnlDist = isBuy ? exit - entry : entry - exit;
       autoR      = Math.round((pnlDist / slDist) * 100) / 100;
       autoDollar = Math.round(autoR * riskDollar * 100) / 100;
       autoPct    = Math.round((autoDollar / capital) * 10000) / 100;
     }
 
     return {
-      slPips:         Math.round(slDist * (form.pair.includes('JPY') ? 100 : 10000)),
-      tpPips:         Math.round(tpDist * (form.pair.includes('JPY') ? 100 : 10000)),
-      rr:             rr.toFixed(2),
-      riskDollar:     riskDollar.toFixed(2),
-      potentialDollar:(riskDollar * rr).toFixed(2),
+      slPips, tpPips,
+      rr:              rr.toFixed(2),
+      riskDollar:      riskDollar.toFixed(2),
+      potentialDollar: (riskDollar * rr).toFixed(2),
+      lotSize:         lotSize.toFixed(2),
+      capital,
       autoR, autoDollar, autoPct,
+      slValid, tpValid,
     };
-  }, [form.entryPrice, form.stopLoss, form.takeProfit, form.exitPrice, form.pair, form.direction, user]);
+  }, [form.entryPrice, form.stopLoss, form.takeProfit, form.exitPrice, form.pair, form.direction, form.accountId, accounts, user]);
+
+  const calcFromLot = useMemo(() => {
+    const entry   = parseFloat(form.entryPrice);
+    const sl      = parseFloat(form.stopLoss);
+    const lot     = parseFloat(form.lotSize);
+    const selectedAccount = accounts.find(a => a.id == form.accountId);
+    const capital = Number(selectedAccount?.capital) || user?.capital || 10000;
+
+    if (isNaN(entry) || isNaN(sl) || isNaN(lot) || lot <= 0) return null;
+
+    const isJPY      = form.pair.includes('JPY');
+    const pipSize    = isJPY ? 0.01 : 0.0001;
+    const slPips     = Math.abs(entry - sl) / pipSize;
+    const pipValuePerLot = isJPY ? 1000 * pipSize : 10;
+    const riskDollar = Math.round(lot * slPips * pipValuePerLot * 100) / 100;
+    const riskPct    = Math.round((riskDollar / capital) * 10000) / 100;
+
+    return { riskDollar, riskPct, capital };
+  }, [form.entryPrice, form.stopLoss, form.lotSize, form.pair, form.accountId, accounts, user]);
 
   // Sync résultat auto → champs
   useMemo(() => {
@@ -151,7 +194,7 @@ export default function NewTrade() {
     }
   }, [calc?.autoR, calc?.autoDollar]);
 
-  // ── Ajouter un setup personnalisé ───────────────────────────
+  // ── Ajouter un setup personnalisé ─────────────────────────────────────────
   const addCustomSetup = () => {
     const name = newSetupName.trim();
     if (!name) { toast.error('Nom du setup requis'); return; }
@@ -164,7 +207,7 @@ export default function NewTrade() {
     toast.success(`Setup "${name}" ajouté !`);
   };
 
-  // ── Screenshot ───────────────────────────────────────────────
+  // ── Screenshot ───────────────────────────────────────────────────────────
   const handleScreenshot = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || file.size > 5 * 1024 * 1024) { toast.error('Taille max : 5MB'); return; }
@@ -173,71 +216,68 @@ export default function NewTrade() {
     reader.readAsDataURL(file);
   };
 
-  // ── Submit ───────────────────────────────────────────────────
-  const handleSubmit = (e: React.FormEvent) => {
+  // ── Submit ────────────────────────────────────────────────────────────────
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const entry = parseFloat(form.entryPrice);
     const sl    = parseFloat(form.stopLoss);
     if (isNaN(entry) || isNaN(sl)) { toast.error('Entrée et Stop Loss requis'); return; }
 
-    const capital    = user?.capital || 10000;
-    const resultR    = form.resultR ? parseFloat(form.resultR) : 0;
+    const selectedAccount = accounts.find(a => a.id === form.accountId);
+    const capital = selectedAccount?.capital || user?.capital || 10000;
+    const resultR      = form.resultR ? parseFloat(form.resultR) : 0;
     const resultDollar = form.resultDollar ? parseFloat(form.resultDollar) : resultR * capital * 0.01;
 
-    const trade: Trade = {
-      id:          `${user!.email}-${Date.now()}`,
-      userId:      user!.email,
-      accountId:   form.accountId || undefined,
-      date:        new Date(form.date).toISOString(),
-      pair:        form.pair === 'Other' ? form.customPair : form.pair,
-      direction:   form.direction,
-      session:     form.session,
-      quality:     form.quality,
-      setup:       form.setup,
-      emotion:     form.emotion,
-      entryPrice:  entry,
-      stopLoss:    sl,
-      takeProfit:  parseFloat(form.takeProfit) || 0,
-      lotSize:     parseFloat(form.lotSize) || 0.1,
-      exitPrice:   parseFloat(form.exitPrice) || undefined,
-      resultR,
-      resultDollar,
-      status:      form.status,
-      duration:    0,
-      entryNote:   form.entryNote,
-      exitNote:    form.exitNote,
-      tradingViewLink: form.tradingViewLink,
-      screenshot:  form.screenshot,
+    const trade = {
+      date:              new Date(form.date).toISOString(),
+      pair:              form.pair === 'Other' ? form.customPair : form.pair,
+      direction:         form.direction,
+      session:           form.session,
+      quality:           form.quality,
+      setup:             form.setup,
+      emotion:           form.emotion,
+      entry_price:       entry,
+      stop_loss:         sl,
+      take_profit:       parseFloat(form.takeProfit) || 0,
+      lot_size:          parseFloat(form.lotSize) || 0.1,
+      exit_price:        parseFloat(form.exitPrice) || null,
+      result_r:          resultR,
+      result_dollar:     resultDollar,
+      status:            form.status,
+      plan_respected:    form.planRespected,   // ← NOUVEAU
+      entry_note:        form.entryNote,
+      exit_note:         form.exitNote,
+      trading_view_link: form.tradingViewLink,
+      screenshot:        form.screenshot,
     };
 
-    StorageManager.addTrade(trade);
-    toast.success('Trade enregistré !');
-
-    setForm(prev => ({
-      ...prev,
-      date:        new Date().toISOString().slice(0, 16),
-      entryPrice:  '', stopLoss: '', takeProfit: '', lotSize: '',
-      exitPrice:   '', resultR: '', resultDollar: '',
-      status:      'RUNNING',
-      entryNote:   '', exitNote: '', tradingViewLink: '', screenshot: '',
-    }));
+    try {
+      await createTrade(String(form.accountId), trade);
+      refreshTrades();
+      toast.success('Trade enregistré !');
+      reset();
+    } catch (err) {
+      toast.error("Erreur lors de l'enregistrement");
+      console.error(err);
+    }
   };
 
   const reset = () => {
     setForm({
-      date:        new Date().toISOString().slice(0, 16),
-      pair:        'EURUSD', customPair: '',
-      direction:   'BUY', session: 'London', quality: 7,
-      setup:       'BOS', emotion: 'Confiant',
-      entryPrice:  '', stopLoss: '', takeProfit: '', lotSize: '',
-      exitPrice:   '', resultR: '', resultDollar: '',
-      status:      'RUNNING',
-      entryNote:   '', exitNote: '', tradingViewLink: '', screenshot: '',
-      accountId:   activeAccount?.id || accounts[0]?.id || '',
+      date:          new Date().toISOString().slice(0, 16),
+      pair:          'EURUSD', customPair: '',
+      direction:     'BUY', session: 'London', quality: 7,
+      setup:         'BOS', emotion: 'Confiant',
+      entryPrice:    '', stopLoss: '', takeProfit: '', lotSize: '',
+      exitPrice:     '', resultR: '', resultDollar: '',
+      status:        'RUNNING',
+      planRespected: null,   // ← NOUVEAU
+      entryNote:     '', exitNote: '', tradingViewLink: '', screenshot: '',
+      accountId:     activeAccount?.id || accounts[0]?.id || '',
     });
   };
 
-  // ────────────────────────────────────────────────────────────
+  // ────────────────────────────────────────────────────────────────────────
   return (
     <div className="space-y-6">
       <div>
@@ -248,42 +288,76 @@ export default function NewTrade() {
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-          {/* ── COL 1 : Infos de base ───────────────────────── */}
+          {/* ── COL 1 : Infos de base ───────────────────────────────────── */}
           <GlassCard className="animate-fade-up">
             <h3 className="text-sm font-bold text-foreground mb-4">Informations de base</h3>
             <div className="space-y-4">
 
-              {/* Sélecteur de compte (checkboxes radio) */}
-              {accounts.length > 0 && (
-                <div>
-                  <label className="text-xs text-muted-foreground">Compte</label>
-                  <div className="flex flex-col gap-2 mt-2">
-                    {accounts.map(acc => (
-                      <label
-                        key={acc.id}
-                        className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
-                          form.accountId === acc.id
-                            ? 'border-primary/60 bg-primary/10'
-                            : 'border-border/40 hover:border-border'
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="accountId"
-                          value={acc.id}
-                          checked={form.accountId === acc.id}
-                          onChange={() => setField('accountId', acc.id)}
-                          className="accent-primary"
-                        />
-                        <div>
-                          <p className="text-sm font-medium text-foreground leading-tight">{acc.name}</p>
-                          <p className="text-xs text-muted-foreground">{acc.broker} · {acc.type}</p>
-                        </div>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              )}
+              {/* Sélecteur de compte */}
+{accounts.length > 0 && (
+  <div>
+    <label className="text-xs text-muted-foreground">Compte</label>
+
+    {/* Compte sélectionné — affiché en permanence */}
+    <div
+      className="flex items-center justify-between p-3 rounded-xl border border-primary/40 bg-primary/8 mt-2 cursor-pointer hover:border-primary/60 transition-all"
+      onClick={() => setShowAccountPicker(v => !v)}
+    >
+      <div className="flex items-center gap-2">
+        <div className="w-2 h-2 rounded-full bg-primary shrink-0" />
+        <div>
+          {accounts.find(a => a.id == form.accountId) ? (
+            <>
+              <p className="text-sm font-semibold text-foreground leading-tight">
+                {accounts.find(a => a.id == form.accountId)?.name}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {accounts.find(a => a.id == form.accountId)?.broker}
+              </p>
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground">Sélectionner un compte</p>
+          )}
+        </div>
+      </div>
+      <ChevronDown
+        size={16}
+        className={`text-muted-foreground transition-transform duration-200 ${showAccountPicker ? 'rotate-180' : ''}`}
+      />
+    </div>
+
+    {/* Carrousel déroulant */}
+    {showAccountPicker && (
+      <div className="mt-2 space-y-2 animate-fade-up">
+        {accounts.map((acc, idx) => (
+          <div
+            key={acc.id}
+            onClick={() => { setField('accountId', acc.id); setShowAccountPicker(false); }}
+            className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200 ${
+              form.accountId == acc.id
+                ? 'border-primary/60 bg-primary/10'
+                : 'border-border/40 bg-accent/20 hover:border-primary/30 hover:bg-primary/5'
+            }`}
+            style={{ animationDelay: `${idx * 50}ms` }}
+          >
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${
+              form.accountId == acc.id ? 'bg-primary text-white' : 'bg-accent text-muted-foreground'
+            }`}>
+              {acc.name.charAt(0).toUpperCase()}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-foreground leading-tight truncate">{acc.name}</p>
+              <p className="text-xs text-muted-foreground">{acc.broker} · {acc.type}</p>
+            </div>
+            {form.accountId == acc.id && (
+              <div className="w-2 h-2 rounded-full bg-primary shrink-0" />
+            )}
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+)}
 
               {/* Date */}
               <div>
@@ -344,7 +418,7 @@ export default function NewTrade() {
                 </select>
               </div>
 
-              {/* Qualité — slider */}
+              {/* Qualité – slider */}
               <div>
                 <label className="text-xs text-muted-foreground">Qualité du trade</label>
                 <div className="mt-3">
@@ -352,7 +426,7 @@ export default function NewTrade() {
                 </div>
               </div>
 
-              {/* Setup + bouton créer custom */}
+              {/* Setup */}
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="text-xs text-muted-foreground">Setup</label>
@@ -403,7 +477,7 @@ export default function NewTrade() {
             </div>
           </GlassCard>
 
-          {/* ── COL 2 : Paramètres ──────────────────────────── */}
+          {/* ── COL 2 : Paramètres ──────────────────────────────────────── */}
           <GlassCard className="animate-fade-up stagger-1">
             <h3 className="text-sm font-bold text-foreground mb-4">Paramètres du trade</h3>
             <div className="space-y-4">
@@ -430,15 +504,43 @@ export default function NewTrade() {
                 <input type="number" step="any" value={form.lotSize}
                   onChange={e => setField('lotSize', e.target.value)}
                   className="input-dark mt-1" placeholder="0.10" />
+                {calcFromLot && (
+                  <div className="p-3 rounded-xl bg-accent/40 border border-border/50 space-y-1 text-xs mt-2">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Risque ($)</span>
+                      <span className="text-destructive font-bold">-${calcFromLot.riskDollar}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Risque (%)</span>
+                      <span className={`font-bold ${calcFromLot.riskPct > 2 ? 'text-destructive' : 'text-success'}`}>
+                        {calcFromLot.riskPct}%
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Bloc calculs */}
               {calc && (
                 <div className="p-4 rounded-xl bg-accent/40 border border-border/50 space-y-2 text-xs">
+                  {!calc.slValid && (
+                    <div className="text-xs text-destructive font-bold bg-destructive/10 px-3 py-2 rounded-lg mb-2">
+                      ⚠️ Stop Loss invalide — le SL doit être {form.direction === 'BUY' ? 'en-dessous' : 'au-dessus'} du prix d'entrée
+                    </div>
+                  )}
+                  {!calc.tpValid && (
+                    <div className="text-xs text-amber-400 font-bold bg-amber-400/10 px-3 py-2 rounded-lg mb-2">
+                      ⚠️ Take Profit invalide — le TP doit être {form.direction === 'BUY' ? 'au-dessus' : 'en-dessous'} du prix d'entrée
+                    </div>
+                  )}
                   <p className="text-muted-foreground font-medium text-[11px] uppercase tracking-wide mb-2">Calculs automatiques</p>
                   <div className="flex justify-between">
+                    <span className="text-muted-foreground">Capital compte</span>
+                    <span className="text-foreground font-medium">${calc.capital.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
                     <span className="text-muted-foreground">Ratio R/R</span>
-                    <span className="text-foreground font-bold">1:{calc.rr}</span>
+                    <span className={`font-bold ${calc.slValid && calc.tpValid ? 'text-foreground' : 'text-destructive'}`}>1:{calc.rr}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">SL (pips)</span>
@@ -448,59 +550,69 @@ export default function NewTrade() {
                     <span className="text-muted-foreground">TP (pips)</span>
                     <span className="text-foreground">{calc.tpPips}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Risque ($)</span>
-                    <span className="text-destructive font-medium">-${calc.riskDollar}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Potentiel ($)</span>
-                    <span className="text-success font-medium">+${calc.potentialDollar}</span>
-                  </div>
+                  <hr className="border-border/30" />
+                  {calcFromLot ? (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Risque réel ($)</span>
+                        <span className="text-destructive font-bold">-${calcFromLot.riskDollar}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Risque réel (%)</span>
+                        <span className={`font-bold ${calcFromLot.riskPct > 2 ? 'text-destructive' : 'text-success'}`}>
+                          {calcFromLot.riskPct}%
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Gain potentiel ($)</span>
+                        <span className="text-success font-bold">+${Math.round(calcFromLot.riskDollar * Number(calc.rr) * 100) / 100}</span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Risque 1% ($)</span>
+                        <span className="text-destructive font-medium">-${calc.riskDollar}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Gain potentiel ($)</span>
+                        <span className="text-success font-medium">+${calc.potentialDollar}</span>
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
 
               <hr className="border-border/50" />
-              <h4 className="text-xs font-bold text-foreground">Résultat (après clôture)</h4>
-
-              {/* Prix de sortie → déclenche calcul auto */}
-              <div>
-                <label className="text-xs text-muted-foreground">Prix de sortie</label>
-                <input type="number" step="any" value={form.exitPrice}
-                  onChange={e => setField('exitPrice', e.target.value)}
-                  className="input-dark mt-1" placeholder="Renseigne pour calcul auto" />
-              </div>
-
-              {/* Résultats auto-calculés (affichage + édition manuelle) */}
-              {calc?.autoR !== null && calc?.autoR !== undefined ? (
-                <div className="p-3 rounded-xl border space-y-2 text-sm border-border/50 bg-accent/20">
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Résultat calculé automatiquement</p>
-                  <div className="grid grid-cols-3 gap-2 text-center">
-                    <div className={`py-2 rounded-lg font-bold ${calc.autoR >= 0 ? 'bg-success/20 text-success' : 'bg-destructive/20 text-destructive'}`}>
-                      {calc.autoR >= 0 ? '+' : ''}{calc.autoR}R
-                    </div>
-                    <div className={`py-2 rounded-lg font-bold ${calc.autoR >= 0 ? 'bg-success/20 text-success' : 'bg-destructive/20 text-destructive'}`}>
-                      {calc.autoR >= 0 ? '+' : ''}{calc.autoPct}%
-                    </div>
-                    <div className={`py-2 rounded-lg font-bold ${calc.autoR >= 0 ? 'bg-success/20 text-success' : 'bg-destructive/20 text-destructive'}`}>
-                      {calc.autoR >= 0 ? '+' : ''}${calc.autoDollar}
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div>
-                  <label className="text-xs text-muted-foreground">Résultat R (manuel)</label>
-                  <input type="number" step="any" value={form.resultR}
-                    onChange={e => setField('resultR', e.target.value)}
-                    className="input-dark mt-1" placeholder="+2.5 ou -1" />
-                </div>
-              )}
 
               {/* Statut */}
               <div>
                 <label className="text-xs text-muted-foreground">Statut</label>
                 <select
                   value={form.status}
-                  onChange={e => setForm(prev => ({ ...prev, status: e.target.value as Trade['status'] }))}
+                  onChange={e => {
+                    const status = e.target.value as Trade['status'];
+                    const entry   = parseFloat(form.entryPrice);
+                    const sl      = parseFloat(form.stopLoss);
+                    const tp      = parseFloat(form.takeProfit);
+                    const selectedAccount = accounts.find(a => a.id === form.accountId);
+                    const capital = Number(selectedAccount?.capital) || user?.capital || 10000;
+                    const riskDollar = capital * 0.01;
+                    const slDist  = Math.abs(entry - sl);
+                    const tpDist  = Math.abs(tp - entry);
+                    if (status === 'WIN' && tp && slDist > 0) {
+                      const resultR      = Math.round((tpDist / slDist) * 100) / 100;
+                      const resultDollar = Math.round(resultR * riskDollar * 100) / 100;
+                      setForm(prev => ({ ...prev, status, resultR: String(resultR), resultDollar: String(resultDollar), exitPrice: String(tp) }));
+                    } else if (status === 'LOSS' && sl && slDist > 0) {
+                      const resultDollar = Math.round(-riskDollar * 100) / 100;
+                      setForm(prev => ({ ...prev, status, resultR: '-1', resultDollar: String(resultDollar), exitPrice: String(sl) }));
+                    } else if (status === 'BE') {
+                      setForm(prev => ({ ...prev, status, resultR: '0', resultDollar: '0', exitPrice: String(entry) }));
+                    } else {
+                      setForm(prev => ({ ...prev, status }));
+                    }
+                  }}
                   className="select-dark mt-1"
                 >
                   <option value="RUNNING">En cours</option>
@@ -512,7 +624,7 @@ export default function NewTrade() {
             </div>
           </GlassCard>
 
-          {/* ── COL 3 : Notes & Preuves ─────────────────────── */}
+          {/* ── COL 3 : Notes & Preuves ─────────────────────────────────── */}
           <GlassCard className="animate-fade-up stagger-2">
             <h3 className="text-sm font-bold text-foreground mb-4">Notes & Preuves</h3>
             <div className="space-y-4">
@@ -526,6 +638,32 @@ export default function NewTrade() {
                 <textarea value={form.exitNote} onChange={e => setField('exitNote', e.target.value)}
                   className="input-dark mt-1 min-h-[80px] resize-none" placeholder="Résultat ? Sois honnête." />
               </div>
+
+              {/* ── Plan de trading respecté ? ── NOUVEAU ─────────────── */}
+              <div>
+                <label className="text-xs text-muted-foreground">Plan de trading respecté ?</label>
+                <div className="flex gap-2 mt-2">
+                  {([
+                    { value: true,  label: '✅ Oui', active: 'bg-success/20 border-success/50 text-success' },
+                    { value: false, label: '❌ Non',  active: 'bg-destructive/20 border-destructive/50 text-destructive' },
+                    { value: null,  label: '— Je ne sais pas',   active: 'bg-accent/60 border-border text-muted-foreground' },
+                  ] as const).map(opt => (
+                    <button
+                      key={String(opt.value)}
+                      type="button"
+                      onClick={() => setField('planRespected', opt.value)}
+                      className={`flex-1 py-2 rounded-lg text-xs font-bold border transition-all ${
+                        form.planRespected === opt.value
+                          ? opt.active
+                          : 'bg-accent/20 border-border/30 text-muted-foreground hover:bg-accent/40'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div>
                 <label className="text-xs text-muted-foreground">Lien TradingView (optionnel)</label>
                 <input type="url" value={form.tradingViewLink} onChange={e => setField('tradingViewLink', e.target.value)}

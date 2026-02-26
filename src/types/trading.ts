@@ -42,22 +42,23 @@ export interface Trade {
   pair: string;               // Paire tradée (ex: EURUSD, XAUUSD...)
   direction: 'BUY' | 'SELL';
   session: string;            // Session de trading (London, NY, Asia...)
-  quality: 'A+' | 'A' | 'B' | 'C' | number; // Qualité du trade (1-10 ou lettre)
-  setup: string;              // Setup utilisé (BOS, CHoCH, FVG...)
+  quality?: 'A+' | 'A' | 'B' | 'C' | number | null;
+  setup?: string | null;           // Optionnel pour trades import�s
   emotion: string;            // État émotionnel lors du trade
   entryPrice: number;
   stopLoss: number;
   takeProfit: number;
   lotSize: number;
   exitPrice?: number;
-  resultR: number;            // Résultat en R (unités de risque)
+  resultR?: number | null;
   resultDollar: number;       // Résultat en dollars
   status: 'WIN' | 'LOSS' | 'BE' | 'RUNNING';
   duration: number;           // Durée en minutes
   entryNote: string;          // Justification de l'entrée
   exitNote: string;           // Analyse de la sortie
   tradingViewLink: string;    // Lien vers l'analyse TradingView
-  screenshot: string;         // Capture d'écran base64
+  screenshot: string;
+  is_imported?: boolean;         // Capture d'écran base64
 }
 
 /** Analyse quotidienne des marchés */
@@ -179,3 +180,5 @@ export const EXPERIENCE_OPTIONS = [
 export const STYLE_OPTIONS = [
   'Scalping', 'Day Trading', 'Swing Trading', 'Position Trading'
 ];
+
+

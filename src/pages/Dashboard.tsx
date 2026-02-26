@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
+import { getAccounts } from '@/lib/api';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useDisplayMode } from '@/context/DisplayModeContext';
@@ -20,6 +21,15 @@ export default function Dashboard() {
   const { user } = useAuth();
   const { formatResult } = useDisplayMode();
   const [quoteIdx] = useState(Math.floor(Date.now() / 60000) % QUOTES.length);
+  const [accounts, setAccounts] = useState<any[]>([]);
+  const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null);
+
+  useEffect(() => {
+    getAccounts().then(data => {
+      setAccounts(data);
+      if (data.length > 0) setSelectedAccountId(data[0].id);
+    });
+  }, []);
 
   const trades = useFilteredTrades();
 
@@ -29,7 +39,7 @@ export default function Dashboard() {
       const d = new Date(t.date);
       return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
     }), [trades]);
-
+  
   const closedMonth = monthTrades.filter(t => t.status !== 'RUNNING');
   const winsMonth = closedMonth.filter(t => t.status === 'WIN');
   const lossesMonth = closedMonth.filter(t => t.status === 'LOSS');
@@ -71,10 +81,14 @@ export default function Dashboard() {
   const hour = now.getHours();
   const greeting = hour < 12 ? 'Bonjour' : hour < 18 ? 'Bon après-midi' : 'Bonsoir';
 
-  // Calcul du capital actuel (initial + P&L cumulé)
-  const capitalTotal = trades.filter(t => t.status !== 'RUNNING').reduce((s, t) => s + t.resultDollar, 0);
-  const capitalActuel = (user?.capital || 0) + capitalTotal;
-  const croissancePct = user?.capital ? ((capitalTotal / user.capital) * 100) : 0;
+// Capital de base = compte sélectionné
+const selectedAccount = accounts.find(a => a.id === selectedAccountId);
+const capitalInitial = selectedAccount?.capital || user?.capital || 0;
+
+
+const capitalTotal = trades.filter(t => t.status !== 'RUNNING').reduce((s, t) => s + Number(t.resultDollar), 0);
+const capitalActuel = Number(user?.capital || 0) + Number(capitalTotal || 0);
+const croissancePct = capitalInitial > 0 ? ((capitalTotal / capitalInitial) * 100) : 0;
 
   const kpis = [
     { label: 'Trades ce mois', value: closedMonth.length, icon: Activity, change: null },
@@ -140,7 +154,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <GlassCard className="animate-fade-up">
           <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Capital initial</p>
-          <p className="metric-value text-2xl text-foreground">${(user?.capital || 0).toLocaleString('fr')}</p>
+          <p className="metric-value text-2xl text-foreground">${capitalInitial.toLocaleString('fr')}</p>
         </GlassCard>
         <GlassCard className="animate-fade-up stagger-1">
           <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">P&L cumulé</p>

@@ -1,21 +1,63 @@
-import { useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { StorageManager } from '@/lib/storage';
 import { Trade } from '@/types/trading';
 
-/**
- * Retourne les trades filtrés selon la sélection active dans le sidebar.
- * - activeAccounts.length > 0 → filtre sur ces comptes précis
- * - activeAccounts.length === 0 → tous les comptes (aucun filtre)
- * Accepte un refreshKey optionnel pour forcer le recalcul.
- */
-export function useFilteredTrades(refreshKey?: number): Trade[] {
-  const { user, activeAccounts } = useAuth();
+const API_URL = 'http://localhost:8000/api';
+const getToken = () => localStorage.getItem('mitrad_token');
 
-  return useMemo(() => {
-    if (!user) return [];
-    const ids = activeAccounts.map(a => a.id);
-    return StorageManager.getUserTradesByAccounts(user.email, ids);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, activeAccounts, refreshKey]);
+let globalRefreshFn: (() => void) | null = null;
+export const refreshTrades = () => globalRefreshFn?.();
+
+export function useFilteredTrades(refreshKey?: number): Trade[] {
+  const { activeAccounts, accounts } = useAuth();
+  const [trades, setTrades] = useState<Trade[]>([]);
+  const [tick, setTick] = useState(0);
+
+  const fetchTrades = useCallback(() => {
+    // Si activeAccounts vide = tous les comptes
+    const targetAccounts = activeAccounts.length > 0 ? activeAccounts : accounts;
+    if (targetAccounts.length === 0) return;
+
+    Promise.all(
+      targetAccounts.map(acc =>
+        fetch(`${API_URL}/accounts/${acc.id}/trades`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${getToken()}`,
+          }
+        }).then(res => res.ok ? res.json() : [])
+          .catch(() => [])
+      )
+    ).then(results => {
+      const all = results.flat().map((t: any) => ({
+        ...t,
+        id:            String(t.id),
+        accountId:     String(t.trading_account_id),
+        trading_account_id: t.trading_account_id,
+        resultR:       t.result_r != null ? Number(t.result_r) : null,
+        resultDollar:  Number(t.result_dollar ?? 0),
+        entryPrice:    Number(t.entry_price ?? 0),
+        stopLoss:      Number(t.stop_loss ?? 0),
+        takeProfit:    Number(t.take_profit ?? 0),
+        lotSize:       Number(t.lot_size ?? 0),
+        exitPrice:     t.exit_price ?? null,
+        entryNote:     t.entry_note ?? '',
+        exitNote:      t.exit_note ?? '',
+        planRespected: t.plan_respected ?? null,
+      }));
+      setTrades(all);
+    });
+  }, [activeAccounts, accounts]);
+
+  useEffect(() => {
+    globalRefreshFn = () => setTick(t => t + 1);
+    return () => { globalRefreshFn = null; };
+  }, []);
+
+  useEffect(() => {
+    fetchTrades();
+  }, [fetchTrades, tick, refreshKey]);
+
+  return trades;
 }

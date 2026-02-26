@@ -6,13 +6,15 @@ export interface CoachAdvice {
   emoji: string;
   message: string;
   priority: number;
+  type: 'strength' | 'weakness' | 'info';
+  repeatCount?: number;
 }
 
 export function generateCoachAdvice(trades: Trade[]): CoachAdvice[] {
   const advice: CoachAdvice[] = [];
   const closed = trades.filter(t => t.status !== 'RUNNING');
   if (closed.length === 0) {
-    advice.push({ category: 'Démarrage', emoji: '🚀', message: 'Bienvenue ! Commence à enregistrer tes trades pour recevoir des conseils personnalisés de Coach Alpha.', priority: 1 });
+    advice.push({ category: 'Démarrage', emoji: '🚀', message: 'Bienvenue ! Commence à enregistrer tes trades pour recevoir des conseils personnalisés de Mentor-X.', priority: 1, type: 'info' });
     return advice;
   }
 
@@ -26,9 +28,43 @@ export function generateCoachAdvice(trades: Trade[]): CoachAdvice[] {
   const avgRR = wins.length > 0 ? grossProfit / wins.length : 0;
   const maxLossStreak = getMaxLossStreak(closed);
   const maxWinStreak = getMaxWinStreak(closed);
-  const avgDuration = closed.reduce((s, t) => s + t.duration, 0) / closed.length;
 
-  // Performance par jour de la semaine
+  // ── Performance par paire ─────────────────────────────────────────────
+  const pairPerf: Record<string, { r: number; count: number; wins: number }> = {};
+  closed.forEach(t => {
+    if (!pairPerf[t.pair]) pairPerf[t.pair] = { r: 0, count: 0, wins: 0 };
+    pairPerf[t.pair].r += t.resultR;
+    pairPerf[t.pair].count++;
+    if (t.status === 'WIN') pairPerf[t.pair].wins++;
+  });
+
+  // ── Performance par setup ─────────────────────────────────────────────
+  const setupPerf: Record<string, { r: number; count: number; wins: number }> = {};
+  closed.forEach(t => {
+    if (!setupPerf[t.setup]) setupPerf[t.setup] = { r: 0, count: 0, wins: 0 };
+    setupPerf[t.setup].r += t.resultR;
+    setupPerf[t.setup].count++;
+    if (t.status === 'WIN') setupPerf[t.setup].wins++;
+  });
+
+  // ── Performance par session ───────────────────────────────────────────
+  const sessionPerf: Record<string, { r: number; count: number; wins: number }> = {};
+  closed.forEach(t => {
+    if (!sessionPerf[t.session]) sessionPerf[t.session] = { r: 0, count: 0, wins: 0 };
+    sessionPerf[t.session].r += t.resultR;
+    sessionPerf[t.session].count++;
+    if (t.status === 'WIN') sessionPerf[t.session].wins++;
+  });
+
+  // ── Émotions négatives répétées ───────────────────────────────────────
+  const emotionCounts: Record<string, number> = {};
+  closed.forEach(t => {
+    if (['FOMO', 'Revenge Trading', 'Stressé', 'Anxieux'].includes(t.emotion)) {
+      emotionCounts[t.emotion] = (emotionCounts[t.emotion] || 0) + 1;
+    }
+  });
+
+  // ── Performance par jour ──────────────────────────────────────────────
   const dayPerf: Record<number, { r: number; count: number }> = {};
   closed.forEach(t => {
     const day = new Date(t.date).getDay();
@@ -37,183 +73,231 @@ export function generateCoachAdvice(trades: Trade[]): CoachAdvice[] {
     dayPerf[day].count++;
   });
   const dayNames = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
-  const bestDay = Object.entries(dayPerf).sort((a, b) => b[1].r - a[1].r)[0];
-  const worstDay = Object.entries(dayPerf).sort((a, b) => a[1].r - b[1].r)[0];
 
-  // Performance par session
-  const sessionPerf: Record<string, { r: number; count: number }> = {};
-  closed.forEach(t => {
-    if (!sessionPerf[t.session]) sessionPerf[t.session] = { r: 0, count: 0 };
-    sessionPerf[t.session].r += t.resultR;
-    sessionPerf[t.session].count++;
-  });
-  const bestSession = Object.entries(sessionPerf).sort((a, b) => b[1].r - a[1].r)[0];
-
-  // Performance par paire
-  const pairPerf: Record<string, { r: number; count: number; wins: number }> = {};
-  closed.forEach(t => {
-    if (!pairPerf[t.pair]) pairPerf[t.pair] = { r: 0, count: 0, wins: 0 };
-    pairPerf[t.pair].r += t.resultR;
-    pairPerf[t.pair].count++;
-    if (t.status === 'WIN') pairPerf[t.pair].wins++;
-  });
-  const bestPair = Object.entries(pairPerf).sort((a, b) => b[1].r - a[1].r)[0];
-
-  // Détection FOMO / revenge
-  const fomoTrades = closed.filter(t => t.emotion === 'FOMO');
-  const revengeTrades = closed.filter(t => t.emotion === 'Revenge Trading');
-
-  // Nombre de trades par jour
+  // ── Overtrading par jour ──────────────────────────────────────────────
   const dailyCounts: Record<string, number> = {};
   closed.forEach(t => {
     const d = t.date.slice(0, 10);
     dailyCounts[d] = (dailyCounts[d] || 0) + 1;
   });
-  const overtrading = Object.values(dailyCounts).some(c => c > 5);
+  const overtradingDays = Object.values(dailyCounts).filter(c => c > 5).length;
 
-  // Meilleur setup
-  const setupPerf: Record<string, { r: number; count: number; wins: number }> = {};
-  closed.forEach(t => {
-    if (!setupPerf[t.setup]) setupPerf[t.setup] = { r: 0, count: 0, wins: 0 };
-    setupPerf[t.setup].r += t.resultR;
-    setupPerf[t.setup].count++;
-    if (t.status === 'WIN') setupPerf[t.setup].wins++;
-  });
-  const bestSetup = Object.entries(setupPerf).sort((a, b) => b[1].r - a[1].r)[0];
+  // ════════════════════════════════════════════════════════════════════
+  // POINTS FORTS RÉPÉTÉS
+  // ════════════════════════════════════════════════════════════════════
 
-  // 1. Analyse win rate
-  if (winRate < 30) {
-    advice.push({ category: 'Win Rate', emoji: '🚨', message: `Ton win rate est à ${winRate.toFixed(0)}%. C'est critique — mets le trading en pause, revois tes setups et tes entrées. Qualité avant quantité.`, priority: 10 });
-  } else if (winRate < 40) {
-    advice.push({ category: 'Win Rate', emoji: '📈', message: `Ton win rate est à ${winRate.toFixed(0)}%. Il est temps de revoir ta sélection de setups. Moins de trades, mieux sélectionnés. Focus sur les A+ uniquement.`, priority: 8 });
-  } else if (winRate < 55) {
-    advice.push({ category: 'Win Rate', emoji: '📊', message: `Win rate à ${winRate.toFixed(0)}% — base solide. Concentre-toi sur l'amélioration de ton risk/reward pour maximiser la rentabilité.`, priority: 4 });
-  } else {
-    advice.push({ category: 'Win Rate', emoji: '🎯', message: `Excellent win rate de ${winRate.toFixed(0)}% ! Tu sélectionnes des trades de qualité. Continue à filtrer avec discipline.`, priority: 2 });
+  // Paires rentables répétées (min 3 trades, win rate > 55%)
+  Object.entries(pairPerf)
+    .filter(([, v]) => v.count >= 3 && (v.wins / v.count) > 0.55 && v.r > 0)
+    .sort((a, b) => b[1].r - a[1].r)
+    .slice(0, 2)
+    .forEach(([pair, v]) => {
+      const wr = ((v.wins / v.count) * 100).toFixed(0);
+      advice.push({
+        category: 'Paire forte',
+        emoji: '💰',
+        message: `${pair} est ta paire la plus régulièrement rentable — ${v.count} trades, ${wr}% WR, +${v.r.toFixed(1)}R. Priorise-la.`,
+        priority: 4,
+        type: 'strength',
+        repeatCount: v.count,
+      });
+    });
+
+  // Setups gagnants répétés (min 3 trades, win rate > 55%)
+  Object.entries(setupPerf)
+    .filter(([, v]) => v.count >= 3 && (v.wins / v.count) > 0.55 && v.r > 0)
+    .sort((a, b) => b[1].r - a[1].r)
+    .slice(0, 2)
+    .forEach(([setup, v]) => {
+      const wr = ((v.wins / v.count) * 100).toFixed(0);
+      advice.push({
+        category: 'Setup gagnant',
+        emoji: '🎯',
+        message: `Le setup ${setup} fonctionne régulièrement — ${v.count} trades, ${wr}% WR, +${v.r.toFixed(1)}R. Continue à l'exploiter.`,
+        priority: 4,
+        type: 'strength',
+        repeatCount: v.count,
+      });
+    });
+
+  // Sessions fortes répétées (min 3 trades, profitable)
+  Object.entries(sessionPerf)
+    .filter(([, v]) => v.count >= 3 && v.r > 0 && (v.wins / v.count) > 0.5)
+    .sort((a, b) => b[1].r - a[1].r)
+    .slice(0, 1)
+    .forEach(([session, v]) => {
+      advice.push({
+        category: 'Session forte',
+        emoji: '⏰',
+        message: `La session ${session} est régulièrement profitable — ${v.count} trades, +${v.r.toFixed(1)}R. C'est ta fenêtre dorée.`,
+        priority: 3,
+        type: 'strength',
+        repeatCount: v.count,
+      });
+    });
+
+  // Win rate solide répété
+  if (winRate > 60 && closed.length >= 10) {
+    advice.push({
+      category: 'Win Rate',
+      emoji: '📈',
+      message: `Win rate de ${winRate.toFixed(0)}% sur ${closed.length} trades — tu sélectionnes régulièrement des setups de qualité. Continue.`,
+      priority: 3,
+      type: 'strength',
+      repeatCount: closed.length,
+    });
   }
 
-  // 2. Analyse RR
-  if (avgRR < 1) {
-    advice.push({ category: 'Risk/Reward', emoji: '⚠️', message: `Ton RR moyen est trop bas à ${avgRR.toFixed(1)}. Tu as besoin d'un minimum de 1:2 pour rester profitable même avec 40% de win rate.`, priority: 9 });
-  } else if (avgRR < 1.5) {
-    advice.push({ category: 'Risk/Reward', emoji: '🎯', message: `RR moyen à ${avgRR.toFixed(1)} — améliore tes take profits. Vise minimum 1:2 sur chaque trade.`, priority: 6 });
-  } else if (avgRR >= 2) {
-    advice.push({ category: 'Risk/Reward', emoji: '💎', message: `RR moyen exceptionnel de ${avgRR.toFixed(1)} ! Ta gestion de trade est excellente. Continue comme ça.`, priority: 1 });
+  // Bonne série de gains
+  if (maxWinStreak >= 4) {
+    advice.push({
+      category: 'Série de gains',
+      emoji: '🔥',
+      message: `Série de ${maxWinStreak} wins consécutifs détectée — tu as une régularité mentale solide.`,
+      priority: 2,
+      type: 'strength',
+      repeatCount: maxWinStreak,
+    });
   }
 
-  // 3. Série de pertes
-  if (maxLossStreak >= 5) {
-    advice.push({ category: 'Série de pertes', emoji: '🛑', message: `${maxLossStreak} pertes consécutives détectées. Pause obligatoire. Éloigne-toi, analyse, et reviens frais.`, priority: 10 });
-  } else if (maxLossStreak >= 3) {
-    advice.push({ category: 'Série de pertes', emoji: '⏸️', message: `${maxLossStreak} pertes consécutives détectées. Pause recommandée. Les meilleurs traders savent quand s'arrêter.`, priority: 8 });
+  // Profit Factor solide
+  if (pf > 1.8 && closed.length >= 10) {
+    advice.push({
+      category: 'Profit Factor',
+      emoji: '⚖️',
+      message: `Profit Factor de ${pf.toFixed(2)} — tu laisses courrir tes gains et coupes tes pertes régulièrement.`,
+      priority: 3,
+      type: 'strength',
+    });
   }
 
-  // 4. Profit Factor
-  if (pf < 1) {
-    advice.push({ category: 'Profit Factor', emoji: '📉', message: `Profit Factor à ${pf.toFixed(2)} — tu perds de l'argent globalement. Analyse urgente nécessaire : réduis la taille de position et sois plus sélectif.`, priority: 9 });
-  } else if (pf < 1.5) {
-    advice.push({ category: 'Profit Factor', emoji: '⚡', message: `PF à ${pf.toFixed(2)} — edge fragile. De petites améliorations en win rate ou RR feront une grande différence.`, priority: 6 });
-  } else if (pf > 2) {
-    advice.push({ category: 'Profit Factor', emoji: '🔥', message: `Profit Factor de ${pf.toFixed(2)} ! Tu es parmi les meilleurs traders. Continue à respecter tes règles.`, priority: 1 });
-  }
-
-  // 5. Meilleur jour
+  // Meilleur jour répété
+  const bestDay = Object.entries(dayPerf).filter(([, v]) => v.count >= 3 && v.r > 0).sort((a, b) => b[1].r - a[1].r)[0];
   if (bestDay) {
-    advice.push({ category: 'Meilleur jour', emoji: '📅', message: `Ta meilleure performance est le ${dayNames[parseInt(bestDay[0])]} (+${bestDay[1].r.toFixed(1)}R). Concentre plus d'énergie sur cette fenêtre.`, priority: 3 });
+    advice.push({
+      category: 'Jour fort',
+      emoji: '📅',
+      message: `Le ${dayNames[parseInt(bestDay[0])]} est régulièrement ton meilleur jour — ${bestDay[1].count} trades, +${bestDay[1].r.toFixed(1)}R. Maximise cette journée.`,
+      priority: 2,
+      type: 'strength',
+      repeatCount: bestDay[1].count,
+    });
   }
 
-  // 6. Pertes le vendredi
-  if (dayPerf[5] && dayPerf[5].r < 0) {
-    advice.push({ category: 'Alerte Vendredi', emoji: '🚫', message: `Évite de trader le vendredi — tes stats montrent ${dayPerf[5].r.toFixed(1)}R ce jour-là. Ce n'est pas ton jour.`, priority: 7 });
+  // ════════════════════════════════════════════════════════════════════
+  // POINTS FAIBLES RÉPÉTÉS
+  // ════════════════════════════════════════════════════════════════════
+
+  // Paires perdantes répétées (min 3 trades, win rate < 40%)
+  Object.entries(pairPerf)
+    .filter(([, v]) => v.count >= 3 && (v.wins / v.count) < 0.40 && v.r < 0)
+    .sort((a, b) => a[1].r - b[1].r)
+    .slice(0, 2)
+    .forEach(([pair, v]) => {
+      const wr = ((v.wins / v.count) * 100).toFixed(0);
+      advice.push({
+        category: 'Paire perdante',
+        emoji: '📉',
+        message: `${pair} te fait perdre régulièrement — ${v.count} trades, ${wr}% WR, ${v.r.toFixed(1)}R. Évite cette paire ou revois ton approche.`,
+        priority: 8,
+        type: 'weakness',
+        repeatCount: v.count,
+      });
+    });
+
+  // Setups perdants répétés (min 3 trades, perdant)
+  Object.entries(setupPerf)
+    .filter(([, v]) => v.count >= 3 && v.r < 0 && (v.wins / v.count) < 0.40)
+    .sort((a, b) => a[1].r - b[1].r)
+    .slice(0, 2)
+    .forEach(([setup, v]) => {
+      const wr = ((v.wins / v.count) * 100).toFixed(0);
+      advice.push({
+        category: 'Setup perdant',
+        emoji: '⚠️',
+        message: `Le setup ${setup} échoue régulièrement — ${v.count} trades, ${wr}% WR, ${v.r.toFixed(1)}R. Arrête de le prendre ou revois ton entrée.`,
+        priority: 8,
+        type: 'weakness',
+        repeatCount: v.count,
+      });
+    });
+
+  // Émotions négatives répétées
+  Object.entries(emotionCounts)
+    .filter(([, count]) => count >= 2)
+    .sort((a, b) => b[1] - a[1])
+    .forEach(([emotion, count]) => {
+      const emotionTrades = closed.filter(t => t.emotion === emotion);
+      const lossRate = emotionTrades.filter(t => t.status === 'LOSS').length / emotionTrades.length;
+      advice.push({
+        category: 'Émotion récurrente',
+        emoji: '🧠',
+        message: `${emotion} apparaît ${count} fois dans ton journal — ${(lossRate * 100).toFixed(0)}% de LOSS dans cet état. C'est un pattern destructeur à corriger.`,
+        priority: 9,
+        type: 'weakness',
+        repeatCount: count,
+      });
+    });
+
+  // Overtrading répété
+  if (overtradingDays >= 2) {
+    advice.push({
+      category: 'Overtrading',
+      emoji: '🔴',
+      message: `Overtrading détecté ${overtradingDays} jours (plus de 5 trades/jour). Ce pattern récurrent détruit les comptes. Fixe une limite de 3 trades/jour.`,
+      priority: 8,
+      type: 'weakness',
+      repeatCount: overtradingDays,
+    });
   }
 
-  // 7. FOMO
-  if (fomoTrades.length > 0) {
-    const fomoR = fomoTrades.reduce((s, t) => s + t.resultR, 0);
-    advice.push({ category: 'Alerte FOMO', emoji: '😤', message: `${fomoTrades.length} trades FOMO détectés (${fomoR.toFixed(1)}R). Attention — reste dans ta session et ton setup préférés.`, priority: 8 });
+  // Série de pertes répétée
+  if (maxLossStreak >= 3) {
+    advice.push({
+      category: 'Série de pertes',
+      emoji: '🛑',
+      message: `${maxLossStreak} pertes consécutives détectées. Ce pattern signale un problème de setup ou de psychologie. Pause et analyse obligatoires.`,
+      priority: 9,
+      type: 'weakness',
+      repeatCount: maxLossStreak,
+    });
   }
 
-  // 8. Revenge trading
-  if (revengeTrades.length > 0) {
-    const revR = revengeTrades.reduce((s, t) => s + t.resultR, 0);
-    advice.push({ category: 'Psychologie', emoji: '🧠', message: `${revengeTrades.length} trades de revenge détectés (${revR.toFixed(1)}R). C'est ton ennemi n°1. Éloigne-toi après une perte.`, priority: 9 });
+  // Jour perdant répété
+  const worstDay = Object.entries(dayPerf).filter(([, v]) => v.count >= 3 && v.r < -1).sort((a, b) => a[1].r - b[1].r)[0];
+  if (worstDay) {
+    advice.push({
+      category: 'Jour faible',
+      emoji: '📉',
+      message: `Le ${dayNames[parseInt(worstDay[0])]} est régulièrement ton pire jour — ${worstDay[1].count} trades, ${worstDay[1].r.toFixed(1)}R. Évite de trader ce jour.`,
+      priority: 6,
+      type: 'weakness',
+      repeatCount: worstDay[1].count,
+    });
   }
 
-  // 9. Meilleure session
-  if (bestSession) {
-    advice.push({ category: 'Meilleure session', emoji: '⏰', message: `Ta meilleure session est ${bestSession[0]} (+${bestSession[1].r.toFixed(1)}R). Priorise cette fenêtre horaire.`, priority: 3 });
+  // Win rate faible répété
+  if (winRate < 40 && closed.length >= 10) {
+    advice.push({
+      category: 'Win Rate faible',
+      emoji: '🚨',
+      message: `Win rate de ${winRate.toFixed(0)}% sur ${closed.length} trades — pattern de pertes répétitif. Revois tes critères d'entrée et sois plus sélectif.`,
+      priority: 9,
+      type: 'weakness',
+      repeatCount: closed.length,
+    });
   }
 
-  // 10. Meilleure paire
-  if (bestPair) {
-    advice.push({ category: 'Meilleure paire', emoji: '💰', message: `${bestPair[0]} est ta paire la plus profitable (+${bestPair[1].r.toFixed(1)}R). Considère de te concentrer dessus.`, priority: 3 });
-  }
-
-  // 11. Durée
-  if (avgDuration < 5) {
-    advice.push({ category: 'Durée', emoji: '⚡', message: `Durée moyenne de trade inférieure à 5 minutes — scalping agressif détecté. Assure-toi que tu ne fais pas du gambling.`, priority: 7 });
-  }
-
-  // 12. Overtrading
-  if (overtrading) {
-    advice.push({ category: 'Overtrading', emoji: '🔴', message: `Plus de 5 trades en une seule journée détecté. L'overtrading tue les comptes. Fixe-toi une limite quotidienne.`, priority: 8 });
-  }
-
-  // 13. Meilleur setup
-  if (bestSetup) {
-    const wr = bestSetup[1].wins / bestSetup[1].count;
-    advice.push({ category: 'Meilleur setup', emoji: '🎯', message: `Ton meilleur setup est ${bestSetup[0]} (${(wr * 100).toFixed(0)}% WR, +${bestSetup[1].r.toFixed(1)}R). Mise tout dessus.`, priority: 3 });
-  }
-
-  // 14. Série de gains
-  if (maxWinStreak >= 5) {
-    advice.push({ category: 'Série de gains', emoji: '🔥', message: `${maxWinStreak} gains consécutifs — tu es en feu ! Reste humble et n'augmente pas le risque.`, priority: 2 });
-  }
-
-  // 15. P&L total
-  if (totalR > 0) {
-    advice.push({ category: 'Global', emoji: '✅', message: `P&L total : +${totalR.toFixed(1)}R. Tu es profitable. Protège cet edge avec de la régularité.`, priority: 2 });
-  } else {
-    advice.push({ category: 'Global', emoji: '📊', message: `P&L total : ${totalR.toFixed(1)}R. Tu es en drawdown. Réduis la taille, concentre-toi sur le processus plutôt que les profits.`, priority: 7 });
-  }
-
-  // 16. Pire jour
-  if (worstDay && parseFloat(worstDay[0]) !== parseFloat(bestDay?.[0] || '')) {
-    if (worstDay[1].r < -2) {
-      advice.push({ category: 'Pire jour', emoji: '📉', message: `${dayNames[parseInt(worstDay[0])]} est ton pire jour (${worstDay[1].r.toFixed(1)}R). Considère de l'éviter.`, priority: 5 });
-    }
-  }
-
-  // 17. Nombre de trades
-  if (closed.length < 20) {
-    advice.push({ category: 'Échantillon', emoji: '📋', message: `Seulement ${closed.length} trades enregistrés. Continue à logger — 50+ trades donnent des statistiques plus fiables.`, priority: 3 });
-  }
-
-  // 18. Analyse qualité
-  const aPlus = closed.filter(t => t.quality === 'A+');
-  const lowQuality = closed.filter(t => t.quality === 'C');
-  if (lowQuality.length > closed.length * 0.3) {
-    advice.push({ category: 'Qualité', emoji: '⚠️', message: `${((lowQuality.length / closed.length) * 100).toFixed(0)}% de tes trades sont de qualité C. Ne prends que des setups A+ et A.`, priority: 7 });
-  }
-  if (aPlus.length > 0) {
-    const apWR = aPlus.filter(t => t.status === 'WIN').length / aPlus.length;
-    advice.push({ category: 'Setups A+', emoji: '💎', message: `Tes setups A+ ont ${(apWR * 100).toFixed(0)}% de win rate. C'est ton pain quotidien.`, priority: 2 });
-  }
-
-  // 19. Régularité
-  const tradeWeeks = new Set(closed.map(t => {
-    const d = new Date(t.date);
-    return `${d.getFullYear()}-W${Math.ceil(((d.getTime() - new Date(d.getFullYear(), 0, 1).getTime()) / 86400000) / 7)}`;
-  }));
-  if (tradeWeeks.size >= 8) {
-    advice.push({ category: 'Régularité', emoji: '📅', message: `Trading régulier depuis ${tradeWeeks.size} semaines. La régularité est la clé du succès long terme.`, priority: 1 });
-  }
-
-  // 20. Inactivité
-  const lastTrade = new Date(closed[0]?.date || Date.now());
-  const daysSince = Math.floor((Date.now() - lastTrade.getTime()) / 86400000);
-  if (daysSince >= 7) {
-    advice.push({ category: 'Inactivité', emoji: '💪', message: `Pas de trades depuis ${daysSince} jours. C'est le moment de revenir sur les charts ! Revois ta watchlist.`, priority: 5 });
+  // RR faible répété
+  if (avgRR < 1 && wins.length >= 5) {
+    advice.push({
+      category: 'RR faible',
+      emoji: '⚠️',
+      message: `RR moyen de ${avgRR.toFixed(1)} sur ${wins.length} trades gagnants — tu coupes tes gains trop tôt régulièrement. Laisse courir tes positions.`,
+      priority: 8,
+      type: 'weakness',
+      repeatCount: wins.length,
+    });
   }
 
   return advice.sort((a, b) => b.priority - a.priority);

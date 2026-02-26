@@ -13,18 +13,23 @@ const DisplayModeContext = createContext<DisplayModeContextType | null>(null);
 export function DisplayModeProvider({ children }: { children: ReactNode }) {
   const [mode, setMode] = useState<DisplayMode>('R');
 
-  const formatResult = (resultR: number, resultDollar: number, capital?: number): string => {
-    const sign = resultR >= 0 ? '+' : '';
+  const formatResult = (resultR: number | null, resultDollar: number, capital?: number): string => {
+    const sign = (resultDollar ?? 0) >= 0 ? '+' : '';
     switch (mode) {
       case 'R':
-        return `${sign}${resultR.toFixed(2)}R`;
+        if (resultR == null) return 'À définir';
+        return `${resultR >= 0 ? '+' : ''}${resultR.toFixed(2)}R`;
       case '$':
-        return `${sign}$${resultDollar.toFixed(2)}`;
+        return `${sign}$${(resultDollar ?? 0).toFixed(2)}`;
       case '%':
-        const pct = capital && capital > 0 ? (resultDollar / capital) * 100 : resultR;
-        return `${sign}${pct.toFixed(2)}%`;
+        if (capital && capital > 0) {
+          const pct = ((resultDollar ?? 0) / capital) * 100;
+          return `${sign}${pct.toFixed(2)}%`;
+        }
+        return `${sign}${(resultDollar ?? 0).toFixed(2)}$`;
       default:
-        return `${sign}${resultR.toFixed(2)}R`;
+        if (resultR == null) return 'À définir';
+        return `${resultR >= 0 ? '+' : ''}${resultR.toFixed(2)}R`;
     }
   };
 
@@ -63,3 +68,4 @@ export function DisplayModeToggle() {
     </div>
   );
 }
+

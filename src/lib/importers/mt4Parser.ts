@@ -50,7 +50,7 @@ export function parseMT4CSV(csvText: string, userId: string, accountId?: string)
       const dateObj = new Date(dateStr);
       if (isNaN(dateObj.getTime())) continue;
 
-      const resultR = sl > 0 ? calcResultR(openPrice, sl, closePrice, type) : (profit > 0 ? 1 : -1);
+      const resultR = sl > 0 ? calcResultR(openPrice, sl, closePrice, type) : null;
 
       trades.push({
         id:             `mt4-${userId}-${Date.now()}-${i}`,
@@ -60,19 +60,19 @@ export function parseMT4CSV(csvText: string, userId: string, accountId?: string)
         pair:           symbol.toUpperCase(),
         direction:      type === 'buy' ? 'BUY' : 'SELL',
         session:        'London',
-        quality:        7,
-        setup:          'Importé MT4',
+        quality:        null,
+        setup:          null,
         emotion:        'Neutre',
         entryPrice:     openPrice,
         stopLoss:       sl || openPrice * 0.999,
         takeProfit:     tp || openPrice * 1.002,
         lotSize:        volume,
         exitPrice:      closePrice,
-        resultR,
+        resultR:         null,
         resultDollar:   Math.round(profit * 100) / 100,
         status:         getStatus(profit),
         duration:       0,
-        entryNote:      'Trade importé depuis MT4',
+        entryNote:      '',
         exitNote:       '',
         tradingViewLink:'',
         screenshot:     '',
@@ -82,3 +82,5 @@ export function parseMT4CSV(csvText: string, userId: string, accountId?: string)
 
   return trades;
 }
+
+

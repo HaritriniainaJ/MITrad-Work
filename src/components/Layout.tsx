@@ -20,14 +20,14 @@ const NAV_ITEMS = [
   { path: '/history',        label: 'Historique',      icon: ClipboardList },
   { path: '/analytics',      label: 'Analytiques',     icon: BarChart3 },
   { path: '/calendar',       label: 'Calendrier',      icon: CalendarDays },
-  { path: '/daily-analysis', label: 'Analyse du Jour', icon: FileText },
+  { path: '/daily-analysis', label: 'Mon Analyse', icon: FileText },
   { path: '/coach',          label: 'Mentor-X',        icon: Bot },
   { path: '/trading-plan',   label: 'Mon Plan',        icon: BookOpen },
   { path: '/objectives',     label: 'Mes Objectifs',   icon: Target },
   { path: '/successes',      label: 'Mes Succès',      icon: Award },
-  { path: '/leaderboard',    label: 'Classement',      icon: Trophy },
+  // { path: '/leaderboard',    label: 'Classement',      icon: Trophy },
   { path: '/profile',        label: 'Mon Profil',      icon: User },
-  { path: '/calculator',     label: 'Calculateur',     icon: Calculator },
+  // { path: '/calculator',     label: 'Calculateur',     icon: Calculator },
   { path: '/import',         label: 'Importer',        icon: Upload },
   { path: '/support',        label: 'Support',         icon: HeadphonesIcon },
   { path: '/settings',       label: 'Paramètres',      icon: Settings },
@@ -68,9 +68,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const allSelected  = activeAccounts.length === 0;
   const sidebarWidth = collapsed ? SIDEBAR_MINI : SIDEBAR_W;
 
+
   const toggleAccount = (acc: typeof accounts[0]) => {
-    const isSelected = activeAccounts.some(a => a.id === acc.id);
-    setActiveAccounts(isSelected ? activeAccounts.filter(a => a.id !== acc.id) : [...activeAccounts, acc]);
+    const isSelected = activeAccounts.some(a => String(a.id) === String(acc.id));
+    setActiveAccounts(
+      isSelected
+        ? activeAccounts.filter(a => String(a.id) !== String(acc.id))
+        : [...activeAccounts, acc]
+    );
   };
   const selectAll = () => setActiveAccounts([]);
 
@@ -184,7 +189,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   </button>
                   <div className="h-px bg-white/5 mx-2" />
                   {accounts.map((acc, idx) => {
-                    const sel = activeAccounts.some(a => a.id === acc.id);
+                    const sel = activeAccounts.some(a => String(a.id) === String(acc.id));
                     return (
                       <button key={acc.id} onClick={() => toggleAccount(acc)}
                         className={cn('w-full flex items-center gap-2.5 px-3 py-2.5 text-xs transition-colors',

@@ -1,10 +1,11 @@
-import { useState, useMemo, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { StorageManager } from '@/lib/storage';
+import { getAnalyses, createAnalysis, updateAnalysis, deleteAnalysis } from '@/lib/api';
 import { DailyAnalysis, AnalyzedPair, ALL_PAIRS, BIAS_OPTIONS, DECISION_OPTIONS } from '@/types/trading';
 import GlassCard from '@/components/GlassCard';
 import { Plus, Trash2, Eye, X, Pencil, Save, ImagePlus, ZoomIn, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
+
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 const emptyPair = (): AnalyzedPair => ({
@@ -273,92 +274,102 @@ function PairForm({
 // ── Page principale ──────────────────────────────────────────────────────────
 export default function DailyAnalysisPage() {
   const { user } = useAuth();
-  // Paires combinées défaut + custom utilisateur
   const allPairs = [...new Set([...ALL_PAIRS, ...(user?.customPairs || [])])];
   const [tab, setTab] = useState<'new' | 'history'>('new');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [title, setTitle] = useState('');
   const [pairs, setPairs] = useState<AnalyzedPair[]>([emptyPair()]);
   const [selectedAnalysis, setSelectedAnalysis] = useState<DailyAnalysis | null>(null);
   const [editingAnalysis, setEditingAnalysis] = useState<DailyAnalysis | null>(null);
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [analyses, setAnalyses] = useState<DailyAnalysis[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [lightboxImg, setLightboxImg] = useState<string | null>(null);
 
-  const analyses = useMemo(
-    () => StorageManager.getAnalyses(user!.email),
-    [user, tab, refreshKey],
-  );
+  // Fetch analyses depuis l'API
+  const fetchAnalyses = async () => {
+    try {
+      const data = await getAnalyses();
+      setAnalyses(Array.isArray(data) ? data.map((a: any) => ({
+        ...a,
+        pairs: typeof a.pairs === 'string' ? JSON.parse(a.pairs) : a.pairs,
+      })) : []);
+    } catch {
+      setAnalyses([]);
+    }
+  };
 
-  // ── Helpers pairs (nouvelle analyse) ───────────────────────────────────────
+  useEffect(() => { fetchAnalyses(); }, []);
+
+  // Helpers pairs (nouvelle analyse)
   const addPair = () => setPairs(prev => [...prev, emptyPair()]);
   const removePair = (idx: number) => setPairs(prev => prev.filter((_, i) => i !== idx));
-
   const updatePair = (idx: number, field: keyof AnalyzedPair, value: string) =>
     setPairs(prev => prev.map((p, i) => i === idx ? { ...p, [field]: value } : p));
-
   const addPairImage = (idx: number, b64: string) =>
     setPairs(prev => prev.map((p, i) =>
-      i === idx ? { ...p, images: [...(p.images || []), b64] } : p,
-    ));
-
+      i === idx ? { ...p, images: [...(p.images || []), b64] } : p));
   const removePairImage = (pairIdx: number, imgIdx: number) =>
     setPairs(prev => prev.map((p, i) =>
-      i === pairIdx ? { ...p, images: (p.images || []).filter((_, ii) => ii !== imgIdx) } : p,
-    ));
+      i === pairIdx ? { ...p, images: (p.images || []).filter((_, ii) => ii !== imgIdx) } : p));
 
-  // ── Helpers pairs (édition) ────────────────────────────────────────────────
+  // Helpers pairs (édition)
   const updateEditPair = (idx: number, field: keyof AnalyzedPair, value: string) => {
     if (!editingAnalysis) return;
     setEditingAnalysis({
-      ...editingAnalysis,
-      pairs: editingAnalysis.pairs.map((p, i) => i === idx ? { ...p, [field]: value } : p),
+      ...analysis,
+      title: analysis.title || '',
+      pairs: analysis.pairs.map(p => ({ ...p, images: [...(p.images || [])] })),
     });
   };
-
   const addEditPairImage = (pairIdx: number, b64: string) => {
     if (!editingAnalysis) return;
     setEditingAnalysis({
       ...editingAnalysis,
       pairs: editingAnalysis.pairs.map((p, i) =>
-        i === pairIdx ? { ...p, images: [...(p.images || []), b64] } : p,
-      ),
+        i === pairIdx ? { ...p, images: [...(p.images || []), b64] } : p),
     });
   };
-
   const removeEditPairImage = (pairIdx: number, imgIdx: number) => {
     if (!editingAnalysis) return;
     setEditingAnalysis({
       ...editingAnalysis,
       pairs: editingAnalysis.pairs.map((p, i) =>
-        i === pairIdx
-          ? { ...p, images: (p.images || []).filter((_, ii) => ii !== imgIdx) }
-          : p,
-      ),
+        i === pairIdx ? { ...p, images: (p.images || []).filter((_, ii) => ii !== imgIdx) } : p),
     });
   };
 
-  // ── Actions CRUD ───────────────────────────────────────────────────────────
-  const save = () => {
+  // CRUD
+  const save = async () => {
     const existing = analyses.find(a => a.date === date);
     if (existing) { toast.error('Une analyse existe déjà pour cette date'); return; }
-    const analysis: DailyAnalysis = {
-      id: `${user!.email}-analysis-${Date.now()}`,
-      userId: user!.email,
-      date,
-      pairs,
-    };
-    StorageManager.addAnalysis(analysis);
-    toast.success('Analyse enregistrée !');
-    setPairs([emptyPair()]);
-    setRefreshKey(k => k + 1);
+    setLoading(true);
+    try {
+      await createAnalysis({ date, title , pairs });
+      toast.success('Analyse enregistrée !');
+      setPairs([emptyPair()]);
+      setTitle('');
+      await fetchAnalyses();
+      setTab('history');
+    } catch {
+      toast.error('Erreur lors de l\'enregistrement');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const deleteAnalysis = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (!confirm('Supprimer cette analyse ?')) return;
-    StorageManager.deleteAnalysis(id);
-    setSelectedAnalysis(null);
-    setEditingAnalysis(null);
-    setRefreshKey(k => k + 1);
-    toast.success('Analyse supprimée');
+    try {
+      await deleteAnalysis(id);
+      setSelectedAnalysis(null);
+      setEditingAnalysis(null);
+      await fetchAnalyses();
+      toast.success('Analyse supprimée');
+    } catch {
+      toast.error('Erreur suppression');
+    }
   };
+  
 
   const startEdit = (analysis: DailyAnalysis) => {
     setEditingAnalysis({
@@ -368,98 +379,84 @@ export default function DailyAnalysisPage() {
     setSelectedAnalysis(null);
   };
 
-  const saveEdit = () => {
+  const saveEdit = async () => {
     if (!editingAnalysis) return;
-    StorageManager.updateAnalysis(editingAnalysis.id, editingAnalysis);
-    setEditingAnalysis(null);
-    setRefreshKey(k => k + 1);
-    toast.success('Analyse mise à jour');
+    setLoading(true);
+    try {
+      await updateAnalysis(String(editingAnalysis.id), { pairs: editingAnalysis.pairs, title: editingAnalysis.title });
+      setEditingAnalysis(null);
+      await fetchAnalyses();
+      toast.success('Analyse mise à jour');
+    } catch {
+      toast.error('Erreur mise à jour');
+    } finally {
+      setLoading(false);
+    }
   };
-
-  // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl md:text-3xl font-bold gradient-text">Analyse du Jour</h1>
+        <h1 className="text-2xl md:text-3xl font-bold gradient-text">Mon Analyse</h1>
         <p className="text-muted-foreground text-sm mt-1">Planifie ta journée de trading</p>
       </div>
 
-      {/* Tabs */}
       <div className="flex gap-2">
         {(['new', 'history'] as const).map(t => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
+          <button key={t} onClick={() => setTab(t)}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              tab === t
-                ? 'gradient-primary text-foreground'
-                : 'bg-accent text-muted-foreground hover:text-foreground'
-            }`}
-          >
+              tab === t ? 'gradient-primary text-foreground' : 'bg-accent text-muted-foreground hover:text-foreground'
+            }`}>
             {t === 'new' ? 'Nouvelle analyse' : `Historique (${analyses.length})`}
           </button>
         ))}
       </div>
 
-      {/* ── Nouvelle analyse ──────────────────────────────────────────────── */}
       {tab === 'new' && (
         <GlassCard className="animate-fade-up">
           <div className="space-y-4">
-            <div>
-              <label className="text-xs text-muted-foreground">Date de l'analyse</label>
-              <input
-                type="date"
-                value={date}
-                onChange={e => setDate(e.target.value)}
-                className="input-dark mt-1 max-w-[200px]"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs text-muted-foreground">Date de l'analyse</label>
+                <input type="date" value={date} onChange={e => setDate(e.target.value)}
+                  className="input-dark mt-1" />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">Titre <span className="opacity-40">(optionnel)</span></label>
+                <input type="text" value={title} onChange={e => setTitle(e.target.value)}
+                  placeholder="Ex : Semaine haussière sur EURUSD"
+                  className="input-dark mt-1" />
+              </div>
             </div>
-
             {pairs.map((p, idx) => (
-              <PairForm
-                key={idx}
-                pair={p}
-                idx={idx}
-                total={pairs.length}
+              <PairForm key={idx} pair={p} idx={idx} total={pairs.length}
                 onChange={(field, value) => updatePair(idx, field, value)}
                 onRemove={() => removePair(idx)}
                 onImageAdd={b64 => addPairImage(idx, b64)}
-                onImageRemove={imgIdx => removePairImage(idx, imgIdx)}
-              />
+                onImageRemove={imgIdx => removePairImage(idx, imgIdx)} />
             ))}
-
-            <button
-              onClick={addPair}
-              className="flex items-center gap-2 text-primary text-sm hover:underline"
-            >
+            <button onClick={addPair} className="flex items-center gap-2 text-primary text-sm hover:underline">
               <Plus size={14} /> Ajouter une paire
             </button>
-
             <div className="flex gap-3 pt-2">
-              <button
-                onClick={() => setPairs([emptyPair()])}
-                className="px-4 py-2 rounded-lg border border-border text-muted-foreground text-sm hover:text-foreground transition-colors"
-              >
+              <button onClick={() => setPairs([emptyPair()])}
+                className="px-4 py-2 rounded-lg border border-border text-muted-foreground text-sm hover:text-foreground transition-colors">
                 Effacer
               </button>
-              <button onClick={save} className="gradient-btn px-6 py-2 text-sm">
-                Enregistrer l'analyse
+              <button onClick={save} disabled={loading} className="gradient-btn px-6 py-2 text-sm">
+                {loading ? 'Enregistrement...' : "Enregistrer l'analyse"}
               </button>
             </div>
           </div>
         </GlassCard>
       )}
 
-      {/* ── Historique ───────────────────────────────────────────────────── */}
       {tab === 'history' && (
         <GlassCard className="animate-fade-up overflow-x-auto p-0">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border">
-                {['Date', 'Paires', 'Images', 'Actions'].map(h => (
-                  <th key={h} className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">
-                    {h}
-                  </th>
+              {['Date', 'Titre', 'Paires', 'Images', 'Actions'].map(h => (
+                    <th key={h} className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -471,35 +468,24 @@ export default function DailyAnalysisPage() {
                     <td className="px-4 py-3 text-foreground font-medium">
                       {new Date(a.date).toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' })}
                     </td>
+                    <td className="px-4 py-3 text-foreground text-xs font-medium">
+                      {a.title || <span className="text-muted-foreground/40 italic">—</span>}
+                    </td>
                     <td className="px-4 py-3 text-muted-foreground text-xs">
                       {a.pairs.map(p => p.pair).join(', ')}
-                    </td>
-                    <td className="px-4 py-3">
-                      {totalImgs > 0 ? (
-                        <span className="text-xs px-2 py-0.5 rounded-full glass text-primary">
-                          {totalImgs} image{totalImgs > 1 ? 's' : ''}
-                        </span>
-                      ) : (
-                        <span className="text-xs text-muted-foreground/50">—</span>
-                      )}
+                    </td>                   <td className="px-4 py-3">
+                      {totalImgs > 0
+                        ? <span className="text-xs px-2 py-0.5 rounded-full glass text-primary">{totalImgs} image{totalImgs > 1 ? 's' : ''}</span>
+                        : <span className="text-xs text-muted-foreground/50">—</span>}
                     </td>
                     <td className="px-4 py-3 flex gap-3">
-                      <button
-                        onClick={() => setSelectedAnalysis(a)}
-                        className="text-primary hover:underline text-xs flex items-center gap-1"
-                      >
+                      <button onClick={() => setSelectedAnalysis(a)} className="text-primary hover:underline text-xs flex items-center gap-1">
                         <Eye size={12} /> Voir
                       </button>
-                      <button
-                        onClick={() => startEdit(a)}
-                        className="text-primary hover:underline text-xs flex items-center gap-1"
-                      >
+                      <button onClick={() => startEdit(a)} className="text-primary hover:underline text-xs flex items-center gap-1">
                         <Pencil size={12} /> Modifier
                       </button>
-                      <button
-                        onClick={() => deleteAnalysis(a.id)}
-                        className="text-destructive hover:underline text-xs flex items-center gap-1"
-                      >
+                      <button onClick={() => handleDelete(a.id)} className="text-destructive hover:underline text-xs flex items-center gap-1">
                         <Trash2 size={12} /> Supprimer
                       </button>
                     </td>
@@ -507,108 +493,60 @@ export default function DailyAnalysisPage() {
                 );
               })}
               {analyses.length === 0 && (
-                <tr>
-                  <td colSpan={4} className="text-center text-muted-foreground py-12">
-                    Aucune analyse enregistrée
-                  </td>
-                </tr>
+                <tr><td colSpan={4} className="text-center text-muted-foreground py-12">Aucune analyse enregistrée</td></tr>
               )}
             </tbody>
           </table>
         </GlassCard>
       )}
 
-      {/* ── Modal détail ─────────────────────────────────────────────────── */}
       {selectedAnalysis && !editingAnalysis && (
         <div className="modal-overlay" onClick={() => setSelectedAnalysis(null)}>
-          <div
-            className="modal-content glass p-6 max-w-xl w-full mx-4 max-h-[85vh] overflow-y-auto"
-            onClick={e => e.stopPropagation()}
-          >
+          <div className="modal-content glass p-6 max-w-xl w-full mx-4 max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-5">
-              <h3 className="font-bold text-foreground text-lg">
-                Analyse du{' '}
-                {new Date(selectedAnalysis.date).toLocaleDateString('fr-FR', {
-                  weekday: 'long', day: '2-digit', month: 'long',
-                })}
-              </h3>
-              <button
-                onClick={() => setSelectedAnalysis(null)}
-                className="text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <X size={20} />
-              </button>
+              <div>
+                <h3 className="font-bold text-foreground text-lg">
+                  {selectedAnalysis.title || 'Analyse du ' + new Date(selectedAnalysis.date).toLocaleDateString('fr-FR', { weekday: 'long', day: '2-digit', month: 'long' })}
+                </h3>
+                {selectedAnalysis.title && (
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {new Date(selectedAnalysis.date).toLocaleDateString('fr-FR', { weekday: 'long', day: '2-digit', month: 'long' })}
+                  </p>
+                )}
+              </div>
+              <button onClick={() => setSelectedAnalysis(null)} className="text-muted-foreground hover:text-foreground"><X size={20} /></button>
             </div>
-
             <div className="space-y-4">
-              {selectedAnalysis.pairs.map((p, i) => {
-                const [lbIdx, setLbIdx] = useState<number | null>(null);
-                return (
-                  <div key={i} className="p-4 rounded-xl bg-accent/30 space-y-3 text-sm">
-                    <div className="font-bold text-foreground text-base">{p.pair}</div>
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div>
-                        <span className="text-muted-foreground">Fondamental :</span>{' '}
-                        <span className="text-foreground font-medium">{p.fundamentalBias}</span>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Technique :</span>{' '}
-                        <span className="text-foreground font-medium">{p.technicalBias}</span>
-                      </div>
+              {selectedAnalysis.pairs.map((p, i) => (
+                <div key={i} className="p-4 rounded-xl bg-accent/30 space-y-3 text-sm">
+                  <div className="font-bold text-foreground text-base">{p.pair}</div>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div><span className="text-muted-foreground">Fondamental :</span> <span className="text-foreground font-medium">{p.fundamentalBias}</span></div>
+                    <div><span className="text-muted-foreground">Technique :</span> <span className="text-foreground font-medium">{p.technicalBias}</span></div>
+                    <div className="col-span-2"><span className="text-muted-foreground">Décision :</span> <span className="text-foreground font-medium">{p.decision}</span></div>
+                    {p.tvLink && (
                       <div className="col-span-2">
-                        <span className="text-muted-foreground">Décision :</span>{' '}
-                        <span className="text-foreground font-medium">{p.decision}</span>
-                      </div>
-                      {p.tvLink && (
-                        <div className="col-span-2">
-                          <a
-                            href={p.tvLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-primary hover:underline flex items-center gap-1 text-xs"
-                          >
-                            <ExternalLink size={11} /> Voir sur TradingView
-                          </a>
-                        </div>
-                      )}
-                    </div>
-                    {p.note && (
-                      <p className="text-xs text-muted-foreground leading-relaxed">{p.note}</p>
-                    )}
-                    {/* Miniatures images */}
-                    {(p.images || []).length > 0 && (
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {(p.images || []).map((img, ii) => (
-                          <div key={ii} className="relative group/img">
-                            <img
-                              src={img}
-                              alt=""
-                              onClick={() => setLbIdx(ii)}
-                              className="w-20 h-16 object-cover rounded-lg border border-border/40 cursor-pointer hover:scale-[1.04] transition-transform"
-                            />
-                            <div
-                              onClick={() => setLbIdx(ii)}
-                              className="absolute inset-0 rounded-lg bg-black/40 flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity cursor-pointer"
-                            >
-                              <ZoomIn size={14} className="text-white" />
-                            </div>
-                          </div>
-                        ))}
-                        {lbIdx !== null && (
-                          <Lightbox images={p.images || []} index={lbIdx} onClose={() => setLbIdx(null)} />
-                        )}
+                        <a href={p.tvLink} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1 text-xs">
+                          <ExternalLink size={11} /> Voir sur TradingView
+                        </a>
                       </div>
                     )}
                   </div>
-                );
-              })}
+                  {p.note && <p className="text-xs text-muted-foreground leading-relaxed">{p.note}</p>}
+                  {(p.images || []).length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {(p.images || []).map((img, ii) => (
+                        <img key={ii} src={img} alt="" 
+                          onClick={() => setLightboxImg(img)}
+                          className="w-20 h-16 object-cover rounded-lg border border-border/40 cursor-pointer hover:scale-[1.04] transition-transform" />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
-
             <div className="flex gap-3 mt-5">
-              <button
-                onClick={() => startEdit(selectedAnalysis)}
-                className="flex items-center gap-2 text-primary text-sm hover:bg-primary/10 px-3 py-2 rounded-lg transition-colors"
-              >
+              <button onClick={() => startEdit(selectedAnalysis)} className="flex items-center gap-2 text-primary text-sm hover:bg-primary/10 px-3 py-2 rounded-lg transition-colors">
                 <Pencil size={14} /> Modifier l'analyse
               </button>
             </div>
@@ -616,68 +554,65 @@ export default function DailyAnalysisPage() {
         </div>
       )}
 
-      {/* ── Modal édition ────────────────────────────────────────────────── */}
       {editingAnalysis && (
         <div className="modal-overlay" onClick={() => setEditingAnalysis(null)}>
-          <div
-            className="modal-content glass p-6 max-w-2xl w-full mx-4 max-h-[88vh] overflow-y-auto"
-            onClick={e => e.stopPropagation()}
-          >
+          <div className="modal-content glass p-6 max-w-2xl w-full mx-4 max-h-[88vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-5">
               <h3 className="font-bold text-foreground text-lg">
                 Modifier — {new Date(editingAnalysis.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long' })}
               </h3>
-              <button
-                onClick={() => setEditingAnalysis(null)}
-                className="text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <X size={20} />
-              </button>
+              <button onClick={() => setEditingAnalysis(null)} className="text-muted-foreground hover:text-foreground"><X size={20} /></button>
             </div>
-
             <div className="space-y-4">
               {editingAnalysis.pairs.map((p, idx) => (
-                <PairForm
-                  key={idx}
-                  pair={p}
-                  idx={idx}
-                  total={editingAnalysis.pairs.length}
+                <PairForm key={idx} pair={p} idx={idx} total={editingAnalysis.pairs.length}
                   onChange={(field, value) => updateEditPair(idx, field, value)}
-                  onRemove={() => setEditingAnalysis({
-                    ...editingAnalysis,
-                    pairs: editingAnalysis.pairs.filter((_, i) => i !== idx),
-                  })}
+                  onRemove={() => setEditingAnalysis({ ...editingAnalysis, pairs: editingAnalysis.pairs.filter((_, i) => i !== idx) })}
                   onImageAdd={b64 => addEditPairImage(idx, b64)}
-                  onImageRemove={imgIdx => removeEditPairImage(idx, imgIdx)}
-                />
+                  onImageRemove={imgIdx => removeEditPairImage(idx, imgIdx)} />
               ))}
-
-              <button
-                onClick={() => setEditingAnalysis({
-                  ...editingAnalysis,
-                  pairs: [...editingAnalysis.pairs, emptyPair()],
-                })}
-                className="flex items-center gap-2 text-primary text-sm hover:underline"
-              >
+              <button onClick={() => setEditingAnalysis({ ...editingAnalysis, pairs: [...editingAnalysis.pairs, emptyPair()] })}
+                className="flex items-center gap-2 text-primary text-sm hover:underline">
                 <Plus size={14} /> Ajouter une paire
               </button>
             </div>
-
+            <div>
+              <label className="text-xs text-muted-foreground">Titre <span className="opacity-40">(optionnel)</span></label>
+              <input type="text" value={editingAnalysis.title || ''} 
+                onChange={e => setEditingAnalysis({ ...editingAnalysis, title: e.target.value })}
+                placeholder="Ex : Semaine haussière sur EURUSD"
+                className="input-dark mt-1" />
+            </div>
             <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => setEditingAnalysis(null)}
-                className="flex-1 py-2.5 rounded-lg border border-border text-muted-foreground text-sm hover:text-foreground transition-colors"
-              >
+              <button onClick={() => setEditingAnalysis(null)}
+                className="flex-1 py-2.5 rounded-lg border border-border text-muted-foreground text-sm hover:text-foreground transition-colors">
                 Annuler
               </button>
-              <button
-                onClick={saveEdit}
-                className="flex-1 gradient-btn py-2.5 text-sm flex items-center justify-center gap-2"
-              >
-                <Save size={14} /> Enregistrer les modifications
+              <button onClick={saveEdit} disabled={loading}
+                className="flex-1 gradient-btn py-2.5 text-sm flex items-center justify-center gap-2">
+                <Save size={14} /> {loading ? 'Enregistrement...' : 'Enregistrer les modifications'}
               </button>
             </div>
           </div>
+        </div>
+      )}
+        {lightboxImg && (
+        <div 
+          className="fixed inset-0 z-[999] flex items-center justify-center bg-black/90 backdrop-blur-md"
+          onClick={() => setLightboxImg(null)}
+        >
+          <button 
+            onClick={() => setLightboxImg(null)}
+            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+          >
+            <X size={18} />
+          </button>
+          <img 
+            src={lightboxImg} 
+            alt="" 
+            className="max-w-[90vw] max-h-[90vh] object-contain rounded-2xl shadow-2xl"
+            onClick={e => e.stopPropagation()}
+          />
         </div>
       )}
     </div>

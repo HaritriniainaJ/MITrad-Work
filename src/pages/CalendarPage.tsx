@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+﻿import { useMemo, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useDisplayMode, DisplayModeToggle } from '@/context/DisplayModeContext';
 import { useFilteredTrades } from '@/hooks/useFilteredTrades';
@@ -219,8 +219,8 @@ export default function CalendarPage() {
                       {dayTrades.map(t => (
                         <div key={t.id} className="flex items-center justify-between gap-3 text-[10px] mb-1">
                           <span className="text-muted-foreground">{t.pair} {t.direction}</span>
-                          <span className={t.resultR >= 0 ? 'text-success' : 'text-destructive'}>
-                            {t.resultR >= 0 ? '+' : ''}{t.resultR.toFixed(1)}R
+                          <span className={t.resultR != null && t.resultR >= 0 ? 'text-success' : 'text-destructive'}>
+                            {t.resultR != null ? (t.resultR >= 0 ? '+' : '') + t.resultR.toFixed(1) + 'R' : '?? � d�finir'}
                           </span>
                         </div>
                       ))}
@@ -299,14 +299,12 @@ export default function CalendarPage() {
                   </div>
                   <div className="flex items-center gap-2 text-right">
                     <div>
-                      <p className={`metric-value text-sm ${t.resultR >= 0 ? 'text-success' : 'text-destructive'}`}>
-                        {t.resultR >= 0 ? '+' : ''}{t.resultR.toFixed(2)}R
+                      <p className={`metric-value text-sm ${t.resultR != null && t.resultR >= 0 ? 'text-success' : 'text-destructive'}`}>
+                        {t.resultR != null ? (t.resultR >= 0 ? '+' : '') + t.resultR.toFixed(2) + 'R' : '?? � d�finir'}
                       </p>
-                      <p className="text-[10px] text-muted-foreground">{t.resultR >= 0 ? '+' : ''}${t.resultDollar.toFixed(0)}</p>
+                      <p className="text-[10px] text-muted-foreground">{t.resultDollar != null ? (t.resultDollar >= 0 ? '+' : '') + '$' + t.resultDollar.toFixed(0) : ''}</p>
                     </div>
-                    <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${
-                      t.status === 'WIN' ? 'badge-win' : t.status === 'LOSS' ? 'badge-loss' : 'badge-be'
-                    }`}>{t.status}</span>
+                    <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${t.status === 'WIN' ? 'badge-win' : t.status === 'LOSS' ? 'badge-loss' : 'badge-be'}`}>{t.status}</span>
                   </div>
                 </div>
               ))}
