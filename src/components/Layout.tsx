@@ -15,10 +15,10 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 
 const NAV_ITEMS = [
-  { path: '/dashboard',      label: 'Tableau de bord', icon: LayoutDashboard },
+  // { path: '/dashboard',      label: 'Tableau de bord', icon: LayoutDashboard },
+  { path: '/analytics',      label: 'Dashboard',     icon: BarChart3 },
   { path: '/new-trade',      label: 'Nouveau Trade',   icon: PlusCircle },
   { path: '/history',        label: 'Historique',      icon: ClipboardList },
-  { path: '/analytics',      label: 'Analytiques',     icon: BarChart3 },
   { path: '/calendar',       label: 'Calendrier',      icon: CalendarDays },
   { path: '/daily-analysis', label: 'Mon Analyse', icon: FileText },
   { path: '/coach',          label: 'Mentor-X',        icon: Bot },

@@ -1,7 +1,7 @@
-// ─────────────────────────────────────────────────────────────────────────────
+﻿// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // PAGE : Mon Plan de Trading
-// MODIFIÉ v2 : localStorage → API + Checklist quotidienne + Score de respect
-// ─────────────────────────────────────────────────────────────────────────────
+// MODIFIé v2 : localStorage â†’ API + Checklist quotidienne + Score de respect
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useFilteredTrades } from '@/hooks/useFilteredTrades';
@@ -19,9 +19,9 @@ import {
   getDailyChecklist, saveDailyChecklist,
 } from '@/lib/api';
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // TYPES
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 interface TradingRule {
   id: string;
   title: string;
@@ -29,14 +29,14 @@ interface TradingRule {
   images: string[];
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // HELPER : date du jour YYYY-MM-DD
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const today = () => new Date().toISOString().split('T')[0];
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // COMPOSANT : Score de respect du plan
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function PlanRespectScore({ trades }: { trades: any[] }) {
   const closed = trades.filter(t => t.status !== 'RUNNING');
 
@@ -82,22 +82,22 @@ function PlanRespectScore({ trades }: { trades: any[] }) {
 
       <div className="flex items-center gap-6">
         {/* Gauge circulaire */}
-        <div className="relative w-24 h-24 shrink-0">
-          <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
-            <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="8" />
-            <circle cx="50" cy="50" r="42" fill="none"
-              stroke={scoreColor} strokeWidth="8" strokeLinecap="round"
-              strokeDasharray={`${(score ?? 0) * 2.64} ${264 - (score ?? 0) * 2.64}`}
-              style={{ transition: 'stroke-dasharray 0.8s ease' }}
-            />
-          </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-2xl font-bold" style={{ color: scoreColor }}>{score}%</span>
-            <span className="text-[9px] text-muted-foreground">{scoreLabel}</span>
+        <div className="flex flex-col items-center shrink-0">
+          <div className="relative w-24 h-24">
+            <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
+              <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="8" />
+              <circle cx="50" cy="50" r="42" fill="none"
+                stroke={scoreColor} strokeWidth="8" strokeLinecap="round"
+                strokeDasharray={`${(score ?? 0) * 2.64} ${264 - (score ?? 0) * 2.64}`}
+                style={{ transition: 'stroke-dasharray 0.8s ease' }}
+              />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-2xl font-bold" style={{ color: scoreColor }}>{score}%</span>
+            </div>
           </div>
+          <p className="text-center text-xs font-bold mt-2" style={{ color: scoreColor }}>{scoreLabel}</p>
         </div>
-
-        {/* Stats détaillées */}
         <div className="flex-1 grid grid-cols-2 gap-2">
           <div className="rounded-xl p-2.5 text-center"
             style={{ background: 'rgba(0,212,170,0.06)', border: '1px solid rgba(0,212,170,0.15)' }}>
@@ -146,9 +146,9 @@ function PlanRespectScore({ trades }: { trades: any[] }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // COMPOSANT : Checklist quotidienne
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function DailyChecklist({ rules }: { rules: TradingRule[] }) {
   const [checkedIds, setCheckedIds] = useState<string[]>([]);
   const [loading, setLoading]       = useState(true);
@@ -260,7 +260,7 @@ function DailyChecklist({ rules }: { rules: TradingRule[] }) {
         </div>
       )}
 
-      {/* Message si tout coché */}
+      {/* Message si tout cochée */}
       <AnimatePresence>
         {allChecked && (
           <motion.div
@@ -279,9 +279,9 @@ function DailyChecklist({ rules }: { rules: TradingRule[] }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // PAGE PRINCIPALE
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function TradingPlan() {
   const trades = useFilteredTrades();
 
@@ -299,7 +299,7 @@ export default function TradingPlan() {
   const dragIdx = useRef<number | null>(null);
   const overIdx = useRef<number | null>(null);
 
-  // ── Chargement initial depuis l'API ───────────────────────────────────────
+  // â”€â”€ Chargement initial depuis l'API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     getPlanRules()
       .then(data => setRules(Array.isArray(data) ? data : []))
@@ -307,7 +307,7 @@ export default function TradingPlan() {
       .finally(() => setLoading(false));
   }, []);
 
-  // ── CRUD ──────────────────────────────────────────────────────────────────
+  // â”€â”€ CRUD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const addRule = async () => {
     if (!newTitle.trim()) { toast.error('Titre requis'); return; }
     try {
@@ -344,7 +344,7 @@ export default function TradingPlan() {
       setRules(prev => prev.map(r => r.id === id ? { ...r, ...updated } : r));
       setEditingId(null);
       toast.success('Règle mise à jour !');
-    } catch { toast.error('Erreur mise à jour'); }
+    } catch { toast.error('Erreur mise à  jour'); }
   };
 
   const handleImageUpload = async (ruleId: string, e: React.ChangeEvent<HTMLInputElement>) => {
@@ -375,7 +375,7 @@ export default function TradingPlan() {
     } catch { toast.error('Erreur suppression image'); }
   };
 
-  // ── Drag & drop ──────────────────────────────────────────────────────────
+  // â”€â”€ Drag & drop â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const onDragStart = (idx: number) => { dragIdx.current = idx; };
   const onDragOver  = (e: React.DragEvent, idx: number) => { e.preventDefault(); overIdx.current = idx; };
   const onDrop = async () => {
@@ -408,7 +408,7 @@ export default function TradingPlan() {
             Mon Plan de Trading
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
-            {rules.length} règle{rules.length !== 1 ? 's' : ''} définie{rules.length !== 1 ? 's' : ''} · glisse pour réordonner
+            {rules.length} règle{rules.length !== 1 ? 's' : ''} définie{rules.length !== 1 ? 's' : ''} s· glisse pour réordonner
           </p>
         </div>
         <motion.button
@@ -422,13 +422,13 @@ export default function TradingPlan() {
         </motion.button>
       </motion.div>
 
-      {/* ── SCORE DE RESPECT ───────────────────────────────────────────────── */}
+      {/* â”€â”€ SCORE DE RESPECT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <PlanRespectScore trades={trades} />
 
-      {/* ── CHECKLIST DU JOUR ─────────────────────────────────────────────── */}
-      <DailyChecklist rules={rules} />
+      {/* â”€â”€ CHECKLIST DU JOUR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
 
-      {/* ── FORMULAIRE AJOUT ──────────────────────────────────────────────── */}
+
+      {/* â”€â”€ FORMULAIRE AJOUT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <AnimatePresence>
         {showForm && (
           <motion.div
@@ -480,14 +480,14 @@ export default function TradingPlan() {
         )}
       </AnimatePresence>
 
-      {/* ── LOADING ────────────────────────────────────────────────────────── */}
+      {/* â”€â”€ LOADING â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {loading && (
         <div className="flex items-center justify-center py-12">
           <Loader2 size={28} className="text-primary animate-spin" />
         </div>
       )}
 
-      {/* ── LISTE DES RÈGLES ───────────────────────────────────────────────── */}
+      {/* â”€â”€ LISTE DES REGLES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {!loading && (
         <div className="space-y-4">
           <AnimatePresence>
@@ -611,7 +611,7 @@ export default function TradingPlan() {
         </div>
       )}
 
-      {/* ── EMPTY STATE ───────────────────────────────────────────────────── */}
+      {/* â”€â”€ EMPTY STATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <AnimatePresence>
         {!loading && rules.length === 0 && !showForm && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
@@ -639,7 +639,7 @@ export default function TradingPlan() {
         )}
       </AnimatePresence>
 
-      {/* ── LIGHTBOX ─────────────────────────────────────────────────────── */}
+      {/* â”€â”€ LIGHTBOX â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <AnimatePresence>
         {lightbox && (
           <motion.div

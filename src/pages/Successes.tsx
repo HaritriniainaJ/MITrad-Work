@@ -1,4 +1,4 @@
-import { createPortal } from 'react-dom';
+﻿import { createPortal } from 'react-dom';
 import { useAuth } from '@/context/AuthContext';
 import GlassCard from '@/components/GlassCard';
 import { useState, useRef, useEffect, useMemo } from 'react';
@@ -20,7 +20,7 @@ interface Success {
   images: string[];
 }
 
-// ── CSS injecté une seule fois ────────────────────────────────────────────────
+// â”€â”€ CSS injectÃ© une seule fois â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const STYLES = `
 @keyframes su-fadeUp {
   from { opacity: 0; transform: translateY(18px); }
@@ -44,10 +44,10 @@ if (typeof document !== 'undefined' && !document.getElementById('su-styles')) {
   document.head.appendChild(s);
 }
 
-// ── Lightbox — rendue via Portal directement dans document.body ───────────────
-// Raison : si rendue à l'intérieur d'un parent avec overflow:hidden ou
-// z-index limité, la lightbox sera clippée/bloquée dans ce conteneur.
-// createPortal() l'échappe complètement du DOM parent.
+// â”€â”€ Lightbox â€” rendue via Portal directement dans document.body â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Raison : si rendue Ã  l'intÃ©rieur d'un parent avec overflow:hidden ou
+// z-index limitÃ©, la lightbox sera clippÃ©e/bloquÃ©e dans ce conteneur.
+// createPortal() l'Ã©chappe complÃ¨tement du DOM parent.
 function Lightbox({ images, index, onClose }: {
   images: string[];
   index: number;
@@ -89,7 +89,7 @@ function Lightbox({ images, index, onClose }: {
         <X size={18} />
       </button>
 
-      {/* Zone image — stopPropagation pour ne pas fermer en cliquant l'image */}
+      {/* Zone image â€” stopPropagation pour ne pas fermer en cliquant l'image */}
       <div
         className="su-scale-in"
         style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '0 20px', maxWidth: '100%' }}
@@ -104,7 +104,7 @@ function Lightbox({ images, index, onClose }: {
           </button>
         )}
 
-        {/* Image : max 78vw × 78vh — jamais plein écran, jamais dans le box */}
+        {/* Image : max 78vw Ã— 78vh â€” jamais plein Ã©cran, jamais dans le box */}
         <img
           src={images[current]}
           alt=""
@@ -142,11 +142,11 @@ function Lightbox({ images, index, onClose }: {
     </div>
   );
 
-  // Portal → rendu directement dans body, échappe tout parent DOM
+  // Portal â†’ rendu directement dans body, Ã©chappe tout parent DOM
   return createPortal(content, document.body);
 }
 
-// ── Galerie compacte côté droit de la carte ───────────────────────────────────
+// â”€â”€ Galerie compacte cÃ´tÃ© droit de la carte â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function CompactGallery({ images }: { images: string[] }) {
   const [lightbox, setLightbox] = useState<number | null>(null);
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
@@ -160,7 +160,7 @@ function CompactGallery({ images }: { images: string[] }) {
           flexShrink: 0,
           width: images.length === 1 ? 100 : 152,
           borderRadius: 12,
-          overflow: 'hidden', // overflow:hidden ici — mais Lightbox échappe via Portal
+          overflow: 'hidden', // overflow:hidden ici â€” mais Lightbox Ã©chappe via Portal
           boxShadow: '0 4px 20px rgba(0,0,0,.25), 0 1px 4px rgba(0,0,0,.15)',
           border: '1px solid rgba(255,255,255,.07)',
         }}
@@ -209,7 +209,7 @@ function CompactGallery({ images }: { images: string[] }) {
         </div>
       </div>
 
-      {/* Portal lightbox — rendu dans body, pas dans ce div */}
+      {/* Portal lightbox â€” rendu dans body, pas dans ce div */}
       {lightbox !== null && (
         <Lightbox images={images} index={lightbox} onClose={() => setLightbox(null)} />
       )}
@@ -217,7 +217,7 @@ function CompactGallery({ images }: { images: string[] }) {
   );
 }
 
-// ── Galerie dans le modal (pleine largeur) ────────────────────────────────────
+// â”€â”€ Galerie dans le modal (pleine largeur) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function ModalGallery({
   images,
   onRemove,
@@ -290,10 +290,10 @@ function ModalGallery({
   );
 }
 
-// ── Modal formulaire ──────────────────────────────────────────────────────────
+// â”€â”€ Modal formulaire â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // BUG MODAL FERMETURE : handleSubmit appelle onSave() PUIS onClose().
-// onClose() est appelé ici-même, pas délégué au parent — garanti de toujours
-// se fermer après la sauvegarde, quelle que soit la logique parent.
+// onClose() est appelÃ© ici-mÃªme, pas dÃ©lÃ©guÃ© au parent â€” garanti de toujours
+// se fermer aprÃ¨s la sauvegarde, quelle que soit la logique parent.
 function SuccessModal({
   initial,
   onSave,
@@ -308,7 +308,7 @@ function SuccessModal({
   const [note, setNote]     = useState(initial?.note   ?? '');
   const [images, setImages] = useState<string[]>(initial?.images ?? []);
 
-  // Refs pour lire les valeurs les plus récentes sans recréer handleSubmit
+  // Refs pour lire les valeurs les plus rÃ©centes sans recrÃ©er handleSubmit
   const rTitle  = useRef(title);  rTitle.current  = title;
   const rDate   = useRef(date);   rDate.current   = date;
   const rNote   = useRef(note);   rNote.current   = note;
@@ -323,7 +323,7 @@ function SuccessModal({
       note:   rNote.current.trim(),
       images: rImages.current,
     });
-    // 2. Fermer — appelé ICI, toujours, après onSave
+    // 2. Fermer â€” appelÃ© ICI, toujours, aprÃ¨s onSave
     onClose();
   };
 
@@ -339,7 +339,7 @@ function SuccessModal({
               <Trophy size={16} className="text-primary" />
             </div>
             <h3 className="font-bold text-foreground text-lg">
-              {initial ? 'Modifier le succès' : 'Nouveau succès'}
+              {initial ? 'Modifier le succÃ¨s' : 'Nouveau succÃ¨s'}
             </h3>
           </div>
           <button
@@ -385,7 +385,7 @@ function SuccessModal({
               value={note}
               onChange={e => setNote(e.target.value)}
               className="input-dark w-full min-h-[88px] resize-none"
-              placeholder="Décris ce que tu as accompli, comment tu te sens..."
+              placeholder="DÃ©cris ce que tu as accompli, comment tu te sens..."
             />
           </div>
 
@@ -413,7 +413,7 @@ function SuccessModal({
             className="flex-1 gradient-btn py-2.5 text-sm flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform"
           >
             <Save size={14} />
-            {initial ? 'Enregistrer' : 'Ajouter le succès'}
+            {initial ? 'Enregistrer' : 'Ajouter le succÃ¨s'}
           </button>
         </div>
       </div>
@@ -421,7 +421,7 @@ function SuccessModal({
   );
 }
 
-// ── Carte succès ──────────────────────────────────────────────────────────────
+// â”€â”€ Carte succÃ¨s â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function SuccessCard({ item, onEdit, onDelete, index }: {
   item: Success; onEdit: () => void; onDelete: () => void; index: number;
 }) {
@@ -429,7 +429,7 @@ function SuccessCard({ item, onEdit, onDelete, index }: {
   return (
     <GlassCard className={`su-fade-up ${stagger} overflow-visible`}>
       <div className="flex gap-4 items-start">
-        {/* Colonne gauche — texte */}
+        {/* Colonne gauche â€” texte */}
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2 mb-1.5">
             <div className="flex items-start gap-2.5 min-w-0">
@@ -460,15 +460,15 @@ function SuccessCard({ item, onEdit, onDelete, index }: {
           )}
         </div>
 
-        {/* Colonne droite — galerie compacte */}
+        {/* Colonne droite â€” galerie compacte */}
         {item.images.length > 0 && <CompactGallery images={item.images} />}
       </div>
     </GlassCard>
   );
 }
 
-// ── Page principale ───────────────────────────────────────────────────────────
-// ── Définition des badges automatiques ────────────────────────────────────
+// â”€â”€ Page principale â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€ DÃ©finition des badges automatiques â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const AUTO_BADGES = [
   { key: 'first_win',      emoji: '🏆', title: 'Premier trade gagnant',          check: (t: any[]) => t.filter(x => x.status === 'WIN').length >= 1 },
   { key: 'win_3',          emoji: '🔥', title: '3 wins consécutifs',              check: (t: any[]) => getMaxStreak(t) >= 3 },
@@ -482,7 +482,7 @@ const AUTO_BADGES = [
   { key: 'trades_10',      emoji: '📈', title: '10 trades enregistrés',           check: (t: any[]) => t.length >= 10 },
   { key: 'trades_50',      emoji: '📊', title: '50 trades enregistrés',           check: (t: any[]) => t.length >= 50 },
   { key: 'trades_100',     emoji: '🏅', title: '100 trades enregistrés',          check: (t: any[]) => t.length >= 100 },
-  { key: 'pf_2',           emoji: '⚖️', title: 'Profit Factor > 2',              check: (t: any[]) => getPF(t) >= 2 },
+  { key: 'pf_2',           emoji: '⚖️', title: 'Profit Factor > 2',               check: (t: any[]) => getPF(t) >= 2 },
   { key: 'no_revenge',     emoji: '🧘', title: '10 trades sans Revenge Trading',  check: (t: any[]) => getLast10NoRevenge(t) },
 ];
 
@@ -535,7 +535,7 @@ export default function Successes() {
 
   useEffect(() => { fetchSuccesses(); }, []);
 
-  // ── Succès automatiques ───────────────────────────────────────────────
+  // â”€â”€ SuccÃ¨s automatiques â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     if (trades.length === 0 || items.length === 0 && trades.length === 0) return;
     const existingKeys = items.filter(s => s.badge_key).map(s => s.badge_key);
@@ -547,7 +547,7 @@ export default function Successes() {
         await createSuccess({
           title:     `${badge.emoji} ${badge.title}`,
           date:      new Date().toISOString().split('T')[0],
-          note:      'Badge débloqué automatiquement par Mentor-X',
+          note:      'Badge dÃ©bloquÃ© automatiquement par Mentor-X',
           type:      'auto',
           badge_key: badge.key,
         });
@@ -560,7 +560,7 @@ export default function Successes() {
     try {
       await createSuccess({ ...data, type: 'manual' });
       await fetchSuccesses();
-      toast.success('🏆 Succès ajouté !');
+      toast.success('ðŸ† SuccÃ¨s ajoutÃ© !');
       setShowAdd(false);
     } catch { toast.error('Erreur ajout'); }
   };
@@ -574,18 +574,18 @@ const handleUpdate = async (id: string, data: Omit<Success, 'id'>) => {
         images: data.images,
       });
       await fetchSuccesses();
-      toast.success('✅ Succès mis à jour');
+      toast.success('âœ… SuccÃ¨s mis Ã  jour');
       setEditTarget(null);
-    } catch { toast.error('Erreur mise à jour'); }
+    } catch { toast.error('Erreur mise Ã  jour'); }
   };
 
   const handleDelete = async (id: string) => {
-    const ok = await confirm({ message: 'Supprimer ce succès ?', variant: 'danger', confirmText: 'Supprimer' });
+    const ok = await confirm({ message: 'Supprimer ce succÃ¨s ?', variant: 'danger', confirmText: 'Supprimer' });
     if (!ok) return;
     try {
       await deleteSuccess(id);
       await fetchSuccesses();
-      toast.success('Supprimé');
+      toast.success('SupprimÃ©');
     } catch { toast.error('Erreur suppression'); }
   };
 
@@ -598,7 +598,7 @@ const handleUpdate = async (id: string, data: Omit<Success, 'id'>) => {
   const autoCount   = items.filter(s => s.type === 'auto').length;
   const manualCount = items.filter(s => s.type !== 'auto').length;
 
-  // ── Badges non encore débloqués ───────────────────────────────────────
+  // â”€â”€ Badges non encore dÃ©bloquÃ©s â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const lockedBadges = useMemo(() => {
     const existingKeys = items.filter(s => s.badge_key).map(s => s.badge_key);
     return AUTO_BADGES.filter(b => !existingKeys.includes(b.key));
@@ -610,15 +610,15 @@ const handleUpdate = async (id: string, data: Omit<Success, 'id'>) => {
       <div className="flex items-center justify-between flex-wrap gap-4 su-fade-up">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold gradient-text flex items-center gap-2">
-            <Trophy size={24} className="text-primary" /> Mes Succès
+            <Trophy size={24} className="text-primary" /> Mes Succes
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Célèbre chaque victoire · {items.length} succès enregistré{items.length !== 1 ? 's' : ''}
+            Célèbre chaque victoire· {items.length} succès enregistré{items.length !== 1 ? 's' : ''}
           </p>
         </div>
         <button onClick={() => { setAddKey(k => k+1); setShowAdd(true); }}
           className="gradient-btn px-4 py-2 text-sm flex items-center gap-2 hover:scale-[1.03] transition-transform">
-          <Plus size={15} /> Ajouter un succès
+          <Plus size={15} /> Ajouter un succes
         </button>
       </div>
 
@@ -652,9 +652,9 @@ const handleUpdate = async (id: string, data: Omit<Success, 'id'>) => {
         </div>
       )}
 
-      {/* Timeline */}
       <div className="space-y-4">
-        {filtered.map((item, idx) => (
+        {filtered.filter(item => item.type !== "auto").map((item, idx) => (
+
           <div key={item.id} className="flex gap-3">
             <div className="flex flex-col items-center">
               <div className={`w-3 h-3 rounded-full mt-4 shrink-0 ${item.type === 'auto' ? 'bg-primary' : 'bg-warning'}`} />
@@ -672,33 +672,33 @@ const handleUpdate = async (id: string, data: Omit<Success, 'id'>) => {
         ))}
       </div>
 
-      {/* Badges à débloquer */}
-      {lockedBadges.length > 0 && (
-        <GlassCard className="su-fade-up">
-          <h3 className="text-sm font-bold text-foreground mb-4">🔒 Badges à débloquer</h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-            {lockedBadges.map(b => (
-              <div key={b.key} className="flex items-center gap-2 p-3 rounded-xl bg-accent/20 border border-border/30 opacity-50">
-                <span className="text-xl grayscale">{b.emoji}</span>
-                <span className="text-xs text-muted-foreground">{b.title}</span>
+      {/* Tous les badges auto */}
+      <div className='su-fade-up'>
+        <h3 className='text-sm font-bold text-foreground mb-4'>🏆 Badges automatiques</h3>
+        <div className='grid grid-cols-2 md:grid-cols-3 gap-2'>
+          {AUTO_BADGES.map(b => {
+            const unlocked = items.some(s => s.badge_key === b.key);
+            return (
+              <div key={b.key} className={`flex items-center gap-2 p-3 rounded-xl border ${unlocked ? "bg-primary/10 border-primary/30" : "bg-accent/20 border-border/30 opacity-40 grayscale"}`}>
+                <span className='text-xl'>{b.emoji}</span>
+                <span className={`text-xs ${unlocked ? "text-foreground font-medium" : "text-muted-foreground"}`}>{b.title}</span>
               </div>
-            ))}
-          </div>
-        </GlassCard>
-      )}
-
+            );
+          })}
+        </div>
+      </div>
       {items.length === 0 && (
         <GlassCard className="text-center py-16 su-fade-up su-s2">
           <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
             <Trophy size={28} className="text-primary" />
           </div>
-          <p className="text-foreground font-semibold text-base">Aucun succès enregistré</p>
+          <p className="text-foreground font-semibold text-base">Aucun succÃ¨s enregistrÃ©</p>
           <p className="text-muted-foreground text-sm mt-1 max-w-xs mx-auto">
-            Célèbre tes victoires, même les petites — elles comptent toutes.
+            CÃ©lÃ¨bre tes victoires, mÃªme les petites â€” elles comptent toutes.
           </p>
           <button onClick={() => { setAddKey(k => k+1); setShowAdd(true); }}
             className="gradient-btn px-5 py-2 text-sm mt-5 inline-flex items-center gap-2">
-            <Star size={14} /> Mon premier succès
+            <Star size={14} /> Mon premier succÃ¨s
           </button>
         </GlassCard>
       )}

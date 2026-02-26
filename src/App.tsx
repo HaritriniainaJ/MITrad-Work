@@ -1,7 +1,7 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// APP.TSX — Routeur principal de MITrad Journal
-// MODIFIÉ v2 : Ajout des routes /import et /support
-// ─────────────────────────────────────────────────────────────────────────────
+﻿// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// APP.TSX â€” Routeur principal de MITrad Journal
+// MODIFIÃ‰ v2 : Ajout des routes /import et /support
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,7 +12,6 @@ import { DisplayModeProvider } from "@/context/DisplayModeContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import Layout from "@/components/Layout";
 import Login from "@/pages/Login";
-import Dashboard from "@/pages/Dashboard";
 import NewTrade from "@/pages/NewTrade";
 import TradeHistory from "@/pages/TradeHistory";
 import Analytics from "@/pages/Analytics";
@@ -26,34 +25,33 @@ import Settings from "@/pages/Settings";
 import TradingPlan from "@/pages/TradingPlan";
 import Successes from "@/pages/Successes";
 import Objectives from "@/pages/Objectives";
-import Import from "@/pages/Import";           // ← NOUVEAU v2
-import Support from "@/pages/Support";         // ← NOUVEAU v2
+import Import from "@/pages/Import";           // â† NOUVEAU v2
+import Support from "@/pages/Support";         // â† NOUVEAU v2
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
 
-/** Route protégée — redirige vers /login si non connecté */
+/** Route protÃ©gÃ©e â€” redirige vers /login si non connectÃ© */
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
   return <Layout>{children}</Layout>;
 }
 
-/** Composant de routing — accès à useAuth() ici */
+/** Composant de routing â€” accÃ¨s Ã  useAuth() ici */
 function AppRoutes() {
   const { user } = useAuth();
 
   return (
     <Routes>
       {/* Auth */}
-      <Route path="/login" element={user ? <Navigate to="/dashboard" replace /> : <Login />} />
-      <Route path="/" element={<Navigate to={user ? "/dashboard" : "/login"} replace />} />
+      <Route path="/login" element={user ? <Navigate to="/analytics" replace /> : <Login />} />
+      <Route path="/" element={<Navigate to={user ? "/analytics" : "/login"} replace />} />
 
       {/* Pages principales */}
-      <Route path="/dashboard"      element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/analytics"      element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
       <Route path="/new-trade"      element={<ProtectedRoute><NewTrade /></ProtectedRoute>} />
       <Route path="/history"        element={<ProtectedRoute><TradeHistory /></ProtectedRoute>} />
-      <Route path="/analytics"      element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
       <Route path="/calendar"       element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
       <Route path="/daily-analysis" element={<ProtectedRoute><DailyAnalysis /></ProtectedRoute>} />
       {/* <Route path="/leaderboard"    element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} /> */}

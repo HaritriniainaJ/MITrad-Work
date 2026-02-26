@@ -1,8 +1,8 @@
-// ─────────────────────────────────────────────────────────────────────────────
+﻿// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // PAGE : Mentor-X (ex Coach Alpha)
-// Analyse complète de la performance avec filtres avancés.
-// MODIFIÉ v3 : Rapport Hebdomadaire Automatique ajouté
-// ─────────────────────────────────────────────────────────────────────────────
+// Analyse complÃ¨te de la performance avec filtres avancÃ©s.
+// MODIFIÃ‰ v3 : Rapport Hebdomadaire Automatique ajoutÃ©
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 import { useMemo, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useFilteredTrades } from '@/hooks/useFilteredTrades';
@@ -17,12 +17,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const ADVICE_CATEGORIES = ['Tout', 'Points forts', 'Points faibles'];
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // HELPER : obtenir lundi et dimanche de la semaine courante
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function getCurrentWeekBounds() {
   const now = new Date();
-  const day = now.getDay(); // 0=Sun, 1=Mon … 6=Sat
+  const day = now.getDay(); // 0=Sun, 1=Mon â€¦ 6=Sat
   const diffToMonday = (day === 0 ? -6 : 1 - day);
   const monday = new Date(now);
   monday.setDate(now.getDate() + diffToMonday);
@@ -37,9 +37,9 @@ function formatDate(d: Date) {
   return d.toLocaleDateString('fr', { day: 'numeric', month: 'long' });
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // COMPOSANT : Modal Rapport Hebdomadaire
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 interface WeeklyReportModalProps {
   trades: any[];
   score: number;
@@ -57,7 +57,7 @@ function WeeklyReportModal({ trades, score, onClose }: WeeklyReportModalProps) {
     });
   }, [trades]);
 
-  // ── Statistiques de base ──────────────────────────────────────────────────
+  // â”€â”€ Statistiques de base â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const stats = useMemo(() => {
     if (weekTrades.length === 0) return null;
     const wins   = weekTrades.filter(t => t.status === 'WIN').length;
@@ -83,8 +83,8 @@ function WeeklyReportModal({ trades, score, onClose }: WeeklyReportModalProps) {
     weekTrades.forEach(t => { setupPnl[t.setup] = (setupPnl[t.setup] || 0) + t.resultR; });
     const bestSetup = Object.entries(setupPnl).sort((a, b) => b[1] - a[1])[0];
 
-    // Trades émotionnels négatifs
-    const badEmotions = weekTrades.filter(t => ['FOMO', 'Revenge Trading', 'Stressé'].includes(t.emotion));
+    // Trades Ã©motionnels nÃ©gatifs
+    const badEmotions = weekTrades.filter(t => ['FOMO', 'Revenge Trading', 'StressÃ©'].includes(t.emotion));
 
     return {
       total: weekTrades.length, wins, losses, be, totalR, winRate, avgRR,
@@ -92,70 +92,70 @@ function WeeklyReportModal({ trades, score, onClose }: WeeklyReportModalProps) {
     };
   }, [weekTrades]);
 
-  // ── Erreurs de la semaine ─────────────────────────────────────────────────
+  // â”€â”€ Erreurs de la semaine â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const weekErrors = useMemo(() => {
     if (!stats || weekTrades.length < 1) return [];
     const errors: string[] = [];
     if (stats.winRate < 40 && weekTrades.length >= 3)
-      errors.push(`Win Rate faible cette semaine : ${Math.round(stats.winRate)}% — revois tes critères d'entrée.`);
+      errors.push(`Win Rate faible cette semaine : ${Math.round(stats.winRate)}% â€” revois tes critÃ¨res d'entrÃ©e.`);
     if (stats.badEmotions.length >= 2)
-      errors.push(`${stats.badEmotions.length} trades pris dans un état émotionnel négatif (FOMO/Revenge).`);
+      errors.push(`${stats.badEmotions.length} trades pris dans un Ã©tat Ã©motionnel nÃ©gatif (FOMO/Revenge).`);
     if (stats.worstPair && stats.worstPair[1] < -1)
-      errors.push(`${stats.worstPair[0]} t'a coûté ${stats.worstPair[1].toFixed(1)}R — évite-la la semaine prochaine.`);
+      errors.push(`${stats.worstPair[0]} t'a coÃ»tÃ© ${stats.worstPair[1].toFixed(1)}R â€” Ã©vite-la la semaine prochaine.`);
     if (stats.totalR < -3)
-      errors.push(`Drawdown important : ${stats.totalR.toFixed(1)}R cette semaine. Réduction de taille conseillée.`);
+      errors.push(`Drawdown important : ${stats.totalR.toFixed(1)}R cette semaine. RÃ©duction de taille conseillÃ©e.`);
     return errors;
   }, [stats, weekTrades]);
 
-  // ── Points forts de la semaine ────────────────────────────────────────────
+  // â”€â”€ Points forts de la semaine â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const weekStrengths = useMemo(() => {
     if (!stats || weekTrades.length < 1) return [];
     const s: string[] = [];
     if (stats.winRate >= 60) s.push(`Excellent win rate : ${Math.round(stats.winRate)}% sur ${stats.total} trades.`);
     if (stats.totalR > 0) s.push(`Semaine positive : +${stats.totalR.toFixed(2)}R au total.`);
     if (stats.bestSetup && stats.bestSetup[1] > 1)
-      s.push(`Setup ${stats.bestSetup[0]} très efficace (+${stats.bestSetup[1].toFixed(1)}R).`);
+      s.push(`Setup ${stats.bestSetup[0]} trÃ¨s efficace (+${stats.bestSetup[1].toFixed(1)}R).`);
     if (stats.badEmotions.length === 0 && weekTrades.length >= 3)
-      s.push(`Aucun trade émotionnel — excellente maîtrise psychologique.`);
+      s.push(`Aucun trade Ã©motionnel â€” excellente maÃ®trise psychologique.`);
     return s;
   }, [stats, weekTrades]);
 
-  // ── Objectifs pour la semaine prochaine ──────────────────────────────────
+  // â”€â”€ Objectifs pour la semaine prochaine â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const nextWeekGoals = useMemo(() => {
     if (!stats) return [
-      'Enregistre tes trades pour que Mentor-X puisse générer des objectifs personnalisés.',
+      'Enregistre tes trades pour que Mentor-X puisse gÃ©nÃ©rer des objectifs personnalisÃ©s.',
     ];
     const goals: string[] = [];
     if (stats.winRate < 50)
-      goals.push(`Améliore ton win rate au-dessus de 50% (actuellement ${Math.round(stats.winRate)}%).`);
+      goals.push(`AmÃ©liore ton win rate au-dessus de 50% (actuellement ${Math.round(stats.winRate)}%).`);
     else
-      goals.push(`Maintiens ton win rate au-dessus de 50% — tu es à ${Math.round(stats.winRate)}%.`);
+      goals.push(`Maintiens ton win rate au-dessus de 50% â€” tu es Ã  ${Math.round(stats.winRate)}%.`);
 
     if (stats.badEmotions.length > 0)
-      goals.push(`Zéro trade FOMO/Revenge la semaine prochaine — ${stats.badEmotions.length} cette semaine.`);
+      goals.push(`ZÃ©ro trade FOMO/Revenge la semaine prochaine â€” ${stats.badEmotions.length} cette semaine.`);
     else
-      goals.push(`Continue à éviter les trades émotionnels — bravo cette semaine !`);
+      goals.push(`Continue Ã  Ã©viter les trades Ã©motionnels â€” bravo cette semaine !`);
 
     if (stats.worstPair && stats.worstPair[1] < -0.5)
-      goals.push(`Limite tes trades sur ${stats.worstPair[0]} ou améliore ta stratégie dessus.`);
+      goals.push(`Limite tes trades sur ${stats.worstPair[0]} ou amÃ©liore ta stratÃ©gie dessus.`);
 
-    goals.push(`Objectif R : ${stats.totalR >= 0 ? `dépasse +${(stats.totalR + 1).toFixed(0)}R` : `revenir en positif (>+1R)`}.`);
+    goals.push(`Objectif R : ${stats.totalR >= 0 ? `dÃ©passe +${(stats.totalR + 1).toFixed(0)}R` : `revenir en positif (>+1R)`}.`);
     return goals.slice(0, 4);
   }, [stats]);
 
-  // ── Verdict global ────────────────────────────────────────────────────────
+  // â”€â”€ Verdict global â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const verdict = useMemo(() => {
     if (!stats || weekTrades.length === 0)
-      return { emoji: '📭', label: 'Aucun trade cette semaine', color: 'text-muted-foreground', bg: 'bg-accent/20' };
+      return { emoji: 'ðŸ“­', label: 'Aucun trade cette semaine', color: 'text-muted-foreground', bg: 'bg-accent/20' };
     if (stats.totalR >= 3 && stats.winRate >= 60)
-      return { emoji: '🏆', label: 'Semaine exceptionnelle', color: 'text-yellow-400', bg: 'bg-yellow-500/10' };
+      return { emoji: 'ðŸ†', label: 'Semaine exceptionnelle', color: 'text-yellow-400', bg: 'bg-yellow-500/10' };
     if (stats.totalR >= 1 && stats.winRate >= 50)
-      return { emoji: '✅', label: 'Bonne semaine', color: 'text-success', bg: 'bg-success/10' };
+      return { emoji: 'âœ…', label: 'Bonne semaine', color: 'text-success', bg: 'bg-success/10' };
     if (stats.totalR >= 0)
-      return { emoji: '📊', label: 'Semaine neutre', color: 'text-blue-400', bg: 'bg-blue-500/10' };
+      return { emoji: 'ðŸ“Š', label: 'Semaine neutre', color: 'text-blue-400', bg: 'bg-blue-500/10' };
     if (stats.totalR >= -2)
-      return { emoji: '⚠️', label: 'Semaine difficile', color: 'text-warning', bg: 'bg-warning/10' };
-    return { emoji: '🔴', label: 'Semaine critique — analyse requise', color: 'text-destructive', bg: 'bg-destructive/10' };
+      return { emoji: 'âš ï¸', label: 'Semaine difficile', color: 'text-warning', bg: 'bg-warning/10' };
+    return { emoji: 'ðŸ”´', label: 'Semaine critique â€” analyse requise', color: 'text-destructive', bg: 'bg-destructive/10' };
   }, [stats, weekTrades]);
 
   return (
@@ -175,13 +175,13 @@ function WeeklyReportModal({ trades, score, onClose }: WeeklyReportModalProps) {
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           className="w-full max-w-2xl space-y-4"
         >
-          {/* ── En-tête rapport ─────────────────────────────────────────── */}
+          {/* â”€â”€ En-tÃªte rapport â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           <div className="rounded-2xl p-5 relative overflow-hidden"
             style={{
               background: 'linear-gradient(135deg, rgba(26,107,255,0.15) 0%, rgba(108,58,255,0.15) 100%)',
               border: '1px solid rgba(26,107,255,0.3)',
             }}>
-            {/* Glow décoratif */}
+            {/* Glow dÃ©coratif */}
             <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-20"
               style={{ background: 'radial-gradient(circle, #6C3AFF, transparent)' }} />
             <button onClick={onClose}
@@ -196,7 +196,7 @@ function WeeklyReportModal({ trades, score, onClose }: WeeklyReportModalProps) {
                 <h2 className="text-lg font-bold text-foreground">Rapport Hebdomadaire</h2>
                 <p className="text-xs text-muted-foreground flex items-center gap-1">
                   <Calendar size={11} />
-                  {formatDate(monday)} → {formatDate(sunday)}
+                  {formatDate(monday)} â†’ {formatDate(sunday)}
                 </p>
               </div>
             </div>
@@ -208,7 +208,7 @@ function WeeklyReportModal({ trades, score, onClose }: WeeklyReportModalProps) {
             </div>
           </div>
 
-          {/* ── Statistiques de la semaine ──────────────────────────────── */}
+          {/* â”€â”€ Statistiques de la semaine â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           {stats ? (
             <>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -260,23 +260,23 @@ function WeeklyReportModal({ trades, score, onClose }: WeeklyReportModalProps) {
             <div className="rounded-xl p-8 text-center"
               style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
               <Bot size={32} className="mx-auto mb-3 opacity-30" />
-              <p className="text-sm text-muted-foreground">Aucun trade clôturé cette semaine.</p>
-              <p className="text-xs text-muted-foreground mt-1">Reviens après avoir enregistré des trades !</p>
+              <p className="text-sm text-muted-foreground">Aucun trade clÃ´turÃ© cette semaine.</p>
+              <p className="text-xs text-muted-foreground mt-1">Reviens aprÃ¨s avoir enregistrÃ© des trades !</p>
             </div>
           )}
 
-          {/* ── Erreurs de la semaine ───────────────────────────────────── */}
+          {/* â”€â”€ Erreurs de la semaine â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           {weekErrors.length > 0 && (
             <div className="rounded-2xl p-4"
               style={{ background: 'rgba(255,59,92,0.06)', border: '1px solid rgba(255,59,92,0.2)' }}>
               <div className="flex items-center gap-2 mb-3">
                 <TrendingDown size={14} className="text-destructive" />
-                <h3 className="text-sm font-bold text-foreground">Points à corriger</h3>
+                <h3 className="text-sm font-bold text-foreground">Points Ã  corriger</h3>
               </div>
               <div className="space-y-2">
                 {weekErrors.map((e, i) => (
                   <div key={i} className="flex items-start gap-2">
-                    <span className="text-destructive mt-0.5 shrink-0">•</span>
+                    <span className="text-destructive mt-0.5 shrink-0">â€¢</span>
                     <p className="text-sm text-muted-foreground">{e}</p>
                   </div>
                 ))}
@@ -284,7 +284,7 @@ function WeeklyReportModal({ trades, score, onClose }: WeeklyReportModalProps) {
             </div>
           )}
 
-          {/* ── Points forts ────────────────────────────────────────────── */}
+          {/* â”€â”€ Points forts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           {weekStrengths.length > 0 && (
             <div className="rounded-2xl p-4"
               style={{ background: 'rgba(0,212,170,0.06)', border: '1px solid rgba(0,212,170,0.2)' }}>
@@ -303,7 +303,7 @@ function WeeklyReportModal({ trades, score, onClose }: WeeklyReportModalProps) {
             </div>
           )}
 
-          {/* ── Objectifs semaine prochaine ─────────────────────────────── */}
+          {/* â”€â”€ Objectifs semaine prochaine â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           <div className="rounded-2xl p-4"
             style={{ background: 'rgba(26,107,255,0.06)', border: '1px solid rgba(26,107,255,0.2)' }}>
             <div className="flex items-center gap-2 mb-3">
@@ -320,7 +320,7 @@ function WeeklyReportModal({ trades, score, onClose }: WeeklyReportModalProps) {
             </div>
           </div>
 
-          {/* ── Mot de Mentor-X ─────────────────────────────────────────── */}
+          {/* â”€â”€ Mot de Mentor-X â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           <div className="rounded-2xl p-4"
             style={{ background: 'rgba(108,58,255,0.06)', border: '1px solid rgba(108,58,255,0.2)' }}>
             <div className="flex items-start gap-3">
@@ -331,12 +331,12 @@ function WeeklyReportModal({ trades, score, onClose }: WeeklyReportModalProps) {
                 <p className="text-xs font-bold text-foreground mb-1">Message de Mentor-X</p>
                 <p className="text-sm text-muted-foreground leading-relaxed italic">
                   {!stats || weekTrades.length === 0
-                    ? "Commence à enregistrer tes trades cette semaine. Chaque trade est une donnée, chaque donnée est une leçon. Je serai là pour analyser et t'aider à progresser."
+                    ? "Commence Ã  enregistrer tes trades cette semaine. Chaque trade est une donnÃ©e, chaque donnÃ©e est une leÃ§on. Je serai lÃ  pour analyser et t'aider Ã  progresser."
                     : stats.totalR >= 2 && stats.winRate >= 55
-                      ? `Excellent travail cette semaine ! ${stats.total} trades, ${Math.round(stats.winRate)}% de win rate et +${stats.totalR.toFixed(1)}R. Garde ce niveau de discipline et continue à appliquer ta stratégie avec rigueur.`
+                      ? `Excellent travail cette semaine ! ${stats.total} trades, ${Math.round(stats.winRate)}% de win rate et +${stats.totalR.toFixed(1)}R. Garde ce niveau de discipline et continue Ã  appliquer ta stratÃ©gie avec rigueur.`
                       : stats.totalR >= 0
-                        ? `Semaine correcte avec ${stats.total} trades. Tu es dans le bon, mais il reste de la marge. Concentre-toi sur la qualité plutôt que la quantité la semaine prochaine.`
-                        : `Cette semaine a été difficile, mais c'est normal dans ce métier. Ce qui compte, c'est ta réaction : analyse, corrige, reviens plus fort. Le marché sera là la semaine prochaine.`
+                        ? `Semaine correcte avec ${stats.total} trades. Tu es dans le bon, mais il reste de la marge. Concentre-toi sur la qualitÃ© plutÃ´t que la quantitÃ© la semaine prochaine.`
+                        : `Cette semaine a Ã©tÃ© difficile, mais c'est normal dans ce mÃ©tier. Ce qui compte, c'est ta rÃ©action : analyse, corrige, reviens plus fort. Le marchÃ© sera lÃ  la semaine prochaine.`
                   }
                 </p>
               </div>
@@ -357,9 +357,9 @@ function WeeklyReportModal({ trades, score, onClose }: WeeklyReportModalProps) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // PAGE PRINCIPALE
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function CoachAlphaPage() {
   const { user } = useAuth();
   const trades  = useFilteredTrades();
@@ -386,21 +386,21 @@ const filteredAdvice = useMemo(() => {
     const worstPair = Object.entries(pairPnl).sort((a, b) => a[1] - b[1])[0];
     if (worstPair && worstPair[1] < -1)
       errors.push({ label: `Tu perds trop sur ${worstPair[0]} (${worstPair[1].toFixed(1)}R)`, count: 3, severity: 'high' });
-    const badEmotions = closed.filter(t => ['FOMO', 'Revenge Trading', 'Stressé'].includes(t.emotion));
+    const badEmotions = closed.filter(t => ['FOMO', 'Revenge Trading', 'StressÃ©'].includes(t.emotion));
     if (badEmotions.length >= 2) {
       const lossRate = badEmotions.filter(t => t.status === 'LOSS').length / badEmotions.length;
       if (lossRate > 0.5)
-        errors.push({ label: `${badEmotions.length} trades en état émotionnel négatif (${Math.round(lossRate * 100)}% de LOSS)`, count: badEmotions.length, severity: 'high' });
+        errors.push({ label: `${badEmotions.length} trades en Ã©tat Ã©motionnel nÃ©gatif (${Math.round(lossRate * 100)}% de LOSS)`, count: badEmotions.length, severity: 'high' });
     }
     const lowQuality = closed.filter(t => {
       const q = typeof t.quality === 'number' ? t.quality : (t.quality === 'C' ? 4 : t.quality === 'B' ? 6 : 8);
       return q <= 5;
     });
     if (lowQuality.length >= 2)
-      errors.push({ label: `${lowQuality.length} trades de qualité faible — t'entrais trop tôt ou sans setup clair`, count: lowQuality.length, severity: 'medium' });
+      errors.push({ label: `${lowQuality.length} trades de qualitÃ© faible â€” t'entrais trop tÃ´t ou sans setup clair`, count: lowQuality.length, severity: 'medium' });
     const winRate = closed.filter(t => t.status === 'WIN').length / closed.length;
     if (winRate < 0.4 && closed.length >= 5)
-      errors.push({ label: `Win Rate de ${Math.round(winRate * 100)}% — revois tes critères de sélection`, count: Math.round((1 - winRate) * closed.length), severity: 'high' });
+      errors.push({ label: `Win Rate de ${Math.round(winRate * 100)}% â€” revois tes critÃ¨res de sÃ©lection`, count: Math.round((1 - winRate) * closed.length), severity: 'high' });
     return errors.sort((a, b) => b.count - a.count).slice(0, 5);
   }, [trades]);
 
@@ -455,16 +455,16 @@ const filteredAdvice = useMemo(() => {
         />
       )}
 
-      {/* En-tête */}
+      {/* En-tÃªte */}
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold gradient-text">Mentor-X</h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Ton coach de trading intelligent — analyse {trades.length} trade{trades.length > 1 ? 's' : ''}
+            Ton coach de trading intelligent â€” analyse {trades.length} trade{trades.length > 1 ? 's' : ''}
           </p>
         </div>
 
-        {/* ── BOUTON RAPPORT HEBDOMADAIRE ── */}
+        {/* â”€â”€ BOUTON RAPPORT HEBDOMADAIRE â”€â”€ */}
         <motion.button
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
@@ -495,7 +495,7 @@ const filteredAdvice = useMemo(() => {
         </div>
         <h2 className="text-xl font-bold text-foreground">Mentor-X</h2>
         <p className="text-muted-foreground text-sm mt-1">
-          Analyse de {trades.length} trade{trades.length > 1 ? 's' : ''} pour des conseils personnalisés
+          Analyse de {trades.length} trade{trades.length > 1 ? 's' : ''} pour des conseils personnalisÃ©s
         </p>
         <div className="mt-6">
           <p className="text-xs text-muted-foreground mb-2">Score de discipline</p>
@@ -519,20 +519,20 @@ const filteredAdvice = useMemo(() => {
           </div>
         </div>
 
-        {/* Mini résumé semaine dans la card score */}
+        {/* Mini rÃ©sumÃ© semaine dans la card score */}
         {weekTradeCount > 0 && (
           <button
             onClick={() => setShowWeeklyReport(true)}
             className="mt-4 inline-flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors"
           >
             <Calendar size={11} />
-            {weekTradeCount} trade{weekTradeCount > 1 ? 's' : ''} cette semaine — voir le rapport
+            {weekTradeCount} trade{weekTradeCount > 1 ? 's' : ''} cette semaine â€” voir le rapport
             <ChevronRight size={11} />
           </button>
         )}
       </GlassCard>
 
-      {/* ── FILTRES ─────────────────────────────────────────────────────────── */}
+      {/* â”€â”€ FILTRES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <GlassCard className="animate-fade-up">
         <div className="flex items-center gap-2 mb-3">
           <Filter size={14} className="text-primary" />
@@ -555,12 +555,12 @@ const filteredAdvice = useMemo(() => {
         </div>
       </GlassCard>
 
-      {/* ── ERREURS FRÉQUENTES ──────────────────────────────────────────────── */}
+      {/* â”€â”€ ERREURS FRÃ‰QUENTES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         {(filterCategory === 'Tout' || filterCategory === 'Points faibles') && frequentErrors.length > 0 && (
           <GlassCard className="animate-fade-up">
             <div className="flex items-center gap-2 mb-4">
               <TrendingDown size={16} className="text-destructive" />
-              <h3 className="text-sm font-bold text-foreground">Points faibles récurrents</h3>
+              <h3 className="text-sm font-bold text-foreground">Points faibles rÃ©currents</h3>
             </div>
             <div className="space-y-2">
               {[...frequentErrors].sort((a, b) => b.count - a.count).map((err, i) => {
@@ -583,7 +583,7 @@ const filteredAdvice = useMemo(() => {
                         className="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wide shrink-0"
                         style={{ background: 'rgba(239,68,68,0.15)', color: '#f87171', border: '1px solid rgba(239,68,68,0.25)' }}
                       >
-                        RÉCURRENT
+                        RÃ‰CURRENT
                       </motion.span>
                     )}
                   </div>
@@ -593,12 +593,12 @@ const filteredAdvice = useMemo(() => {
           </GlassCard>
         )}
 
-      {/* ── POINTS FORTS ────────────────────────────────────────────────────── */}
+      {/* â”€â”€ POINTS FORTS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {(filterCategory === 'Tout' || filterCategory === 'Points forts') && strengths.length > 0 && (
         <GlassCard className="animate-fade-up">
           <div className="flex items-center gap-2 mb-4">
             <Star size={16} className="text-warning" />
-            <h3 className="text-sm font-bold text-foreground">Points forts détectés</h3>
+            <h3 className="text-sm font-bold text-foreground">Points forts dÃ©tectÃ©s</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {strengths.map((s, i) => (
@@ -612,7 +612,7 @@ const filteredAdvice = useMemo(() => {
         </GlassCard>
       )}
 
-      {/* ── CONSEILS MENTOR-X ───────────────────────────────────────────────── */}
+      {/* â”€â”€ CONSEILS MENTOR-X â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         {(
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filteredAdvice.map((a, i) => {
@@ -626,7 +626,7 @@ const filteredAdvice = useMemo(() => {
                 'Paire perdante': { icon: TrendingDown, color: '#FF3B5C' },
                 'Setup gagnant':  { icon: Target,       color: '#00D4AA' },
                 'Setup perdant':  { icon: AlertTriangle, color: '#FF3B5C' },
-                'Émotion récurrente': { icon: Brain,    color: '#7C3AED' },
+                'Ã‰motion rÃ©currente': { icon: Brain,    color: '#7C3AED' },
               };
               const iconInfo = iconMap[a.category] || { icon: Bot, color: '#1A6BFF' };
               const IconComp = iconInfo.icon;
@@ -641,7 +641,7 @@ const filteredAdvice = useMemo(() => {
                         {a.repeatCount && (
                           <span className="text-[10px] px-2 py-0.5 rounded-full font-bold"
                             style={{ background: a.type === 'strength' ? 'rgba(0,212,170,0.15)' : 'rgba(255,59,92,0.15)', color: a.type === 'strength' ? '#00D4AA' : '#FF3B5C' }}>
-                            {a.repeatCount}x répété
+                            {a.repeatCount}x rÃ©pÃ©tÃ©
                           </span>
                         )}
                         {a.priority >= 8 && (
@@ -651,7 +651,7 @@ const filteredAdvice = useMemo(() => {
                             className="text-[10px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wide"
                             style={{ background: 'rgba(239,68,68,0.15)', color: '#f87171', border: '1px solid rgba(239,68,68,0.25)' }}
                           >
-                            RÉCURRENT
+                            RÃ‰CURRENT
                           </motion.span>
                         )}
                       </div>
@@ -671,12 +671,12 @@ const filteredAdvice = useMemo(() => {
   </div>
 )}
 
-      {/* ── HISTORIQUE RÉCENT ───────────────────────────────────────────────── */}
+      {/* â”€â”€ HISTORIQUE RÃ‰CENT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {sessionHistory.length > 0 && (
         <GlassCard className="animate-fade-up">
           <div className="flex items-center gap-2 mb-4">
             <History size={14} className="text-primary" />
-            <h3 className="text-sm font-bold text-foreground">Dernières sessions</h3>
+            <h3 className="text-sm font-bold text-foreground">DerniÃ¨res sessions</h3>
           </div>
           <div className="space-y-2">
             {sessionHistory.map((s, i) => (
@@ -686,8 +686,8 @@ const filteredAdvice = useMemo(() => {
                   <span className="text-sm font-medium text-foreground">{s.pair}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className={`metric-value text-sm ${s.result >= 0 ? 'text-success' : 'text-destructive'}`}>
-                    {s.result >= 0 ? '+' : ''}{s.result.toFixed(2)}R
+                  <span className={`metric-value text-sm ${s.result != null && s.result >= 0 ? 'text-success' : 'text-destructive'}`}>
+                    {s.result != null ? (s.result >= 0 ? '+' : '') + s.result.toFixed(2) + 'R' : 'À définir'}
                   </span>
                   <span className={`text-xs font-bold px-2 py-0.5 rounded ${
                     s.status === 'WIN' ? 'badge-win' : s.status === 'LOSS' ? 'badge-loss' : 'badge-be'

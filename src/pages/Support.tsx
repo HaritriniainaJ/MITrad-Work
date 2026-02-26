@@ -1,8 +1,8 @@
-// ─────────────────────────────────────────────────────────────────────────────
+﻿// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // PAGE : Support
 // Formulaire de contact : bug, amélioration, question.
 // Stockage localStorage + bouton copier/mailto pour envoi manuel.
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import GlassCard from '@/components/GlassCard';
@@ -22,7 +22,7 @@ interface SupportTicket {
 
 const TYPE_CONFIG: Record<TicketType, { label: string; icon: React.ElementType; color: string }> = {
   'bug':          { label: 'Bug',         icon: Bug,         color: 'text-destructive bg-destructive/10' },
-  'amélioration': { label: 'Amélioration', icon: Lightbulb,  color: 'text-warning bg-warning/10' },
+  'amélioration': { label: 'amélioration', icon: Lightbulb,  color: 'text-warning bg-warning/10' },
   'question':     { label: 'Question',    icon: HelpCircle,  color: 'text-primary bg-primary/10' },
 };
 
@@ -46,28 +46,28 @@ export default function Support() {
 
   const [copied, setCopied] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-
-  /** Soumet le formulaire et sauvegarde en localStorage */
-  const handleSubmit = (e: React.FormEvent) => {
+  /** Soumet le formulaire via Formspree */
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.message.trim()) { toast.error('Le message est requis'); return; }
 
-    const ticket: SupportTicket = {
-      id:        `support-${Date.now()}`,
-      name:      form.name,
-      email:     form.email,
-      type:      form.type,
-      message:   form.message.trim(),
-      createdAt: new Date().toISOString(),
-    };
-
-    // Sauvegarde dans localStorage
-    const existing = JSON.parse(localStorage.getItem(storageKey) || '[]');
-    localStorage.setItem(storageKey, JSON.stringify([ticket, ...existing]));
-
-    setSubmitted(true);
-    toast.success('Message enregistré !');
+    try {
+      const res = await fetch('https://formspree.io/f/mdalbjaa', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ name: form.name, email: user?.email || form.email, type: form.type, message: form.message.trim() }),
+      });
+      if (res.ok) {
+        const existing = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        const ticket: SupportTicket = { id: `support-${Date.now()}`, name: form.name, email: user?.email || form.email, type: form.type, message: form.message.trim(), createdAt: new Date().toISOString() };
+        localStorage.setItem(storageKey, JSON.stringify([ticket, ...existing]));
+        setSubmitted(true);
+        toast.success('Message envoyé !');
+      } else { toast.error('Erreur lors de l\u0027envoi.'); }
+    } catch { toast.error('Erreur réseau.'); }
   };
+
+
 
   /** Copie le ticket formaté dans le presse-papier */
   const copyTicket = () => {
@@ -90,7 +90,7 @@ ${form.message}
 
   /** Ouvre le client mail avec le ticket pré-rempli */
   const sendByMail = () => {
-    const subject = encodeURIComponent(`[MITrad Support] ${form.type} — ${form.name}`);
+    const subject = encodeURIComponent(`[MITrad Support] ${form.type} â€” ${form.name}`);
     const body    = encodeURIComponent(`Type : ${form.type}\n\nMessage :\n${form.message}`);
     window.open(`mailto:support@mitrad.app?subject=${subject}&body=${body}`);
   };
@@ -101,7 +101,7 @@ ${form.message}
       {/* En-tête */}
       <div>
         <h1 className="text-2xl md:text-3xl font-bold gradient-text">Support</h1>
-        <p className="text-muted-foreground text-sm mt-1">Un bug ? Une idée ? Une question ? On est là.</p>
+        <p className="text-muted-foreground text-sm mt-1">Un bug ? Une idée ? Une question ? On est lÃ .</p>
       </div>
 
       {submitted ? (
@@ -134,24 +134,24 @@ ${form.message}
                 <label className="text-xs text-muted-foreground">Ton nom</label>
                 <input
                   value={form.name}
-                  onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
-                  className="input-dark mt-1"
+                  readOnly
+                  className="input-dark mt-1 opacity-50 cursor-not-allowed"
                   placeholder="Ex: Moussa"
-                  required
                 />
               </div>
               <div>
                 <label className="text-xs text-muted-foreground">Ton email</label>
                 <input
                   type="email"
-                  value={form.email}
-                  onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
-                  className="input-dark mt-1"
-                  placeholder="ton@email.com"
-                  required
+                  value={user?.email || ""}
+                  readOnly
+                  className="input-dark mt-1 opacity-50 cursor-not-allowed"
                 />
               </div>
             </div>
+
+
+
 
             {/* Type de demande */}
             <div>

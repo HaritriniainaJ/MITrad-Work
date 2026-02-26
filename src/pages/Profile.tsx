@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+﻿import { useState, useMemo, useEffect, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { StorageManager } from '@/lib/storage';
 import { getAccounts, createAccount, deleteAccount } from '@/lib/api';
@@ -15,7 +15,7 @@ import { toast } from 'sonner';
 import { useFilteredTrades } from '@/hooks/useFilteredTrades';
 
 
-// ── Counter animé ────────────────────────────────────────────────────────────
+// â”€â”€ Counter animé â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function AnimatedCounter({ value, suffix = '', decimals = 0 }: { value: number; suffix?: string; decimals?: number }) {
   const [display, setDisplay] = useState(0);
   const raf = useRef<number>();
@@ -40,7 +40,7 @@ function AnimatedCounter({ value, suffix = '', decimals = 0 }: { value: number; 
   return <>{(Number(formatted) >= 0 && suffix !== '%' ? '' : '') + formatted + suffix}</>;
 }
 
-// ── Badge design sans emoji ───────────────────────────────────────────────────
+// â”€â”€ Badge design sans emoji â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function BadgeChip({ name, description }: { name: string; description: string }) {
   return (
     <span
@@ -53,11 +53,11 @@ function BadgeChip({ name, description }: { name: string; description: string })
   );
 }
 
-// ── Page Profile ─────────────────────────────────────────────────────────────
+// â”€â”€ Page Profile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function Profile() {
   const { user, updateProfile } = useAuth();
   const [editing, setEditing] = useState(false);
-  const [form, setForm] = useState({ ...user! });
+  const [form, setForm] = useState({ bio: "", name: "", country: "", experience: "", tradingStyle: "", broker: "", ...user! });
   const [showAccounts, setShowAccounts] = useState(false);
 
 const trades = useFilteredTrades();
@@ -82,7 +82,7 @@ const [accounts, setAccounts] = useState([]);
     return sorted.map(t => { cum += t.resultR; return { r: Math.round(cum * 100) / 100 }; });
   }, [closed]);
 
-  // ── Banner & Avatar ────────────────────────────────────────────────────────
+  // â”€â”€ Banner & Avatar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const handleBanner = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || file.size > 5 * 1024 * 1024) { toast.error('Max 5 Mo'); return; }
@@ -106,10 +106,22 @@ const [accounts, setAccounts] = useState([]);
     }
     updateProfile(form);
     setEditing(false);
-    toast.success('Profil mis à jour !');
+    toast.success('Profil mis À  jour !');
   };
 
-  // ── KPI Cards ──────────────────────────────────────────────────────────────
+  // â”€â”€ KPI Cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  const totalCapital = accounts.reduce((s, a) => s + (a.capital || 0), 0);
+  const pnlPercent = totalCapital > 0 ? (totalR / totalCapital) * 100 : null;
+  const getLevel = (pct: number | null) => {
+    if (pct === null)  return { emoji: "🌱", label: "Starter",   color: "text-muted-foreground" };
+    if (pct < 0)       return { emoji: "🌱", label: "Starter",   color: "text-muted-foreground" };
+    if (pct < 10)      return { emoji: "⚡", label: "Rising",    color: "text-yellow-400" };
+    if (pct < 30)      return { emoji: "🔥", label: "Confirmed", color: "text-orange-400" };
+    if (pct < 60)      return { emoji: "💎", label: "Pro",       color: "text-blue-400" };
+    if (pct < 100)     return { emoji: "👑", label: "Elite",     color: "text-purple-400" };
+    return               { emoji: "🚀", label: "Legend",  color: "text-primary" };
+  };
+  const level = getLevel(pnlPercent);
   const kpis = [
     { label: 'Win Rate',      value: winRate,  suffix: '%',  decimals: 0, icon: Target,    color: 'text-primary' },
     { label: 'P&L Total',     value: totalR,   suffix: 'R',  decimals: 1, icon: TrendingUp, color: totalR >= 0 ? 'text-success' : 'text-destructive', showSign: true },
@@ -119,7 +131,7 @@ const [accounts, setAccounts] = useState([]);
 
   return (
     <div className="space-y-6">
-      {/* ── Header actions ────────────────────────────────────────────────── */}
+      {/* â”€â”€ Header actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold gradient-text">Mon Profil</h1>
@@ -144,7 +156,7 @@ const [accounts, setAccounts] = useState([]);
         )}
       </div>
 
-      {/* ── Banner + Avatar ───────────────────────────────────────────────── */}
+      {/* â”€â”€ Banner + Avatar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <GlassCard className="relative overflow-hidden animate-fade-up p-0">
         {/* Banner */}
         <div className="relative h-40 overflow-hidden">
@@ -194,8 +206,8 @@ const [accounts, setAccounts] = useState([]);
 
             <div className="pb-1">
               <h2 className="text-xl font-bold text-foreground">{user!.name}</h2>
-              <p className="text-sm text-muted-foreground">
-                {COUNTRY_FLAGS[user!.country] || ''} {user!.country}
+              <p className={`text-sm font-semibold ${level.color}`}>
+                {level.emoji} {level.label}
               </p>
             </div>
 
@@ -224,7 +236,7 @@ const [accounts, setAccounts] = useState([]);
         </div>
       </GlassCard>
 
-      {/* ── KPI Cards sous la banner ──────────────────────────────────────── */}
+      {/* â”€â”€ KPI Cards sous la banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 animate-fade-up stagger-1">
         {kpis.map(({ label, value, suffix, decimals, icon: Icon, color, showSign }) => (
           <GlassCard key={label} className="!p-4 text-center">
@@ -238,19 +250,10 @@ const [accounts, setAccounts] = useState([]);
         ))}
       </div>
 
-      {/* ── Badges design ────────────────────────────────────────────────── */}
-      {badges.length > 0 && (
-        <GlassCard className="animate-fade-up stagger-2">
-          <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">Badges obtenus</h3>
-          <div className="flex flex-wrap gap-2">
-            {badges.map(b => (
-              <BadgeChip key={b.id} name={b.name} description={b.description} />
-            ))}
-          </div>
-        </GlassCard>
-      )}
+      {/* â”€â”€ Badges design â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
 
-      {/* ── Informations profil ───────────────────────────────────────────── */}
+
+      {/* â”€â”€ Informations profil â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <GlassCard className="animate-fade-up stagger-2">
         {editing ? (
           <div className="space-y-4">
@@ -270,7 +273,7 @@ const [accounts, setAccounts] = useState([]);
                 onChange={e => setForm(prev => ({ ...prev, bio: e.target.value.slice(0, 300) }))}
                 className="input-dark mt-1 min-h-[80px] resize-none"
               />
-              <p className="text-xs text-muted-foreground mt-1">{form.bio.length}/300</p>
+              <p className="text-xs text-muted-foreground mt-1">{(form.bio || "").length}/300</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -310,7 +313,7 @@ const [accounts, setAccounts] = useState([]);
                 { label: 'Expérience',    value: user!.experience },
                 { label: 'Style',         value: user!.tradingStyle },
                 { label: 'Broker',        value: user!.broker },
-                { label: 'Paires',        value: user!.favoritePairs?.join(', ') || '—' },
+                { label: 'Pays',          value: user!.country },
               ].map(({ label, value }) => (
                 <div key={label}>
                   <span className="text-xs text-muted-foreground block mb-0.5">{label}</span>
@@ -322,7 +325,7 @@ const [accounts, setAccounts] = useState([]);
         )}
       </GlassCard>
 
-      {/* ── Comptes liés ────────────────────────────────────────────────── */}
+      {/* â”€â”€ Comptes liés â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <GlassCard className="animate-fade-up stagger-3">
         <div className="flex items-center justify-between mb-1">
           <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
@@ -335,19 +338,7 @@ const [accounts, setAccounts] = useState([]);
             {showAccounts ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             {showAccounts ? 'Masquer' : 'Afficher'}
           </button>
-          <button
-            onClick={async () => {
-              const name = prompt('Nom du compte :');
-              if (!name) return;
-              const capitalStr = prompt('Capital de départ ($) :', '10000');
-              const capital = parseFloat(capitalStr || '10000') || 10000;
-              const account = await createAccount(name, capital);
-              setAccounts(prev => [...prev, account]);
-            }}
-            className="text-xs gradient-btn px-3 py-1"
-          >
-            + Nouveau compte
-          </button>
+
         </div>
 
         {showAccounts && (
@@ -363,7 +354,7 @@ const [accounts, setAccounts] = useState([]);
                   </div>
                   <div className="text-right">
                     <p className="text-xs text-muted-foreground">Capital</p>
-                    <p className="text-sm font-bold text-foreground">••••••</p>
+                    <p className="text-sm font-bold text-foreground">${acc.capital ? acc.capital.toLocaleString() + " $" : "—"}</p>
                   </div>
                 </div>
               ))
@@ -372,7 +363,7 @@ const [accounts, setAccounts] = useState([]);
         )}
       </GlassCard>
 
-      {/* ── Equity curve ─────────────────────────────────────────────────── */}
+      {/* â”€â”€ Equity curve â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <GlassCard className="animate-fade-up stagger-4">
         <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">
           Performance cumulée (en R)

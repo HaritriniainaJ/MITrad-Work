@@ -170,7 +170,7 @@ const capital = useMemo(() => {
     <div className="space-y-6">
 
       <div>
-        <h1 className="text-2xl md:text-3xl font-bold gradient-text">Analytiques</h1>
+        <h1 className="text-2xl md:text-3xl font-bold gradient-text">Dashboard</h1>
         <p className="text-muted-foreground text-sm mt-1">Analyse approfondie de ta performance</p>
       </div>
       <GlassCard className="animate-fade-up">
