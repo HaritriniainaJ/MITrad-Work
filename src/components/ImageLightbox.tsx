@@ -1,4 +1,4 @@
-// ─────────────────────────────────────────────────────────────────────────────
+﻿// ─────────────────────────────────────────────────────────────────────────────
 // COMPOSANT GLOBAL : ImageLightbox
 // Permet d'afficher n'importe quelle image en plein écran au clic.
 // Supporte navigation multi-images (gauche/droite) et fermeture clavier (Escape).
@@ -153,3 +153,5 @@ export function ZoomableImage({ src, alt, className }: ZoomableImageProps) {
     </>
   );
 }
+
+

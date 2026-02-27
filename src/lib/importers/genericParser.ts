@@ -1,4 +1,4 @@
-// ─────────────────────────────────────────────────────────────────────────────
+﻿// ─────────────────────────────────────────────────────────────────────────────
 // PARSER GÉNÉRIQUE — Tente de lire n'importe quel CSV avec des colonnes standard
 // Compatible MT5, cTrader, ThinkorSwim (avec colonnes reconnues automatiquement)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -88,3 +88,5 @@ export function parseGenericCSV(csvText: string, userId: string, accountId?: str
 
   return trades;
 }
+
+

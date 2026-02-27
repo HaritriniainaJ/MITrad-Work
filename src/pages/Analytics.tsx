@@ -22,7 +22,7 @@ const tooltipStyle = {
 
 export default function Analytics() {
   const { user, accounts, activeAccounts } = useAuth();
-  // Ã‰tat pour la modale du meilleur trade (cliquable)
+  // État pour la modale du meilleur trade (cliquable)
   const [showBestTrade, setShowBestTrade] = useState(false);
   const [chartView, setChartView] = useState<'area' | 'bar' | 'distribution'>('area');
   const { mode, formatResult } = useDisplayMode();
@@ -32,7 +32,7 @@ const capital = useMemo(() => {
   return targets.reduce((sum, acc) => sum + Number(acc.capital || 0), 0);
 }, [activeAccounts, accounts, user]);
 
-  // â”€â”€ Trades filtrÃ©s par le sidebar (activeAccounts) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â”€â”€ Trades filtrés par le sidebar (activeAccounts) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const trades = useFilteredTrades();
 
   const closed  = useMemo(() => trades.filter(t => t.status !== 'RUNNING'), [trades]);
@@ -69,7 +69,7 @@ const capital = useMemo(() => {
   const modeUnit = mode === 'R' ? 'R' : mode === '$' ? '$' : '%';
   const modeKey  = mode === 'R' ? 'r' : mode === '$' ? 'd' : 'p';
 
-  // â”€â”€ DonnÃ©es graphiques â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â”€â”€ Données graphiques â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const sortedClosed = useMemo(() =>
     [...closed].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
   [closed]);
@@ -193,7 +193,7 @@ const capital = useMemo(() => {
               <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
             </svg>
           </div>
-          <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Trades clÃ´turÃ©s</p>
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Trades clôturés</p>
           <p className="metric-value text-xl font-bold text-foreground mt-0.5">{closed.length}</p>
         </GlassCard>
 
@@ -275,7 +275,7 @@ const capital = useMemo(() => {
           </div>
           <p className="text-xs text-muted-foreground uppercase tracking-wide">Max Win Streak</p>
           <p className="metric-value text-3xl text-success mt-1">{maxWS}</p>
-          <p className="text-[10px] text-muted-foreground mt-1">trades gagnants consÃ©cutifs</p>
+          <p className="text-[10px] text-muted-foreground mt-1">trades gagnants consécutifs</p>
         </GlassCard>
 
         <GlassCard className="animate-fade-up stagger-2 !p-5 relative overflow-hidden">
@@ -289,7 +289,7 @@ const capital = useMemo(() => {
           </div>
           <p className="text-xs text-muted-foreground uppercase tracking-wide">Max Loss Streak</p>
           <p className="metric-value text-3xl text-destructive mt-1">{maxLS}</p>
-          <p className="text-[10px] text-muted-foreground mt-1">trades perdants consÃ©cutifs</p>
+          <p className="text-[10px] text-muted-foreground mt-1">trades perdants consécutifs</p>
         </GlassCard>
 
         <GlassCard className="animate-fade-up stagger-3 !p-5 relative overflow-hidden">
@@ -304,7 +304,7 @@ const capital = useMemo(() => {
           <p className={`metric-value text-3xl mt-1 ${maxDD < -5 ? 'text-destructive' : 'text-warning'}`}>
             {fmtDD(maxDD)}
           </p>
-          <p className="text-[10px] text-muted-foreground mt-1">affichÃ© en {modeUnit}</p>
+          <p className="text-[10px] text-muted-foreground mt-1">affiché en {modeUnit}</p>
         </GlassCard>
 
         <GlassCard className="animate-fade-up stagger-4 !p-5 relative overflow-hidden">
@@ -324,12 +324,12 @@ const capital = useMemo(() => {
         </GlassCard>
       </div>
 
-      {/* Meilleur Trade â€” cliquable pour voir le dÃ©tail */}
+      {/* Meilleur Trade "” cliquable pour voir le détail */}
       {bestTrade && (
         <GlassCard glow="gold" className="animate-fade-up cursor-pointer hover:border-warning/30 transition-all" onClick={() => setShowBestTrade(true)}>
           <div className="flex items-center justify-between mb-2">
             <p className="text-xs font-bold text-warning uppercase tracking-wide">â­ Meilleur Trade</p>
-            <span className="text-xs text-muted-foreground hover:text-primary transition-colors">Voir dÃ©tail â†’</span>
+            <span className="text-xs text-muted-foreground hover:text-primary transition-colors">Voir détail ←’</span>
           </div>
           <div className="flex items-center gap-4 flex-wrap">
             <span className="text-foreground font-bold text-lg">{bestTrade.pair}</span>
@@ -346,13 +346,13 @@ const capital = useMemo(() => {
         </GlassCard>
       )}
 
-      {/* â”€â”€ MODALE DÃ‰TAIL MEILLEUR TRADE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* â”€â”€ MODALE DÉTAIL MEILLEUR TRADE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {showBestTrade && bestTrade && (
         <div className="modal-overlay" onClick={() => setShowBestTrade(false)}>
           <div className="modal-content glass p-6 max-w-lg w-full max-h-[85vh] overflow-y-auto scrollbar-thin" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-5">
               <h3 className="font-bold text-foreground text-lg gradient-text">
-                â­ {bestTrade.pair} â€” {bestTrade.direction}
+                â­ {bestTrade.pair} "” {bestTrade.direction}
               </h3>
               <button onClick={() => setShowBestTrade(false)} className="text-muted-foreground hover:text-foreground">
                 <X size={20} />
@@ -363,12 +363,12 @@ const capital = useMemo(() => {
                 { label: 'Date',    val: new Date(bestTrade.date).toLocaleString('fr') },
                 { label: 'Session', val: bestTrade.session },
                 { label: 'Setup',   val: bestTrade.setup },
-                { label: 'Ã‰motion', val: bestTrade.emotion },
-                { label: 'EntrÃ©e',  val: bestTrade.entryPrice },
+                { label: 'Émotion', val: bestTrade.emotion },
+                { label: 'Entrée',  val: bestTrade.entryPrice },
                 { label: 'SL',      val: bestTrade.stopLoss },
                 { label: 'TP',      val: bestTrade.takeProfit },
-                { label: 'Sortie',  val: bestTrade.exitPrice || 'â€”' },
-                { label: 'DurÃ©e',   val: `${bestTrade.duration} min` },
+                { label: 'Sortie',  val: bestTrade.exitPrice || '"”' },
+                { label: 'Durée',   val: `${bestTrade.duration} min` },
               ].map(({ label, val }) => (
                 <div key={label} className="flex justify-between py-1 border-b border-border/30">
                   <span className="text-muted-foreground">{label}</span>
@@ -376,14 +376,14 @@ const capital = useMemo(() => {
                 </div>
               ))}
               <div className="flex justify-between py-1 border-b border-border/30">
-                <span className="text-muted-foreground">RÃ©sultat</span>
+                <span className="text-muted-foreground">Résultat</span>
                 <span className="text-success metric-value">
                   {formatResult(bestTrade.resultR, bestTrade.resultDollar, capital)}
                 </span>
               </div>
               {bestTrade.entryNote && (
                 <div className="pt-1">
-                  <p className="text-muted-foreground text-xs mb-1">Note d'entrÃ©e</p>
+                  <p className="text-muted-foreground text-xs mb-1">Note d'entrée</p>
                   <p className="text-foreground bg-accent/30 rounded-lg p-3 text-sm">{bestTrade.entryNote}</p>
                 </div>
               )}
@@ -540,7 +540,7 @@ const capital = useMemo(() => {
 
         <GlassCard>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-medium text-muted-foreground">Performance par Ã©motion</h3>
+            <h3 className="text-sm font-medium text-muted-foreground">Performance par émotion</h3>
             <span className="text-xs text-muted-foreground bg-accent/50 px-2 py-0.5 rounded-lg">{modeUnit}</span>
           </div>
           <div className="h-[220px]">
@@ -605,7 +605,7 @@ const capital = useMemo(() => {
               ))}
               {setupData.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="text-center py-8 text-muted-foreground text-sm">Aucun trade clÃ´turÃ©</td>
+                  <td colSpan={5} className="text-center py-8 text-muted-foreground text-sm">Aucun trade clôturé</td>
                 </tr>
               )}
             </tbody>
@@ -615,3 +615,5 @@ const capital = useMemo(() => {
     </div>
   );
 }
+
+

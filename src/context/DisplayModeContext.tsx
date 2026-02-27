@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+ï»¿import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 type DisplayMode = 'R' | '%' | '$';
 
@@ -11,13 +11,13 @@ interface DisplayModeContextType {
 const DisplayModeContext = createContext<DisplayModeContextType | null>(null);
 
 export function DisplayModeProvider({ children }: { children: ReactNode }) {
-  const [mode, setMode] = useState<DisplayMode>('R');
+  const [mode, setMode] = useState<DisplayMode>('%');
 
   const formatResult = (resultR: number | null, resultDollar: number, capital?: number): string => {
     const sign = (resultDollar ?? 0) >= 0 ? '+' : '';
     switch (mode) {
       case 'R':
-        if (resultR == null) return 'À définir';
+        if (resultR == null) return 'Ã€ dÃ©finir';
         return `${resultR >= 0 ? '+' : ''}${resultR.toFixed(2)}R`;
       case '$':
         return `${sign}$${(resultDollar ?? 0).toFixed(2)}`;
@@ -28,7 +28,7 @@ export function DisplayModeProvider({ children }: { children: ReactNode }) {
         }
         return `${sign}${(resultDollar ?? 0).toFixed(2)}$`;
       default:
-        if (resultR == null) return 'À définir';
+        if (resultR == null) return 'Ã€ dÃ©finir';
         return `${resultR >= 0 ? '+' : ''}${resultR.toFixed(2)}R`;
     }
   };
@@ -68,4 +68,6 @@ export function DisplayModeToggle() {
     </div>
   );
 }
+
+
 

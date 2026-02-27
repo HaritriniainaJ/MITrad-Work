@@ -90,7 +90,7 @@ ${form.message}
 
   /** Ouvre le client mail avec le ticket pré-rempli */
   const sendByMail = () => {
-    const subject = encodeURIComponent(`[MITrad Support] ${form.type} â€” ${form.name}`);
+    const subject = encodeURIComponent(`[MITrad Support] ${form.type} "” ${form.name}`);
     const body    = encodeURIComponent(`Type : ${form.type}\n\nMessage :\n${form.message}`);
     window.open(`mailto:support@mitrad.app?subject=${subject}&body=${body}`);
   };
@@ -237,3 +237,5 @@ ${form.message}
     </div>
   );
 }
+
+

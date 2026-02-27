@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+﻿import { useState, useMemo } from 'react';
 import { ALL_PAIRS } from '@/types/trading';
 import GlassCard from '@/components/GlassCard';
 
@@ -127,3 +127,5 @@ export default function Calculator() {
     </div>
   );
 }
+
+

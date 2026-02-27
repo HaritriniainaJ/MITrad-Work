@@ -667,3 +667,8 @@ a.gradient-primary::before {
   from { opacity: 0; transform: translateY(12px) scale(0.99); }
   to   { opacity: 1; transform: translateY(0)    scale(1); }
 }
+#nprogress .bar {
+  background: linear-gradient(90deg, #1a6bff, #7c3aed) !important;
+  height: 3px !important;
+  box-shadow: 0 0 10px #1a6bff, 0 0 5px #7c3aed !important;
+}

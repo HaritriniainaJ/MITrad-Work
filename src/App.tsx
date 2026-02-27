@@ -1,6 +1,6 @@
 ﻿// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// APP.TSX â€” Routeur principal de MITrad Journal
-// MODIFIÃ‰ v2 : Ajout des routes /import et /support
+// APP.TSX "” Routeur principal de MITrad Journal
+// MODIFIÉ v2 : Ajout des routes /import et /support
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -25,20 +25,20 @@ import Settings from "@/pages/Settings";
 import TradingPlan from "@/pages/TradingPlan";
 import Successes from "@/pages/Successes";
 import Objectives from "@/pages/Objectives";
-import Import from "@/pages/Import";           // â† NOUVEAU v2
-import Support from "@/pages/Support";         // â† NOUVEAU v2
+import Import from "@/pages/Import";           // ← NOUVEAU v2
+import Support from "@/pages/Support";         // ← NOUVEAU v2
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
 
-/** Route protÃ©gÃ©e â€” redirige vers /login si non connectÃ© */
+/** Route protégée "” redirige vers /login si non connecté */
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
   return <Layout>{children}</Layout>;
 }
 
-/** Composant de routing â€” accÃ¨s Ã  useAuth() ici */
+/** Composant de routing "” accès Ã  useAuth() ici */
 function AppRoutes() {
   const { user } = useAuth();
 
@@ -93,3 +93,4 @@ const App = () => (
 );
 
 export default App;
+

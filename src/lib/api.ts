@@ -1,4 +1,4 @@
-// ─────────────────────────────────────────────────────────────────────────────
+﻿// ─────────────────────────────────────────────────────────────────────────────
 // API — MITrad Journal
 // ─────────────────────────────────────────────────────────────────────────────
 const API_URL = 'http://localhost:8000/api';
@@ -281,3 +281,5 @@ export async function importTrades(accountId: string, trades: any[]) {
   if (!res.ok) throw new Error('Erreur import trades');
   return res.json();
 }
+
+

@@ -1,4 +1,4 @@
-import { User, Trade, DailyAnalysis, TradingAccount } from '@/types/trading';
+﻿import { User, Trade, DailyAnalysis, TradingAccount } from '@/types/trading';
 
 export class StorageManager {
   static getUsers(): User[] {
@@ -148,3 +148,4 @@ export class StorageManager {
     return headers + rows;
   }
 }
+

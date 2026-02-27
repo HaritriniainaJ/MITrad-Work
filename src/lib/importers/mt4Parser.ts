@@ -1,4 +1,4 @@
-// ─────────────────────────────────────────────────────────────────────────────
+﻿// ─────────────────────────────────────────────────────────────────────────────
 // PARSER MT4 — Importe les trades depuis un export CSV MetaTrader 4
 // Format attendu : Date,Symbol,Type,Volume,Open,SL,TP,Close,Commission,Swap,Profit
 // ─────────────────────────────────────────────────────────────────────────────
@@ -82,5 +82,7 @@ export function parseMT4CSV(csvText: string, userId: string, accountId?: string)
 
   return trades;
 }
+
+
 
 

@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+﻿import { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
 interface GlassCardProps {
@@ -30,3 +30,4 @@ export default function GlassCard({ children, className, onClick, glow = 'none' 
     </div>
   );
 }
+

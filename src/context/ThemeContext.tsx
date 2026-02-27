@@ -1,4 +1,4 @@
-// ─────────────────────────────────────────────────────────────────────────────
+﻿// ─────────────────────────────────────────────────────────────────────────────
 // ThemeContext — Gestion du thème clair / sombre
 // ─────────────────────────────────────────────────────────────────────────────
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
@@ -39,3 +39,5 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 }
 
 export const useTheme = () => useContext(ThemeContext);
+
+

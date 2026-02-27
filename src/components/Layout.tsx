@@ -1,9 +1,11 @@
-import { useState, useRef, useEffect } from 'react';
+﻿import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
+import NProgress from 'nprogress';
 import { cn } from '@/lib/utils';
 import CoachAlphaFloat from '@/components/CoachAlphaFloat';
+import { usePageProgress } from '@/hooks/usePageProgress';
 import { DisplayModeToggle } from '@/context/DisplayModeContext';
 import {
   LayoutDashboard, PlusCircle, ClipboardList, BarChart3,
@@ -45,6 +47,7 @@ const SIDEBAR_MINI = 68;
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { user, logout, accounts, activeAccounts, setActiveAccounts } = useAuth();
+  usePageProgress();
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
 
@@ -128,13 +131,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 <div className="w-7 h-7 rounded-lg gradient-primary flex items-center justify-center shrink-0">
                   <span className="text-white font-black text-xs">M</span>
                 </div>
-                <Link to="/dashboard" className="gradient-text text-lg font-black tracking-tight truncate">
+                <Link to="/analytics" className="gradient-text text-lg font-black tracking-tight truncate">
                   Pro MITrad
                 </Link>
               </motion.div>
             ) : (
               <motion.div key="mini" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                <Link to="/dashboard" className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center">
+                <Link to="/analytics" className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center">
                   <span className="text-white font-black text-sm">M</span>
                 </Link>
               </motion.div>
@@ -309,7 +312,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   <p className="text-[10px] text-muted-foreground truncate">{user.country}</p>
                 </div>
               </div>
-              <button onClick={logout}
+              <button onClick={() => { NProgress.start(); logout(); }}
                 className="flex items-center gap-2 text-destructive text-xs w-full px-3 py-2 rounded-lg hover:bg-destructive/10 transition-colors font-medium">
                 <LogOut size={14} /> Déconnexion
               </button>
@@ -326,7 +329,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 )}
                 <div className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-400 border border-background" />
               </div>
-              <button onClick={logout} title="Déconnexion"
+              <button onClick={() => { NProgress.start(); setTimeout(logout, 100); }} title="Déconnexion"
                 className="w-8 h-8 rounded-lg flex items-center justify-center text-destructive hover:bg-destructive/10 transition-colors">
                 <LogOut size={15} />
               </button>
@@ -371,3 +374,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+
+
+
+
+
+
+

@@ -43,7 +43,7 @@ function Lightbox({ src, onClose }: { src: string; onClose: () => void }) {
 }
 
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// VISION BOARD â€” grille responsive adaptive selon nombre d'images remplies
+// VISION BOARD "” grille responsive adaptive selon nombre d'images remplies
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function VisionBoard({ email }: { email: string }) {
   const storageKey = `mitrad_visionboard_${email}`;
@@ -86,7 +86,7 @@ function VisionBoard({ email }: { email: string }) {
     persist(updated);
   };
 
-  // Indices remplis en premier, puis vides â€” pour que les images s'affichent toujours en tÃªte
+  // Indices remplis en premier, puis vides "” pour que les images s'affichent toujours en tête
   const orderedSlots = [
     ...images.map((img, i) => ({ img, originalIdx: i })).filter(s => s.img !== null),
     ...images.map((img, i) => ({ img, originalIdx: i })).filter(s => s.img === null),
@@ -95,12 +95,12 @@ function VisionBoard({ email }: { email: string }) {
   const filledCount = orderedSlots.filter(s => s.img !== null).length;
 
   // â”€â”€ Styles de grille selon nombre d'images â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  // 0        â†’ grille 3Ã—3 vide (invitation)
-  // 1        â†’ 1 image grande (16:9 pleine largeur)
-  // 2        â†’ 2 colonnes 1:1
-  // 3        â†’ [grande sur 2 cols] + [petite] en ligne, puis 3Ã¨me sous
-  // 4â€“5      â†’ [1 grande 2cols] + petites sur 1 col ; ex: 4=[2+1+1], 5=[2+1+1+1]
-  // 6â€“9      â†’ grille 3 cols uniforme
+  // 0        ←’ grille 3Ã—3 vide (invitation)
+  // 1        ←’ 1 image grande (16:9 pleine largeur)
+  // 2        ←’ 2 colonnes 1:1
+  // 3        ←’ [grande sur 2 cols] + [petite] en ligne, puis 3ème sous
+  // 4"“5      ←’ [1 grande 2cols] + petites sur 1 col ; ex: 4=[2+1+1], 5=[2+1+1+1]
+  // 6"“9      ←’ grille 3 cols uniforme
 
   type SlotConfig = { gridColumn?: string; gridRow?: string; aspectRatio: string };
 
@@ -145,7 +145,7 @@ function VisionBoard({ email }: { email: string }) {
         boxShadow: '0 4px 32px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.04)',
       }}
     >
-      {/* â”€â”€ En-tÃªte â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* â”€â”€ En-tête â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="px-5 pt-5 pb-4 flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-3">
           <div
@@ -185,7 +185,7 @@ function VisionBoard({ email }: { email: string }) {
       {/* â”€â”€ Grille images â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="px-4 pb-4">
         {filledCount === 0 ? (
-          /* Ã‰tat vide : 9 cellules en pointillÃ©s avec icÃ´ne */
+          /* État vide : 9 cellules en pointillés avec icône */
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
             {Array.from({ length: 9 }).map((_, idx) => (
               <label
@@ -439,7 +439,7 @@ export default function Objectives() {
 
   const addObjective = (data: Omit<Objective, 'id' | 'completed' | 'createdAt'>) => {
     persist([...items, { id: `obj-${Date.now()}`, completed: false, createdAt: new Date().toISOString(), ...data }]);
-    toast.success('Objectif ajoutÃ© !');
+    toast.success('Objectif ajouté !');
   };
 
   const updateObjective = (id: string, data: Omit<Objective, 'id' | 'completed' | 'createdAt'>) => {
@@ -451,10 +451,10 @@ export default function Objectives() {
     persist(items.map(o => o.id === id ? { ...o, completed: !o.completed } : o));
 
   const deleteObjective = async (id: string) => {
-    const ok = await confirm({ message: 'Supprimer cet objectif dÃ©finitivement ?', variant: 'danger', confirmText: 'Supprimer' });
+    const ok = await confirm({ message: 'Supprimer cet objectif définitivement ?', variant: 'danger', confirmText: 'Supprimer' });
     if (!ok) return;
     persist(items.filter(o => o.id !== id));
-    toast.success('Objectif supprimÃ©');
+    toast.success('Objectif supprimé');
   };
 
   const pending   = items.filter(o => !o.completed);
@@ -473,7 +473,7 @@ export default function Objectives() {
         animation: 'fadeUp .4s ease forwards',
       }}
     >
-      {/* Image en haut si prÃ©sente */}
+      {/* Image en haut si présente */}
       {obj.image && (
         <div
           className="relative overflow-hidden cursor-pointer group/thumb"
@@ -490,7 +490,7 @@ export default function Objectives() {
               <ZoomIn size={16} className="text-white" />
             </div>
           </div>
-          {/* DÃ©gradÃ© bas */}
+          {/* Dégradé bas */}
           <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-black/40 to-transparent" />
         </div>
       )}
@@ -569,7 +569,7 @@ export default function Objectives() {
         </button>
       </div>
 
-      {/* Vision Board â€” toujours visible */}
+      {/* Vision Board "” toujours visible */}
       <VisionBoard email={user!.email} />
 
       {/* Barre de progression */}
@@ -594,7 +594,7 @@ export default function Objectives() {
               style={{ width: progressVisible ? `${progress}%` : '0%' }}
             />
           </div>
-          <p className="text-xs text-muted-foreground mt-2">{progress}% complÃ©tÃ©</p>
+          <p className="text-xs text-muted-foreground mt-2">{progress}% complété</p>
         </div>
       )}
 
@@ -609,12 +609,12 @@ export default function Objectives() {
         </div>
       )}
 
-      {/* Objectifs complÃ©tÃ©s */}
+      {/* Objectifs complétés */}
       {completed.length > 0 && (
         <div className="space-y-2.5">
           <div className="flex items-center gap-2 px-1">
             <div className="w-2 h-2 rounded-full bg-success" />
-            <h3 className="text-sm font-bold text-muted-foreground">ComplÃ©tÃ©s ({completed.length})</h3>
+            <h3 className="text-sm font-bold text-muted-foreground">Complétés ({completed.length})</h3>
           </div>
           {completed.map(obj => <ObjectiveCard key={obj.id} obj={obj} />)}
         </div>
@@ -630,7 +630,7 @@ export default function Objectives() {
             style={{ background: 'rgba(26,107,255,0.1)' }}>
             <Target size={24} className="text-primary" />
           </div>
-          <p className="text-foreground font-semibold">Aucun objectif dÃ©fini</p>
+          <p className="text-foreground font-semibold">Aucun objectif défini</p>
           <p className="text-muted-foreground text-sm mt-1.5 max-w-xs mx-auto">
             Fixe-toi des objectifs clairs et mesurables pour progresser.
           </p>
@@ -656,3 +656,5 @@ export default function Objectives() {
     </div>
   );
 }
+
+

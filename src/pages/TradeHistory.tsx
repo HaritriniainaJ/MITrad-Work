@@ -121,8 +121,8 @@ export default function TradeHistory() {
     const wsData = [
       ['MITRAD JOURNAL - HISTORIQUE DES TRADES'],
       [],
-      ['Date', 'Paire', 'Direction', 'Session', 'Setup', 'Ã‰motion', 'QualitÃ©',
-       'EntrÃ©e', 'SL', 'TP', 'Sortie', 'Lot', 'RÃ©sultat R', 'RÃ©sultat $', 'Statut', 'Note entrÃ©e', 'Note sortie'],
+      ['Date', 'Paire', 'Direction', 'Session', 'Setup', 'Émotion', 'Qualité',
+       'Entrée', 'SL', 'TP', 'Sortie', 'Lot', 'Résultat R', 'Résultat $', 'Statut', 'Note entrée', 'Note sortie'],
       ...filtered.map(t => [
         t.date ? new Date(t.date).toLocaleDateString('fr-FR') : '',
         t.pair, t.direction, t.session, t.setup, t.emotion, t.quality,
@@ -142,11 +142,11 @@ export default function TradeHistory() {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Trades');
     XLSX.writeFile(wb, `MITrad_${new Date().toLocaleDateString('fr-FR').replace(/\//g, '-')}.xlsx`);
-    toast.success('Excel exportÃ© !');
+    toast.success('Excel exporté !');
   };
 
   const deleteTrade = async (id: string) => {
-    const ok = await confirm({ title: 'Supprimer ce trade', message: 'Cette action est irrÃ©versible.', confirmText: 'Supprimer', variant: 'danger' });
+    const ok = await confirm({ title: 'Supprimer ce trade', message: 'Cette action est irréversible.', confirmText: 'Supprimer', variant: 'danger' });
     if (!ok) return;
     try {
       const trade = allTrades.find(t => t.id === id);
@@ -155,7 +155,7 @@ export default function TradeHistory() {
       setSelectedTrade(null);
       setEditingTrade(null);
       setRefreshKey(k => k + 1);
-      toast.success('Trade supprimÃ©');
+      toast.success('Trade supprimé');
     } catch {
       toast.error('Erreur suppression');
     }
@@ -250,7 +250,7 @@ export default function TradeHistory() {
     return [...new Set([...ALL_SETUPS, ...custom])];
   }, [user]);
 
-  // Compte du trade en cours d'Ã©dition (lecture seule)
+  // Compte du trade en cours d'édition (lecture seule)
   const editingAccount = useMemo(() => {
     if (!editingTrade) return null;
     return accounts.find(a =>
@@ -290,13 +290,13 @@ export default function TradeHistory() {
           <FilterSelect label="Sessions"         value={filters.session}   onChange={v => setFilters(p => ({ ...p, session: v }))}   options={ALL_SESSIONS} />
           <FilterSelect label="Direction"        value={filters.direction} onChange={v => setFilters(p => ({ ...p, direction: v }))} options={['BUY', 'SELL']} />
           <FilterSelect label="Setups"           value={filters.setup}     onChange={v => setFilters(p => ({ ...p, setup: v }))}     options={allSetups} />
-          <FilterSelect label="Ã‰motion"          value={filters.emotion}   onChange={v => setFilters(p => ({ ...p, emotion: v }))}   options={ALL_EMOTIONS} />
+          <FilterSelect label="Émotion"          value={filters.emotion}   onChange={v => setFilters(p => ({ ...p, emotion: v }))}   options={ALL_EMOTIONS} />
           <FilterSelect label="Statut"           value={filters.status}    onChange={v => setFilters(p => ({ ...p, status: v }))}    options={['WIN', 'LOSS', 'BE', 'RUNNING']} />
           <button
             onClick={() => { setFilters({ pair: '', session: '', direction: '', setup: '', emotion: '', status: '' }); setPage(1); }}
             className="text-xs text-muted-foreground hover:text-foreground transition-colors py-2 hover:bg-accent/30 rounded-lg"
           >
-            RÃ©initialiser
+            Réinitialiser
           </button>
         </div>
       </GlassCard>
@@ -305,7 +305,7 @@ export default function TradeHistory() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border">
-              {['Date', 'Paire', 'Dir.', 'Session', 'Setup', 'QualitÃ©', 'RÃ©sultat', 'Statut', 'Actions'].map(h => (
+              {['Date', 'Paire', 'Dir.', 'Session', 'Setup', 'Qualité', 'Résultat', 'Statut', 'Actions'].map(h => (
                 <th key={h} className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">{h}</th>
               ))}
             </tr>
@@ -330,14 +330,14 @@ export default function TradeHistory() {
                 <td className="px-4 py-3 text-xs text-muted-foreground">
                   {t.is_imported && !t.setup ? (
                     <span title="A completer" className="flex items-center gap-1 text-amber-400">
-                      <AlertTriangle size={12} /> <span className="text-xs">A dÃ©finir</span>
+                      <AlertTriangle size={12} /> <span className="text-xs">A définir</span>
                     </span>
                   ) : t.setup}
                 </td>
                 <td className="px-4 py-3">
                   {t.is_imported && t.quality == null ? (
                     <span title="A completer" className="flex items-center gap-1 text-amber-400">
-                      <AlertTriangle size={12} /> <span className="text-xs">A dÃ©finir</span>
+                      <AlertTriangle size={12} /> <span className="text-xs">A définir</span>
                     </span>
                   ) : (
                   <span className={`text-xs font-bold px-2 py-0.5 rounded-md ${
@@ -379,7 +379,7 @@ export default function TradeHistory() {
           </tbody>
         </table>
         {paginated.length === 0 && (
-          <p className="text-center text-muted-foreground py-12 text-sm">T'as pas tradÃ©. C'est bien ou t'as ratÃ© des setups ?</p>
+          <p className="text-center text-muted-foreground py-12 text-sm">T'as pas tradé. C'est bien ou t'as raté des setups ?</p>
         )}
       </GlassCard>
 
@@ -401,13 +401,13 @@ export default function TradeHistory() {
         </div>
       )}
 
-      {/* â”€â”€ MODALE DÃ‰TAIL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* â”€â”€ MODALE DÉTAIL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {selectedTrade && !editingTrade && (
         <div className="modal-overlay" onClick={() => setSelectedTrade(null)}>
           <div className="modal-content glass p-6 max-w-lg w-full max-h-[85vh] overflow-y-auto scrollbar-thin" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-5">
               <h3 className="font-bold text-foreground text-lg gradient-text">
-                {selectedTrade.pair} â€” {selectedTrade.direction}
+                {selectedTrade.pair} "” {selectedTrade.direction}
               </h3>
               <button onClick={() => setSelectedTrade(null)} className="text-muted-foreground hover:text-foreground">
                 <X size={20} />
@@ -419,12 +419,12 @@ export default function TradeHistory() {
                 { label: 'Session', val: selectedTrade.session },
                 { label: 'Setup',   val: selectedTrade.setup || 'ï¿½ Non dï¿½fini' },
 
-                { label: 'Ã‰motion', val: selectedTrade.emotion },
-                { label: 'EntrÃ©e',  val: selectedTrade.entryPrice },
+                { label: 'Émotion', val: selectedTrade.emotion },
+                { label: 'Entrée',  val: selectedTrade.entryPrice },
                 { label: 'SL',      val: selectedTrade.stopLoss },
                 { label: 'TP',      val: selectedTrade.takeProfit },
-                { label: 'Sortie',  val: selectedTrade.exitPrice || 'â€”' },
-                { label: 'DurÃ©e',   val: `${selectedTrade.duration} min` },
+                { label: 'Sortie',  val: selectedTrade.exitPrice || '"”' },
+                { label: 'Durée',   val: `${selectedTrade.duration} min` },
               ].map(({ label, val }) => (
                 <div key={label} className="flex justify-between py-1 border-b border-border/30">
                   <span className="text-muted-foreground">{label}</span>
@@ -432,11 +432,11 @@ export default function TradeHistory() {
                 </div>
               ))}
               <div className="flex justify-between py-1 border-b border-border/30">
-                <span className="text-muted-foreground">QualitÃ©</span>
+                <span className="text-muted-foreground">Qualité</span>
                 {selectedTrade.is_imported && selectedTrade.quality == null ? (<span className="flex items-center gap-1 text-amber-400 text-xs font-bold"><AlertTriangle size={12} /> ï¿½ dï¿½finir</span>) : (<span className="text-foreground font-bold">{getQualityNum(selectedTrade.quality)}/10</span>)}
               </div>
               <div className="flex justify-between py-1 border-b border-border/30">
-                <span className="text-muted-foreground">RÃ©sultat</span>
+                <span className="text-muted-foreground">Résultat</span>
                 <span className={`metric-value ${selectedTrade.resultR != null && selectedTrade.resultR >= 0 ? "text-success" : "text-destructive"}`}>{formatResult(selectedTrade.resultR, selectedTrade.resultDollar, Number(accounts.find(a => String(a.id) === String(selectedTrade.accountId || (selectedTrade as any).trading_account_id))?.capital) || activeAccount?.capital || 10000)}</span>
 
 
@@ -447,20 +447,20 @@ export default function TradeHistory() {
                   selectedTrade.status === 'WIN' ? 'badge-win' : selectedTrade.status === 'LOSS' ? 'badge-loss' : 'badge-be'
                 }`}>{selectedTrade.status}</span>
               </div>
-              {/* Plan respectÃ© */}
+              {/* Plan respecté */}
               <div className="flex justify-between py-1 border-b border-border/30">
-                <span className="text-muted-foreground">Plan respectÃ©</span>
+                <span className="text-muted-foreground">Plan respecté</span>
                 <span className={`text-xs font-bold px-2 py-0.5 rounded ${
                   selectedTrade.planRespected === true  ? 'bg-success/20 text-success' :
                   selectedTrade.planRespected === false ? 'bg-destructive/20 text-destructive' :
                   'bg-accent/40 text-muted-foreground'
                 }`}>
-                  {selectedTrade.planRespected === true ? 'âœ… Oui' : selectedTrade.planRespected === false ? 'âŒ Non' : 'â€” NSP'}
+                  {selectedTrade.planRespected === true ? 'âœ… Oui' : selectedTrade.planRespected === false ? 'âŒ Non' : '"” NSP'}
                 </span>
               </div>
               {selectedTrade.entryNote && (
                 <div className="pt-1">
-                  <p className="text-muted-foreground text-xs mb-1">Note d'entrÃ©e</p>
+                  <p className="text-muted-foreground text-xs mb-1">Note d'entrée</p>
                   <p className="text-foreground bg-accent/30 rounded-lg p-3 text-sm">{selectedTrade.entryNote}</p>
                 </div>
               )}
@@ -494,7 +494,7 @@ export default function TradeHistory() {
         </div>
       )}
 
-      {/* â”€â”€ MODALE Ã‰DITION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* â”€â”€ MODALE ÉDITION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {editingTrade && (
         <div className="modal-overlay" onClick={() => setEditingTrade(null)}>
           <div className="modal-content glass p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto scrollbar-thin" onClick={e => e.stopPropagation()}>
@@ -504,7 +504,7 @@ export default function TradeHistory() {
             </div>
             <div className="space-y-4">
 
-              {/* â”€â”€ Compte â€” lecture seule â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+              {/* â”€â”€ Compte "” lecture seule â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
               {editingAccount && (
                 <div>
                   <label className="text-xs text-muted-foreground">Compte</label>
@@ -594,7 +594,7 @@ export default function TradeHistory() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-muted-foreground">Ã‰motion</label>
+                  <label className="text-xs text-muted-foreground">Émotion</label>
                   <select value={editingTrade.emotion} onChange={e => setEditField('emotion', e.target.value)} className="select-dark mt-1">
                     {ALL_EMOTIONS.map(em => <option key={em} value={em}>{em}</option>)}
                   </select>
@@ -610,14 +610,14 @@ export default function TradeHistory() {
                 </div>
               </div>
               <div>
-                <label className="text-xs text-muted-foreground">QualitÃ© du trade</label>
+                <label className="text-xs text-muted-foreground">Qualité du trade</label>
                 <div className="mt-2">
                   <QualityBar value={getQualityNum(editingTrade.quality)} onChange={v => setEditField('quality', v)} />
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="text-xs text-muted-foreground">Prix d'entrÃ©e</label>
+                  <label className="text-xs text-muted-foreground">Prix d'entrée</label>
                   <input type="number" step="any" value={editingTrade.entryPrice}
                     onChange={e => setEditField('entryPrice', parseFloat(e.target.value) || 0)} className="input-dark mt-1" />
                 </div>
@@ -645,15 +645,15 @@ export default function TradeHistory() {
                 </div>
               </div>
               <div className="p-3 rounded-xl bg-accent/40 border border-border/50 space-y-2">
-                <p className="text-xs text-muted-foreground font-medium">RÃ©sultats (recalculÃ©s automatiquement)</p>
+                <p className="text-xs text-muted-foreground font-medium">Résultats (recalculés automatiquement)</p>
                 <div className="grid grid-cols-3 gap-3">
                   <div>
-                    <label className="text-xs text-muted-foreground">RÃ©sultat R</label>
+                    <label className="text-xs text-muted-foreground">Résultat R</label>
                     <input type="number" step="any" value={editingTrade.resultR}
                       onChange={e => setEditField('resultR', parseFloat(e.target.value) || 0)} className="input-dark mt-1 text-sm" />
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground">RÃ©sultat $</label>
+                    <label className="text-xs text-muted-foreground">Résultat $</label>
                     <input type="number" step="any" value={editingTrade.resultDollar}
                       onChange={e => setEditField('resultDollar', parseFloat(e.target.value) || 0)} className="input-dark mt-1 text-sm" />
                   </div>
@@ -667,14 +667,14 @@ export default function TradeHistory() {
                 </div>
               </div>
 
-              {/* â”€â”€ Plan respectÃ© â€” toggle Ã©ditable â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+              {/* â”€â”€ Plan respecté "” toggle éditable â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
               <div>
-                <label className="text-xs text-muted-foreground">Plan de trading respectÃ© ?</label>
+                <label className="text-xs text-muted-foreground">Plan de trading respecté ?</label>
                 <div className="flex gap-2 mt-2">
                   {([
                     { value: true,  label: 'âœ… Oui', active: 'bg-success/20 border-success/50 text-success' },
                     { value: false, label: 'âŒ Non',  active: 'bg-destructive/20 border-destructive/50 text-destructive' },
-                    { value: null,  label: 'â€” NSP',   active: 'bg-accent/60 border-border text-muted-foreground' },
+                    { value: null,  label: '"” NSP',   active: 'bg-accent/60 border-border text-muted-foreground' },
                   ] as const).map(opt => (
                     <button
                       key={String(opt.value)}
@@ -693,16 +693,16 @@ export default function TradeHistory() {
               </div>
 
               <div>
-                <label className="text-xs text-muted-foreground">Note d'entrÃ©e</label>
+                <label className="text-xs text-muted-foreground">Note d'entrée</label>
                 <textarea value={editingTrade.entryNote}
                   onChange={e => setEditField('entryNote', e.target.value)}
-                  className="input-dark mt-1 min-h-[70px] resize-none" placeholder="Justifie ton entrÃ©e. Pas d'excuse." />
+                  className="input-dark mt-1 min-h-[70px] resize-none" placeholder="Justifie ton entrée. Pas d'excuse." />
               </div>
               <div>
                 <label className="text-xs text-muted-foreground">Note de sortie</label>
                 <textarea value={editingTrade.exitNote}
                   onChange={e => setEditField('exitNote', e.target.value)}
-                  className="input-dark mt-1 min-h-[70px] resize-none" placeholder="RÃ©sultat ? Sois honnÃªte." />
+                  className="input-dark mt-1 min-h-[70px] resize-none" placeholder="Résultat ? Sois honnête." />
               </div>
               <div>
                 <label className="text-xs text-muted-foreground">Lien TradingView</label>
@@ -711,7 +711,7 @@ export default function TradeHistory() {
                   className="input-dark mt-1" placeholder="https://..." />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground">Capture d'Ã©cran</label>
+                <label className="text-xs text-muted-foreground">Capture d'écran</label>
                 {editingTrade.screenshot && (
                   <div className="relative group mt-2 cursor-pointer" onClick={() => setZoomImg(editingTrade.screenshot!)}>
                     <img src={editingTrade.screenshot} alt="Capture"
@@ -757,6 +757,8 @@ export default function TradeHistory() {
     </div>
   );
 }
+
+
 
 
 

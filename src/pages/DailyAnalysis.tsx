@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { getAnalyses, createAnalysis, updateAnalysis, deleteAnalysis } from '@/lib/api';
 import { DailyAnalysis, AnalyzedPair, ALL_PAIRS, BIAS_OPTIONS, DECISION_OPTIONS } from '@/types/trading';
@@ -618,3 +618,4 @@ export default function DailyAnalysisPage() {
     </div>
   );
 }
+

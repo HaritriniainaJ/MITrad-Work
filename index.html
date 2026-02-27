@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -21,6 +21,13 @@
 
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <script>
+    // SPA fallback: restore last path on refresh
+    const path = sessionStorage.getItem("spa_path");
+    if (path && path !== "/") { sessionStorage.removeItem("spa_path"); window.history.replaceState(null, "", path); }
+    window.addEventListener("beforeunload", () => { sessionStorage.setItem("spa_path", window.location.pathname); });
+  </script>
+  <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
+

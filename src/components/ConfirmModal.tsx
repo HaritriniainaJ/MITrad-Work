@@ -1,4 +1,4 @@
-// ─────────────────────────────────────────────────────────────────────────────
+﻿// ─────────────────────────────────────────────────────────────────────────────
 // COMPOSANT : ConfirmModal — Glassmorphism stylée (remplace window.confirm)
 // Usage : const [confirm, ConfirmModal] = useConfirm();
 //         await confirm({ title, message }) → true/false
@@ -109,3 +109,5 @@ export function useConfirm(): [
 
   return [confirm, opts ? modal : null];
 }
+
+

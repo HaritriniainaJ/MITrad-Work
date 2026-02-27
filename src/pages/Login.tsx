@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import NProgress from 'nprogress';
 import { useAuth } from '@/context/AuthContext';
 import {
   Eye, EyeOff, TrendingUp, Shield, Zap, BarChart2, Target,
@@ -12,7 +13,7 @@ const FEATURES = [
   { icon: BarChart2, title: 'Analytiques avancées', desc: 'KPIs, equity curve, drawdown, profit factor en temps réel.', color: '#1A6BFF' },
   { icon: Target,    title: 'Plan de trading',      desc: 'Définis tes règles, illustre-les, suivi rigoureux.', color: '#7C3AED' },
   { icon: Shield,    title: 'Discipline de fer',    desc: 'Score de discipline, alertes émotionnelles, Mentor-X.', color: '#00D4AA' },
-  { icon: Zap,       title: 'Multi-comptes',        desc: 'Personnel, Funded, Démo, Propfirm — tout en un.', color: '#F59E0B' },
+  { icon: Zap,       title: 'Multi-comptes',        desc: 'Personnel, Funded, Démo, Propfirm "” tout en un.', color: '#F59E0B' },
   { icon: TrendingUp,title: 'Suivi de croissance',  desc: 'Capital réel, P&L cumulé, progression visuelle.', color: '#EC4899' },
 ];
 const CONTACTS = [
@@ -141,8 +142,9 @@ export default function Login() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault(); setLoading(true); setError('');
-    setTimeout(() => {
-      if (login(email, password)) { navigate('/dashboard'); }
+    setTimeout(async () => {
+      const ok = await login(email, password);
+      if (ok) { navigate('/analytics'); }
       else { setError('Email ou mot de passe incorrect'); }
       setLoading(false);
     }, 600);
@@ -180,7 +182,7 @@ export default function Login() {
       <div className="absolute bottom-[-10%] right-[-5%] w-[400px] h-[400px] rounded-full pointer-events-none"
         style={{ background:'radial-gradient(circle,rgba(124,58,237,0.12) 0%,transparent 65%)', filter:'blur(40px)' }} />
 
-      {/* Éléments flottants — fixés dans la zone extrême gauche du viewport */}
+      {/* Éléments flottants "” fixés dans la zone extrême gauche du viewport */}
       <div
         className="hidden xl:block"
         style={{
@@ -226,7 +228,7 @@ export default function Login() {
             </h1>
             <p className="text-muted-foreground mt-5 text-lg leading-relaxed max-w-xl">
               Le journal de trading professionnel pensé pour les traders africains.
-              Analyse, discipline et performance — <span className="text-foreground font-medium">tout en un.</span>
+              Analyse, discipline et performance "” <span className="text-foreground font-medium">tout en un.</span>
             </p>
           </div>
 
@@ -277,7 +279,7 @@ export default function Login() {
           </div>
         </motion.div>
 
-        {/* Colonne droite — Formulaire */}
+        {/* Colonne droite "” Formulaire */}
         <motion.div style={{ rotateX:sRotX, rotateY:sRotY, transformPerspective:1200 }}
           onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave}
           initial={{ opacity:0, y:30 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.6, delay:0.2 }} className="w-full">
@@ -303,7 +305,7 @@ export default function Login() {
                 </motion.div>
               </div>
               <h2 className="text-2xl font-black gradient-text">Pro MITrad Journal</h2>
-              <p className="text-muted-foreground text-sm mt-1">Connecte-toi à ton espace de trading</p>
+              <p className="text-muted-foreground text-sm mt-1">Connecte-toi Ã  ton espace de trading</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -374,13 +376,13 @@ export default function Login() {
               <button type="button" onClick={fillDemo}
                 className="mt-2 w-full py-2 rounded-xl text-xs font-medium transition-all duration-200 text-primary"
                 style={{ background:'rgba(26,107,255,0.1)', border:'1px solid rgba(26,107,255,0.2)' }}>
-                Remplir automatiquement →
+                Remplir automatiquement ←’
               </button>
             </div>
 
             <div className="mt-4 p-3.5 rounded-xl bg-accent/30 border border-border/40 text-center">
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Pour accéder à ce journal, contacte l'administrateur — ton compte sera activé sous 24h.
+                Pour accéder Ã  ce journal, contacte l'administrateur "” ton compte sera activé sous 24h.
               </p>
               <div className="flex items-center justify-center gap-3 mt-3 lg:hidden">
                 {CONTACTS.map(c => (
@@ -396,3 +398,10 @@ export default function Login() {
     </div>
   );
 }
+
+
+
+
+
+
+

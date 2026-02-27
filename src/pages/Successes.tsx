@@ -20,7 +20,7 @@ interface Success {
   images: string[];
 }
 
-// â”€â”€ CSS injectÃ© une seule fois â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€ CSS injecté une seule fois â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const STYLES = `
 @keyframes su-fadeUp {
   from { opacity: 0; transform: translateY(18px); }
@@ -44,10 +44,10 @@ if (typeof document !== 'undefined' && !document.getElementById('su-styles')) {
   document.head.appendChild(s);
 }
 
-// â”€â”€ Lightbox â€” rendue via Portal directement dans document.body â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Raison : si rendue Ã  l'intÃ©rieur d'un parent avec overflow:hidden ou
-// z-index limitÃ©, la lightbox sera clippÃ©e/bloquÃ©e dans ce conteneur.
-// createPortal() l'Ã©chappe complÃ¨tement du DOM parent.
+// â”€â”€ Lightbox "” rendue via Portal directement dans document.body â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Raison : si rendue Ã  l'intérieur d'un parent avec overflow:hidden ou
+// z-index limité, la lightbox sera clippée/bloquée dans ce conteneur.
+// createPortal() l'échappe complètement du DOM parent.
 function Lightbox({ images, index, onClose }: {
   images: string[];
   index: number;
@@ -89,7 +89,7 @@ function Lightbox({ images, index, onClose }: {
         <X size={18} />
       </button>
 
-      {/* Zone image â€” stopPropagation pour ne pas fermer en cliquant l'image */}
+      {/* Zone image "” stopPropagation pour ne pas fermer en cliquant l'image */}
       <div
         className="su-scale-in"
         style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '0 20px', maxWidth: '100%' }}
@@ -104,7 +104,7 @@ function Lightbox({ images, index, onClose }: {
           </button>
         )}
 
-        {/* Image : max 78vw Ã— 78vh â€” jamais plein Ã©cran, jamais dans le box */}
+        {/* Image : max 78vw Ã— 78vh "” jamais plein écran, jamais dans le box */}
         <img
           src={images[current]}
           alt=""
@@ -142,11 +142,11 @@ function Lightbox({ images, index, onClose }: {
     </div>
   );
 
-  // Portal â†’ rendu directement dans body, Ã©chappe tout parent DOM
+  // Portal ←’ rendu directement dans body, échappe tout parent DOM
   return createPortal(content, document.body);
 }
 
-// â”€â”€ Galerie compacte cÃ´tÃ© droit de la carte â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€ Galerie compacte côté droit de la carte â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function CompactGallery({ images }: { images: string[] }) {
   const [lightbox, setLightbox] = useState<number | null>(null);
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
@@ -160,7 +160,7 @@ function CompactGallery({ images }: { images: string[] }) {
           flexShrink: 0,
           width: images.length === 1 ? 100 : 152,
           borderRadius: 12,
-          overflow: 'hidden', // overflow:hidden ici â€” mais Lightbox Ã©chappe via Portal
+          overflow: 'hidden', // overflow:hidden ici "” mais Lightbox échappe via Portal
           boxShadow: '0 4px 20px rgba(0,0,0,.25), 0 1px 4px rgba(0,0,0,.15)',
           border: '1px solid rgba(255,255,255,.07)',
         }}
@@ -209,7 +209,7 @@ function CompactGallery({ images }: { images: string[] }) {
         </div>
       </div>
 
-      {/* Portal lightbox â€” rendu dans body, pas dans ce div */}
+      {/* Portal lightbox "” rendu dans body, pas dans ce div */}
       {lightbox !== null && (
         <Lightbox images={images} index={lightbox} onClose={() => setLightbox(null)} />
       )}
@@ -292,8 +292,8 @@ function ModalGallery({
 
 // â”€â”€ Modal formulaire â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // BUG MODAL FERMETURE : handleSubmit appelle onSave() PUIS onClose().
-// onClose() est appelÃ© ici-mÃªme, pas dÃ©lÃ©guÃ© au parent â€” garanti de toujours
-// se fermer aprÃ¨s la sauvegarde, quelle que soit la logique parent.
+// onClose() est appelé ici-même, pas délégué au parent "” garanti de toujours
+// se fermer après la sauvegarde, quelle que soit la logique parent.
 function SuccessModal({
   initial,
   onSave,
@@ -308,7 +308,7 @@ function SuccessModal({
   const [note, setNote]     = useState(initial?.note   ?? '');
   const [images, setImages] = useState<string[]>(initial?.images ?? []);
 
-  // Refs pour lire les valeurs les plus rÃ©centes sans recrÃ©er handleSubmit
+  // Refs pour lire les valeurs les plus récentes sans recréer handleSubmit
   const rTitle  = useRef(title);  rTitle.current  = title;
   const rDate   = useRef(date);   rDate.current   = date;
   const rNote   = useRef(note);   rNote.current   = note;
@@ -323,7 +323,7 @@ function SuccessModal({
       note:   rNote.current.trim(),
       images: rImages.current,
     });
-    // 2. Fermer â€” appelÃ© ICI, toujours, aprÃ¨s onSave
+    // 2. Fermer "” appelé ICI, toujours, après onSave
     onClose();
   };
 
@@ -339,7 +339,7 @@ function SuccessModal({
               <Trophy size={16} className="text-primary" />
             </div>
             <h3 className="font-bold text-foreground text-lg">
-              {initial ? 'Modifier le succÃ¨s' : 'Nouveau succÃ¨s'}
+              {initial ? 'Modifier le succès' : 'Nouveau succès'}
             </h3>
           </div>
           <button
@@ -385,7 +385,7 @@ function SuccessModal({
               value={note}
               onChange={e => setNote(e.target.value)}
               className="input-dark w-full min-h-[88px] resize-none"
-              placeholder="DÃ©cris ce que tu as accompli, comment tu te sens..."
+              placeholder="Décris ce que tu as accompli, comment tu te sens..."
             />
           </div>
 
@@ -413,7 +413,7 @@ function SuccessModal({
             className="flex-1 gradient-btn py-2.5 text-sm flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform"
           >
             <Save size={14} />
-            {initial ? 'Enregistrer' : 'Ajouter le succÃ¨s'}
+            {initial ? 'Enregistrer' : 'Ajouter le succès'}
           </button>
         </div>
       </div>
@@ -421,7 +421,7 @@ function SuccessModal({
   );
 }
 
-// â”€â”€ Carte succÃ¨s â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€ Carte succès â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function SuccessCard({ item, onEdit, onDelete, index }: {
   item: Success; onEdit: () => void; onDelete: () => void; index: number;
 }) {
@@ -429,7 +429,7 @@ function SuccessCard({ item, onEdit, onDelete, index }: {
   return (
     <GlassCard className={`su-fade-up ${stagger} overflow-visible`}>
       <div className="flex gap-4 items-start">
-        {/* Colonne gauche â€” texte */}
+        {/* Colonne gauche "” texte */}
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2 mb-1.5">
             <div className="flex items-start gap-2.5 min-w-0">
@@ -460,7 +460,7 @@ function SuccessCard({ item, onEdit, onDelete, index }: {
           )}
         </div>
 
-        {/* Colonne droite â€” galerie compacte */}
+        {/* Colonne droite "” galerie compacte */}
         {item.images.length > 0 && <CompactGallery images={item.images} />}
       </div>
     </GlassCard>
@@ -468,7 +468,7 @@ function SuccessCard({ item, onEdit, onDelete, index }: {
 }
 
 // â”€â”€ Page principale â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// â”€â”€ DÃ©finition des badges automatiques â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€ Définition des badges automatiques â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const AUTO_BADGES = [
   { key: 'first_win',      emoji: '🏆', title: 'Premier trade gagnant',          check: (t: any[]) => t.filter(x => x.status === 'WIN').length >= 1 },
   { key: 'win_3',          emoji: '🔥', title: '3 wins consécutifs',              check: (t: any[]) => getMaxStreak(t) >= 3 },
@@ -535,7 +535,7 @@ export default function Successes() {
 
   useEffect(() => { fetchSuccesses(); }, []);
 
-  // â”€â”€ SuccÃ¨s automatiques â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â”€â”€ Succès automatiques â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     if (trades.length === 0 || items.length === 0 && trades.length === 0) return;
     const existingKeys = items.filter(s => s.badge_key).map(s => s.badge_key);
@@ -547,7 +547,7 @@ export default function Successes() {
         await createSuccess({
           title:     `${badge.emoji} ${badge.title}`,
           date:      new Date().toISOString().split('T')[0],
-          note:      'Badge dÃ©bloquÃ© automatiquement par Mentor-X',
+          note:      'Badge débloqué automatiquement par Mentor-X',
           type:      'auto',
           badge_key: badge.key,
         });
@@ -560,7 +560,7 @@ export default function Successes() {
     try {
       await createSuccess({ ...data, type: 'manual' });
       await fetchSuccesses();
-      toast.success('ðŸ† SuccÃ¨s ajoutÃ© !');
+      toast.success('ðŸ† Succès ajouté !');
       setShowAdd(false);
     } catch { toast.error('Erreur ajout'); }
   };
@@ -574,18 +574,18 @@ const handleUpdate = async (id: string, data: Omit<Success, 'id'>) => {
         images: data.images,
       });
       await fetchSuccesses();
-      toast.success('âœ… SuccÃ¨s mis Ã  jour');
+      toast.success('âœ… Succès mis Ã  jour');
       setEditTarget(null);
     } catch { toast.error('Erreur mise Ã  jour'); }
   };
 
   const handleDelete = async (id: string) => {
-    const ok = await confirm({ message: 'Supprimer ce succÃ¨s ?', variant: 'danger', confirmText: 'Supprimer' });
+    const ok = await confirm({ message: 'Supprimer ce succès ?', variant: 'danger', confirmText: 'Supprimer' });
     if (!ok) return;
     try {
       await deleteSuccess(id);
       await fetchSuccesses();
-      toast.success('SupprimÃ©');
+      toast.success('Supprimé');
     } catch { toast.error('Erreur suppression'); }
   };
 
@@ -598,7 +598,7 @@ const handleUpdate = async (id: string, data: Omit<Success, 'id'>) => {
   const autoCount   = items.filter(s => s.type === 'auto').length;
   const manualCount = items.filter(s => s.type !== 'auto').length;
 
-  // â”€â”€ Badges non encore dÃ©bloquÃ©s â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â”€â”€ Badges non encore débloqués â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const lockedBadges = useMemo(() => {
     const existingKeys = items.filter(s => s.badge_key).map(s => s.badge_key);
     return AUTO_BADGES.filter(b => !existingKeys.includes(b.key));
@@ -692,13 +692,13 @@ const handleUpdate = async (id: string, data: Omit<Success, 'id'>) => {
           <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
             <Trophy size={28} className="text-primary" />
           </div>
-          <p className="text-foreground font-semibold text-base">Aucun succÃ¨s enregistrÃ©</p>
+          <p className="text-foreground font-semibold text-base">Aucun succès enregistré</p>
           <p className="text-muted-foreground text-sm mt-1 max-w-xs mx-auto">
-            CÃ©lÃ¨bre tes victoires, mÃªme les petites â€” elles comptent toutes.
+            Célèbre tes victoires, même les petites "” elles comptent toutes.
           </p>
           <button onClick={() => { setAddKey(k => k+1); setShowAdd(true); }}
             className="gradient-btn px-5 py-2 text-sm mt-5 inline-flex items-center gap-2">
-            <Star size={14} /> Mon premier succÃ¨s
+            <Star size={14} /> Mon premier succès
           </button>
         </GlassCard>
       )}
@@ -713,3 +713,5 @@ const handleUpdate = async (id: string, data: Omit<Success, 'id'>) => {
     </div>
   );
 }
+
+

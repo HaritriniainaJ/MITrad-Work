@@ -1,4 +1,4 @@
-// ─────────────────────────────────────────────────────────────────────────────
+﻿// ─────────────────────────────────────────────────────────────────────────────
 // COMPOSANT : CoachAlphaFloat (renommé Mentor-X en v2)
 // Bouton flottant + panel de conseils rapides
 // MODIFIÉ v2 : "Coach Alpha" → "Mentor-X" dans tous les textes
@@ -88,3 +88,5 @@ export default function CoachAlphaFloat() {
     </>
   );
 }
+
+

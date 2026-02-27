@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+﻿import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { TradingAccount } from '@/types/trading';
 import { getAccounts } from '@/lib/api';
 const API_URL = 'http://localhost:8000/api';
@@ -131,3 +131,4 @@ export function useAuth() {
   if (!ctx) throw new Error('useAuth must be used within AuthProvider');
   return ctx;
 }
+

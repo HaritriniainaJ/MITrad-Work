@@ -1,4 +1,4 @@
-import { Trade } from '@/types/trading';
+﻿import { Trade } from '@/types/trading';
 import { getMaxLossStreak, getMaxWinStreak } from './badgeEngine';
 
 export interface CoachAdvice {
@@ -328,3 +328,4 @@ export function getDisciplineScore(trades: Trade[]): number {
 
   return Math.max(0, Math.min(100, Math.round(score)));
 }
+

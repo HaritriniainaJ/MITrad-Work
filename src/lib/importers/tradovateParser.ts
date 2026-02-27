@@ -1,4 +1,4 @@
-// ─────────────────────────────────────────────────────────────────────────────
+﻿// ─────────────────────────────────────────────────────────────────────────────
 // PARSER TRADOVATE — Position History CSV
 // Format : Position ID, Timestamp, Trade Date, Net Pos, Net Price, Bought,
 //          Avg. Buy, Sold, Avg. Sell, Account, Contract, Product, ...,
@@ -216,5 +216,7 @@ export function parseTradovateCSV(csvText: string, userId: string, accountId?: s
 
   return trades;
 }
+
+
 
 

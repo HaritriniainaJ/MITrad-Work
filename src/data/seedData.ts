@@ -1,4 +1,4 @@
-import { User, Trade, DailyAnalysis, TradingAccount, ALL_PAIRS, ALL_SESSIONS, ALL_SETUPS, ALL_QUALITIES, BIAS_OPTIONS, DECISION_OPTIONS } from '@/types/trading';
+﻿import { User, Trade, DailyAnalysis, TradingAccount, ALL_PAIRS, ALL_SESSIONS, ALL_SETUPS, ALL_QUALITIES, BIAS_OPTIONS, DECISION_OPTIONS } from '@/types/trading';
 
 function hashCode(s: string): number {
   let h = 0;
@@ -183,3 +183,5 @@ export function initializeSeedData(): void {
 }
 
 export { USER_CONFIGS };
+
+

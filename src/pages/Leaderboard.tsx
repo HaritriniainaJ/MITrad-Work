@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useRef } from 'react';
+﻿import { useMemo, useState, useEffect, useRef } from 'react';
 import { StorageManager } from '@/lib/storage';
 import { useAuth } from '@/context/AuthContext';
 import { calculateBadges, getMaxWinStreak } from '@/lib/badgeEngine';
@@ -448,3 +448,5 @@ export default function Leaderboard() {
     </div>
   );
 }
+
+

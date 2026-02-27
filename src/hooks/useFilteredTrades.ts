@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+﻿import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Trade } from '@/types/trading';
 
@@ -61,3 +61,5 @@ export function useFilteredTrades(refreshKey?: number): Trade[] {
 
   return trades;
 }
+
+

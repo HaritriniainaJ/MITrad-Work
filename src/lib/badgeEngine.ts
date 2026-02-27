@@ -1,4 +1,4 @@
-import { Trade, Badge } from '@/types/trading';
+﻿import { Trade, Badge } from '@/types/trading';
 
 export const ALL_BADGES: Badge[] = [
   { id: 'sniper', name: 'Sniper', emoji: '🎯', description: 'Win Rate ≥ 70%' },
@@ -100,3 +100,5 @@ export function getMaxDrawdown(trades: Trade[]): number {
   });
   return Math.round(maxDD * 100) / 100;
 }
+
+

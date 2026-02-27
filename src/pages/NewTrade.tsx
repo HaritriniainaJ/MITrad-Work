@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+﻿import { useState, useMemo, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { createTrade } from "@/lib/api";
 import { Trade, ALL_PAIRS, ALL_SESSIONS, ALL_SETUPS, ALL_EMOTIONS } from '@/types/trading';
@@ -716,3 +716,5 @@ export default function NewTrade() {
     </div>
   );
 }
+
+
