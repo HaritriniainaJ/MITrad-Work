@@ -1,11 +1,11 @@
 ﻿import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Trade } from '@/types/trading';
+import { isDemo, DEMO_TRADES } from '@/lib/demoData';
 
 const API_URL = 'http://localhost:8000/api';
 const getToken = () => localStorage.getItem('mitrad_token');
 
-// Clé globale pour forcer le refresh depuis n'importe où
 let globalRefreshFn: (() => void) | null = null;
 export const refreshTrades = () => globalRefreshFn?.();
 
@@ -15,9 +15,12 @@ export function useFilteredTrades(refreshKey?: number): Trade[] {
   const [tick, setTick] = useState(0);
 
   const fetchTrades = useCallback(() => {
+    if (isDemo()) {
+      setTrades(DEMO_TRADES as any);
+      return;
+    }
     const targetAccounts = activeAccounts.length > 0 ? activeAccounts : accounts;
     if (targetAccounts.length === 0) return;
-
     Promise.all(
       targetAccounts.map(acc =>
         fetch(`${API_URL}/accounts/${acc.id}/trades`, {
@@ -40,13 +43,12 @@ export function useFilteredTrades(refreshKey?: number): Trade[] {
         exitPrice:     t.exit_price ?? null,
         entryNote:     t.entry_note ?? '',
         exitNote:      t.exit_note ?? '',
-        planRespected: t.plan_respected ?? null, // ← NOUVEAU
+        planRespected: t.plan_respected ?? null,
       }));
       setTrades(all);
     }).catch(() => setTrades([]));
   }, [activeAccounts, accounts]);
 
-  // Enregistre la fonction globale
   useEffect(() => {
     globalRefreshFn = () => setTick(t => t + 1);
     return () => { globalRefreshFn = null; };

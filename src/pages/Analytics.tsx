@@ -63,18 +63,16 @@ const capital = useMemo(() => {
   const avgR        = closed.length ? totalR / closed.length : 0;
   const maxWS       = getMaxWinStreak(closed);
   const maxLS       = getMaxLossStreak(closed);
-  const maxDD       = closed.length === 0 ? 0 : getMaxDrawdown(closed);
+  const maxDD = closed.length === 0 ? { r: 0, dollar: 0, pct: 0 } : getMaxDrawdown(closed, capital);
   const bestTrade   = closed.reduce<Trade | null>(
     (best, t) => t.resultR > (best?.resultR ?? -999) ? t : best, null
   );
 
   // â”€â”€ Format drawdown selon mode â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  const fmtDD = (ddR: number) => {
-    if (isNaN(ddR) || !isFinite(ddR)) return mode === 'R' ? '0.00R' : mode === '$' ? '$0' : '0.00%';
-    if (mode === 'R')  return `${ddR.toFixed(2)}R`;
-    if (mode === '$')  return `$${(ddR * capital * 0.01).toFixed(0)}`;
-    if (capital === 0) return '0.00%';
-    return `${((ddR * capital * 0.01) / capital * 100).toFixed(2)}%`;
+const fmtDD = () => {
+    if (mode === 'R')  return `${maxDD.r.toFixed(2)}R`;
+    if (mode === '$')  return `$${maxDD.dollar.toFixed(0)}`;
+    return `${maxDD.pct.toFixed(2)}%`;
   };
   const modeUnit = mode === 'R' ? 'R' : mode === '$' ? '$' : '%';
   const modeKey  = mode === 'R' ? 'r' : mode === '$' ? 'd' : 'p';
@@ -311,8 +309,8 @@ const capital = useMemo(() => {
             </svg>
           </div>
           <p className="text-xs text-muted-foreground uppercase tracking-wide">Max Drawdown</p>
-          <p className={`metric-value text-3xl mt-1 ${maxDD < -5 ? 'text-destructive' : 'text-warning'}`}>
-            {fmtDD(maxDD)}
+          <p className={`metric-value text-3xl mt-1 ${maxDD.dollar > 5 ? 'text-destructive' : 'text-warning'}`}>
+            {fmtDD()}
           </p>
           <p className="text-[10px] text-muted-foreground mt-1">affiché en {modeUnit}</p>
         </GlassCard>

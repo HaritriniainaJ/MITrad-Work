@@ -128,17 +128,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             {!collapsed ? (
               <motion.div key="full" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 className="flex items-center gap-2 min-w-0">
-                <div className="w-7 h-7 rounded-lg gradient-primary flex items-center justify-center shrink-0">
-                  <span className="text-white font-black text-xs">M</span>
-                </div>
+                <Link to="/analytics" className="flex items-center gap-2">
+                  <img src="/logo.png" alt="Logo" className="h-8 w-auto object-contain" />
+                </Link>
                 <Link to="/analytics" className="gradient-text text-lg font-black tracking-tight truncate">
                   Pro MITrad
                 </Link>
               </motion.div>
             ) : (
               <motion.div key="mini" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                <Link to="/analytics" className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center">
-                  <span className="text-white font-black text-sm">M</span>
+                <Link to="/analytics">
+                  <img src="/logo.png" alt="Logo" className="h-8 w-auto object-contain" />
                 </Link>
               </motion.div>
             )}

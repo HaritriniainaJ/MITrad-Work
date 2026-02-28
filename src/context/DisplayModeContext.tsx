@@ -17,7 +17,7 @@ export function DisplayModeProvider({ children }: { children: ReactNode }) {
     const sign = (resultDollar ?? 0) >= 0 ? '+' : '';
     switch (mode) {
       case 'R':
-        if (resultR == null) return 'À définir';
+        if (resultR == null || resultR === 0) return 'À définir';
         return `${resultR >= 0 ? '+' : ''}${resultR.toFixed(2)}R`;
       case '$':
         return `${sign}$${(resultDollar ?? 0).toFixed(2)}`;
@@ -28,7 +28,7 @@ export function DisplayModeProvider({ children }: { children: ReactNode }) {
         }
         return `${sign}${(resultDollar ?? 0).toFixed(2)}$`;
       default:
-        if (resultR == null) return 'À définir';
+        if (resultR == null || resultR === 0) return 'À définir';
         return `${resultR >= 0 ? '+' : ''}${resultR.toFixed(2)}R`;
     }
   };

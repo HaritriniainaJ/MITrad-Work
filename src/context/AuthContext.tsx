@@ -1,6 +1,7 @@
 ﻿import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { TradingAccount } from '@/types/trading';
 import { getAccounts } from '@/lib/api';
+
 const API_URL = 'http://localhost:8000/api';
 
 interface AuthContextType {
@@ -19,6 +20,23 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+const DEMO_USER = {
+  id: 'demo',
+  name: 'Trader Demo',
+  email: 'demo@mitrad.com',
+  isDemo: true,
+  password_set: false,
+  customSetups: [],
+};
+
+const DEMO_ACCOUNT = {
+  id: 'demo-account',
+  name: 'Compte Démo',
+  type: 'Démo',
+  capital: 10000,
+  currency: 'USD',
+};
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const savedUser = localStorage.getItem('mitrad_user');
   const [user, setUser] = useState<any | null>(savedUser ? JSON.parse(savedUser) : null);
@@ -28,6 +46,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [activeAccounts, setActiveAccountsState] = useState<TradingAccount[]>([]);
 
   const refreshAccounts = () => {
+    const savedUser = JSON.parse(localStorage.getItem('mitrad_user') || '{}');
+    if (savedUser?.isDemo) return;
     getAccounts().then(data => setAccounts(Array.isArray(data) ? data : []));
   };
 
@@ -38,6 +58,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user]);
 
   const login = async (email: string, password: string): Promise<boolean> => {
+    if (email === 'demo@mitrad.com' && password === 'mitrad123') {
+      localStorage.setItem('mitrad_token', 'demo-token');
+      localStorage.setItem('mitrad_user', JSON.stringify(DEMO_USER));
+      setUser(DEMO_USER);
+      setAccounts([DEMO_ACCOUNT as any]);
+      setActiveAccount(DEMO_ACCOUNT as any);
+      return true;
+    }
     try {
       const response = await fetch(`${API_URL}/login`, {
         method: 'POST',

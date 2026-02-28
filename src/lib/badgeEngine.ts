@@ -89,16 +89,25 @@ export function getMaxLossStreak(trades: Trade[]): number {
   return max;
 }
 
-export function getMaxDrawdown(trades: Trade[]): number {
+export function getMaxDrawdown(trades: Trade[], capital = 0): { r: number, dollar: number, pct: number } {
   const sorted = [...trades].filter(t => t.status !== 'RUNNING')
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  let peak = 0, cumR = 0, maxDD = 0;
+  if (sorted.length === 0) return { r: 0, dollar: 0, pct: 0 };
+
+  let cumD = 0, maxDDD = 0;
+  let cumR = 0, maxDDR = 0;
+
   sorted.forEach(t => {
-    cumR += t.resultR ?? 0;
-    peak = Math.max(peak, cumR);
-    maxDD = Math.min(maxDD, cumR - peak);
+    cumD += t.resultDollar ?? 0;
+    if (cumD < 0 && Math.abs(cumD) > maxDDD) maxDDD = Math.abs(cumD);
+
+    const r = (t.resultR ?? 0) !== 0 ? (t.resultR ?? 0) : capital > 0 ? (t.resultDollar / (capital * 0.01)) : 0;
+    cumR += r;
+    if (cumR < 0 && Math.abs(cumR) > maxDDR) maxDDR = Math.abs(cumR);
   });
-  return Math.round(maxDD * 100) / 100;
+
+  const dollar = Math.round(maxDDD * 100) / 100;
+  const pct = capital > 0 ? Math.round((dollar / capital) * 10000) / 100 : 0;
+  const r = Math.round(maxDDR * 100) / 100;
+  return { r, dollar, pct };
 }
-
-

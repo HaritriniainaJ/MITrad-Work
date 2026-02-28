@@ -2,6 +2,7 @@
 // API — MITrad Journal
 // ─────────────────────────────────────────────────────────────────────────────
 import NProgress from 'nprogress';
+import { isDemo, DEMO_ANALYSES, DEMO_PLAN_RULES, DEMO_OBJECTIVES, DEMO_SUCCESSES } from './demoData';
 
 const API_URL = 'http://localhost:8000/api';
 const getToken = () => localStorage.getItem('mitrad_token');
@@ -28,12 +29,14 @@ async function apiFetch(url: string, options?: RequestInit): Promise<Response> {
 // ANALYSES DU JOUR
 // ─────────────────────────────────────────────────────────────────────────────
 export async function getAnalyses() {
+  if (isDemo()) return DEMO_ANALYSES;
   const res = await apiFetch(`${API_URL}/analyses`, { headers: headers() });
   return res.json();
 }
 
 export async function createAnalysis(data: { date: string; title?: string; pairs: any[] }) {
-    const res = await apiFetch(`${API_URL}/analyses`, {
+  if (isDemo()) { alert('Mode démo — modifications désactivées'); return null; }
+  const res = await apiFetch(`${API_URL}/analyses`, {
     method: 'POST',
     headers: headers(),
     body: JSON.stringify(data),
@@ -43,6 +46,7 @@ export async function createAnalysis(data: { date: string; title?: string; pairs
 }
 
 export async function updateAnalysis(id: string, data: { pairs: any[]; title?: string }) {
+  if (isDemo()) { alert('Mode démo — modifications désactivées'); return null; }
   const res = await apiFetch(`${API_URL}/analyses/${id}`, {
     method: 'PUT',
     headers: headers(),
@@ -53,6 +57,7 @@ export async function updateAnalysis(id: string, data: { pairs: any[]; title?: s
 }
 
 export async function deleteAnalysis(id: string) {
+  if (isDemo()) { alert('Mode démo — modifications désactivées'); return null; }
   const res = await apiFetch(`${API_URL}/analyses/${id}`, {
     method: 'DELETE',
     headers: headers(),
@@ -65,6 +70,7 @@ export async function deleteAnalysis(id: string) {
 // COMPTES DE TRADING
 // ─────────────────────────────────────────────────────────────────────────────
 export const getAccounts = async () => {
+  if (isDemo()) return [{ id: 'demo-account', name: 'Compte Démo', type: 'Démo', capital: 10000, currency: 'USD' }];
   const res = await apiFetch(`${API_URL}/accounts`, { headers: headers() });
   return res.json();
 };
@@ -90,6 +96,7 @@ export const deleteAccount = async (id: number) => {
 // TRADES
 // ─────────────────────────────────────────────────────────────────────────────
 export async function createTrade(accountId: string, trade: any) {
+  if (isDemo()) { alert('Mode démo — modifications désactivées'); return null; }
   const res = await apiFetch(`${API_URL}/accounts/${accountId}/trades`, {
     method: 'POST',
     headers: headers(),
@@ -100,6 +107,7 @@ export async function createTrade(accountId: string, trade: any) {
 }
 
 export async function updateTrade(accountId: number, tradeId: number, trade: any) {
+  if (isDemo()) { alert('Mode démo — modifications désactivées'); return null; }
   const res = await apiFetch(`${API_URL}/accounts/${accountId}/trades/${tradeId}`, {
     method: 'PUT',
     headers: headers(),
@@ -110,6 +118,7 @@ export async function updateTrade(accountId: number, tradeId: number, trade: any
 }
 
 export async function deleteTrade(accountId: number, tradeId: number) {
+  if (isDemo()) { alert('Mode démo — modifications désactivées'); return null; }
   const res = await apiFetch(`${API_URL}/accounts/${accountId}/trades/${tradeId}`, {
     method: 'DELETE',
     headers: headers(),
@@ -122,9 +131,10 @@ export async function deleteTrade(accountId: number, tradeId: number) {
 // PLAN DE TRADING — RÈGLES
 // ─────────────────────────────────────────────────────────────────────────────
 export async function getPlanRules() {
+  if (isDemo()) return DEMO_PLAN_RULES;
   const res = await apiFetch(`${API_URL}/plan`, { headers: headers() });
   if (!res.ok) throw new Error('Erreur chargement plan');
-  return res.json(); // TradingRule[]
+  return res.json();
 }
 
 export async function createPlanRule(rule: {
@@ -132,6 +142,7 @@ export async function createPlanRule(rule: {
   description: string;
   images: string[];
 }) {
+  if (isDemo()) { alert('Mode démo — modifications désactivées'); return null; }
   const res = await apiFetch(`${API_URL}/plan`, {
     method: 'POST',
     headers: headers(),
@@ -147,6 +158,7 @@ export async function updatePlanRule(id: string, rule: {
   images?: string[];
   order?: number;
 }) {
+  if (isDemo()) { alert('Mode démo — modifications désactivées'); return null; }
   const res = await apiFetch(`${API_URL}/plan/${id}`, {
     method: 'PUT',
     headers: headers(),
@@ -157,6 +169,7 @@ export async function updatePlanRule(id: string, rule: {
 }
 
 export async function deletePlanRule(id: string) {
+  if (isDemo()) { alert('Mode démo — modifications désactivées'); return null; }
   const res = await apiFetch(`${API_URL}/plan/${id}`, {
     method: 'DELETE',
     headers: headers(),
@@ -186,24 +199,21 @@ export async function saveDailyChecklist(date: string, checkedIds: string[]) {
 
 // Objectifs
 export async function getObjectives() {
+  if (isDemo()) return DEMO_OBJECTIVES;
   const res = await apiFetch(`${API_URL}/objectives`, { headers: headers() });
   return res.json();
 }
-export async function createObjective(data: { text: string; description?: string; target_date?: string; image?: string }) {
-  const res = await apiFetch(`${API_URL}/objectives`, {
+export async function updateObjective(id: string, data: any) {
+  if (isDemo()) { alert('Mode démo — modifications désactivées'); return null; }
+  const res = await apiFetch(`${API_URL}/objectives/${id}`, {
     method: 'POST', headers: headers(), body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error('Erreur création objectif');
   return res.json();
 }
-export async function updateObjective(id: string, data: any) {
-  const res = await apiFetch(`${API_URL}/objectives/${id}`, {
-    method: 'PUT', headers: headers(), body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error('Erreur mise à jour objectif');
-  return res.json();
-}
+
 export async function deleteObjective(id: string) {
+  if (isDemo()) { alert('Mode démo — modifications désactivées'); return null; }
   const res = await apiFetch(`${API_URL}/objectives/${id}`, {
     method: 'DELETE', headers: headers(),
   });
@@ -213,6 +223,7 @@ export async function deleteObjective(id: string) {
 
 // Succès
 export async function getSuccesses() {
+  if (isDemo()) return DEMO_SUCCESSES;
   const res = await apiFetch(`${API_URL}/successes`, { headers: headers() });
   return res.json();
 }
@@ -225,6 +236,7 @@ export async function createSuccess(data: {
   type?: string;
   badge_key?: string;
 }) {
+  if (isDemo()) { alert('Mode démo — modifications désactivées'); return null; }
   const res = await apiFetch(`${API_URL}/successes`, {
     method: 'POST',
     headers: headers(),
@@ -235,6 +247,7 @@ export async function createSuccess(data: {
 }
 
 export async function updateSuccess(id: string, data: any) {
+  if (isDemo()) { alert('Mode démo — modifications désactivées'); return null; }
   const res = await apiFetch(`${API_URL}/successes/${id}`, {
     method: 'PUT',
     headers: headers(),
@@ -245,6 +258,7 @@ export async function updateSuccess(id: string, data: any) {
 }
 
 export async function deleteSuccess(id: string) {
+  if (isDemo()) { alert('Mode démo — modifications désactivées'); return null; }
   const res = await apiFetch(`${API_URL}/successes/${id}`, {
     method: 'DELETE',
     headers: headers(),
