@@ -7,13 +7,13 @@ import GlassCard from '@/components/GlassCard';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 
 export default function CalendarPage() {
-  const { user } = useAuth();
+  const { user, accounts, activeAccounts } = useAuth();
   const { mode, formatResult } = useDisplayMode();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay]  = useState<string | null>(null);
   const [hoveredDay, setHoveredDay]    = useState<string | null>(null);
 
-  const capital = user?.capital || 10000;
+  const capital = useMemo(() => { const targets = activeAccounts.length > 0 ? activeAccounts : accounts; if (targets.length === 0) return 0; return targets.reduce((sum, acc) => sum + Number(acc.capital || 0), 0); }, [activeAccounts, accounts]);
   const trades  = useFilteredTrades();
 
   const year        = currentDate.getFullYear();
@@ -51,8 +51,7 @@ export default function CalendarPage() {
     const sign = dayR >= 0 ? '+' : '';
     if (mode === 'R')  return `${sign}${dayR.toFixed(1)}R`;
     if (mode === '$')  return `${sign}$${dayDollar.toFixed(0)}`;
-    const pct = capital > 0 ? (dayDollar / capital) * 100 : dayR;
-    return `${sign}${pct.toFixed(2)}%`;
+    const pct = capital > 0 ? (dayDollar / capital) * 100 : dayR; const pctSign = pct >= 0 ? '+' : ''; return `${pctSign}${pct.toFixed(2)}%`;
   };
 
   const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
@@ -220,7 +219,7 @@ export default function CalendarPage() {
                         <div key={t.id} className="flex items-center justify-between gap-3 text-[10px] mb-1">
                           <span className="text-muted-foreground">{t.pair} {t.direction}</span>
                           <span className={t.resultR != null && t.resultR >= 0 ? 'text-success' : 'text-destructive'}>
-                            {t.resultR != null ? (t.resultR >= 0 ? '+' : '') + t.resultR.toFixed(1) + 'R' : '?? � d�finir'}
+                            {t.resultR != null ? (t.resultR >= 0 ? '+' : '') + t.resultR.toFixed(1) + 'R' : 'RR à définir'}
                           </span>
                         </div>
                       ))}
@@ -278,9 +277,8 @@ export default function CalendarPage() {
             <div className="grid grid-cols-3 gap-2 mb-4">
               {[
                 { label: 'R', val: `${selectedDayR >= 0 ? '+' : ''}${selectedDayR.toFixed(2)}R`, color: selectedDayR >= 0 ? 'text-success' : 'text-destructive' },
-                { label: '%', val: `${selectedDayR >= 0 ? '+' : ''}${((selectedDayDollar / capital) * 100).toFixed(2)}%`, color: selectedDayR >= 0 ? 'text-success' : 'text-destructive' },
-                { label: '$', val: `${selectedDayR >= 0 ? '+' : ''}$${selectedDayDollar.toFixed(0)}`, color: selectedDayR >= 0 ? 'text-success' : 'text-destructive' },
-              ].map(item => (
+                { label: '%', val: (() => { const p = capital > 0 ? (selectedDayDollar / capital) * 100 : 0; return `${p >= 0 ? '+' : ''}${p.toFixed(2)}%`; })(), color: selectedDayR >= 0 ? 'text-success' : 'text-destructive' },
+                { label: '$', val: (() => { const d = selectedDayDollar; return `${d >= 0 ? '+' : '-'}$${Math.abs(d).toFixed(0)}`; })(), color: selectedDayR >= 0 ? 'text-success' : 'text-destructive' },              ].map(item => (
                 <div key={item.label} className="text-center py-2 rounded-xl bg-accent/40 border border-border/30">
                   <p className="text-[9px] text-muted-foreground uppercase">{item.label}</p>
                   <p className={`metric-value text-sm ${item.color}`}>{item.val}</p>
@@ -300,10 +298,8 @@ export default function CalendarPage() {
                   <div className="flex items-center gap-2 text-right">
                     <div>
                       <p className={`metric-value text-sm ${t.resultR != null && t.resultR >= 0 ? 'text-success' : 'text-destructive'}`}>
-                        {t.resultR != null ? (t.resultR >= 0 ? '+' : '') + t.resultR.toFixed(2) + 'R' : '?? � d�finir'}
-                      </p>
-                      <p className="text-[10px] text-muted-foreground">{t.resultDollar != null ? (t.resultDollar >= 0 ? '+' : '') + '$' + t.resultDollar.toFixed(0) : ''}</p>
-                    </div>
+                        {t.resultR != null ? (t.resultR >= 0 ? '+' : '') + t.resultR.toFixed(2) + 'R' : 'RR à définir'}                      </p>
+                        <p className="text-[10px] text-muted-foreground">{t.resultDollar != null ? (t.resultDollar >= 0 ? '+' : '-') + '$' + Math.abs(t.resultDollar).toFixed(0) : ''}</p>                    </div>
                     <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${t.status === 'WIN' ? 'badge-win' : t.status === 'LOSS' ? 'badge-loss' : 'badge-be'}`}>{t.status}</span>
                   </div>
                 </div>
@@ -315,5 +311,3 @@ export default function CalendarPage() {
     </div>
   );
 }
-
-

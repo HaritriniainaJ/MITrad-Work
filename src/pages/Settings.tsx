@@ -3,7 +3,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 import { TradingAccount, ACCOUNT_TYPES } from '@/types/trading';
 import GlassCard from '@/components/GlassCard';
-import { LogOut, Plus, X, AlertTriangle, Pencil, Sun, Moon, Trash2 } from 'lucide-react';
+import { LogOut, Plus, X, AlertTriangle, Pencil, Sun, Moon, Trash2, Eye, EyeOff } from 'lucide-react';
 import { useConfirm } from '@/components/ConfirmModal';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -13,8 +13,8 @@ export default function Settings() {
   const { theme, setTheme } = useTheme();
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
-  const [deletePassword, setDeletePassword] = useState('');
-  const [editTarget, setEditTarget] = useState<TradingAccount | null>(null);
+const [deletePassword, setDeletePassword] = useState('');
+  const [showDeletePassword, setShowDeletePassword] = useState(false);  const [editTarget, setEditTarget] = useState<TradingAccount | null>(null);
   const [editForm, setEditForm] = useState({ name: '', broker: '', type: 'Personnel' as TradingAccount['type'], capital: '' });
   const [confirmDel, ConfirmModalDel] = useConfirm();
   const [confirmReset, ConfirmModalReset] = useConfirm();
@@ -286,7 +286,22 @@ export default function Settings() {
               </p>
               <div className="mb-4">
                 <label className="text-xs text-muted-foreground">Confirmez avec votre mot de passe</label>
-                <input type="password" value={deletePassword} onChange={e => setDeletePassword(e.target.value)} className="input-dark mt-1" placeholder="Votre mot de passe" />
+                <div className="relative mt-1">
+                  <input
+                    type={showDeletePassword ? 'text' : 'password'}
+                    value={deletePassword}
+                    onChange={e => setDeletePassword(e.target.value)}
+                    className="input-dark w-full pr-10"
+                    placeholder="Votre mot de passe"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowDeletePassword(p => !p)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showDeletePassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
               </div>
               <div className="flex gap-3">
                 <button onClick={() => { setDeleteTarget(null); setDeletePassword(''); }} className="flex-1 px-4 py-2.5 rounded-lg border border-border text-foreground text-sm font-medium hover:bg-accent transition-colors">Annuler</button>

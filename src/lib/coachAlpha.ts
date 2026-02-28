@@ -305,9 +305,9 @@ export function generateCoachAdvice(trades: Trade[]): CoachAdvice[] {
 
 export function getDisciplineScore(trades: Trade[]): number {
   const closed = trades.filter(t => t.status !== 'RUNNING');
-  if (closed.length === 0) return 50;
+  if (closed.length === 0) return 0;
 
-  let score = 50;
+  let score = 0;
   const wins = closed.filter(t => t.status === 'WIN');
   const winRate = wins.length / closed.length;
 

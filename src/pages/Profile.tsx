@@ -204,11 +204,53 @@ const [accounts, setAccounts] = useState([]);
               )}
             </div>
 
-            <div className="pb-1">
+            <div className="pb-1 w-full">
               <h2 className="text-xl font-bold text-foreground">{user!.name}</h2>
-              <p className={`text-sm font-semibold ${level.color}`}>
-                {level.emoji} {level.label}
-              </p>
+              {/* Roadmap niveaux */}
+              {(() => {
+                const levels = [
+                  { label: 'Starter',   emoji: '🌱', color: '#8B9BB4' },
+                  { label: 'Rising',    emoji: '⚡', color: '#FBBF24' },
+                  { label: 'Confirmed', emoji: '🔥', color: '#FB923C' },
+                  { label: 'Pro',       emoji: '💎', color: '#60A5FA' },
+                  { label: 'Elite',     emoji: '👑', color: '#A78BFA' },
+                  { label: 'Legend',    emoji: '🚀', color: '#00D4AA' },
+                ];
+                const currentIdx = levels.findIndex(l => l.label === level.label);
+                return (
+                  <div className="mt-2">
+                    <div className="flex items-center gap-1">
+                      {levels.map((l, i) => {
+                        const isPast    = i < currentIdx;
+                        const isCurrent = i === currentIdx;
+                        const isFuture  = i > currentIdx;
+                        return (
+                          <div key={l.label} className="flex items-center">
+                            <div className="flex flex-col items-center gap-0.5">
+                              <span
+                                className={`text-sm transition-all ${isFuture ? 'grayscale opacity-30' : ''} ${isCurrent ? 'scale-125' : ''}`}
+                                title={l.label}
+                              >
+                                {l.emoji}
+                              </span>
+                              <span
+                                className="text-[9px] font-bold"
+                                style={{ color: isFuture ? '#4B5563' : l.color }}
+                              >
+                                {l.label}
+                              </span>
+                            </div>
+                            {i < levels.length - 1 && (
+                              <div className="w-6 h-0.5 mx-0.5 rounded-full mb-3"
+                                style={{ background: i < currentIdx ? l.color : '#1F2937' }} />
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Toggle public/privé visible */}

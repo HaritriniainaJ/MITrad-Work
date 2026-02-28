@@ -349,7 +349,7 @@ export default function TradeHistory() {
                   </span>
                   )}
                 </td>
-                <td className={`px-4 py-3 metric-value text-sm ${t.resultR != null && t.resultR >= 0 ? 'text-success' : 'text-destructive'}`}>
+                <td className={`px-4 py-3 metric-value text-sm ${t.status === 'WIN' ? 'text-success' : t.status === 'LOSS' ? 'text-destructive' : 'text-muted-foreground'}`}>
                   {formatResult(t.resultR, t.resultDollar, Number(accounts.find(a => String(a.id) === String(t.accountId || (t as any).trading_account_id))?.capital) || activeAccount?.capital || 10000)}
                 </td>
                 <td className="px-4 py-3">

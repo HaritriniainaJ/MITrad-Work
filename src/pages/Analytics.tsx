@@ -7,7 +7,7 @@ import { Trade } from '@/types/trading';
 import GlassCard from '@/components/GlassCard';
 import {
   LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceDot, Legend,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceDot, ReferenceLine, Legend,
 } from 'recharts';
 import { X } from 'lucide-react';
 
@@ -28,14 +28,22 @@ export default function Analytics() {
   const { mode, formatResult } = useDisplayMode();
 const capital = useMemo(() => {
   const targets = activeAccounts.length > 0 ? activeAccounts : accounts;
-  if (targets.length === 0) return user?.capital || 10000;
+  if (targets.length === 0) return 0;
   return targets.reduce((sum, acc) => sum + Number(acc.capital || 0), 0);
 }, [activeAccounts, accounts, user]);
 
   // â”€â”€ Trades filtrés par le sidebar (activeAccounts) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const trades = useFilteredTrades();
 
-  const closed  = useMemo(() => trades.filter(t => t.status !== 'RUNNING'), [trades]);
+  const closed  = useMemo(() => trades.filter(t => t.status !== 'RUNNING').map(t => {
+    if (t.resultR !== 0) return t;
+    const acc = accounts.find(a => String(a.id) === String(t.accountId || (t as any).trading_account_id));
+    const cap = Number(acc?.capital) || capital || 10000;
+    const riskDollar = cap * 0.01;
+    if (riskDollar === 0) return t;
+    const computedR = Math.round((t.resultDollar / riskDollar) * 100) / 100;
+    return { ...t, resultR: computedR };
+  }), [trades, accounts, capital]);
   const wins    = useMemo(() => closed.filter(t => t.status === 'WIN'),  [closed]);
   const losses  = useMemo(() => closed.filter(t => t.status === 'LOSS'), [closed]);
   const be      = useMemo(() => closed.filter(t => t.status === 'BE'),   [closed]);
@@ -46,8 +54,8 @@ const capital = useMemo(() => {
   const croissancePct = capital > 0 ? ((capitalTotal / capital) * 100) : 0;
 
   // â”€â”€ KPIs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  const totalR      = closed.reduce((s, t) => s + t.resultR, 0);
-  const totalDollar = closed.reduce((s, t) => s + t.resultDollar, 0);
+  const totalR      = closed.reduce((s, t) => s + (t.resultR ?? 0), 0);
+  const totalDollar = closed.reduce((s, t) => s + (t.resultDollar ?? 0), 0);
   const grossProfit = wins.reduce((s, t) => s + t.resultR, 0);
   const grossLoss   = Math.abs(losses.reduce((s, t) => s + t.resultR, 0));
   const winRate     = closed.length ? (wins.length / closed.length * 100) : 0;
@@ -55,15 +63,17 @@ const capital = useMemo(() => {
   const avgR        = closed.length ? totalR / closed.length : 0;
   const maxWS       = getMaxWinStreak(closed);
   const maxLS       = getMaxLossStreak(closed);
-  const maxDD       = getMaxDrawdown(closed);
+  const maxDD       = closed.length === 0 ? 0 : getMaxDrawdown(closed);
   const bestTrade   = closed.reduce<Trade | null>(
     (best, t) => t.resultR > (best?.resultR ?? -999) ? t : best, null
   );
 
   // â”€â”€ Format drawdown selon mode â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const fmtDD = (ddR: number) => {
+    if (isNaN(ddR) || !isFinite(ddR)) return mode === 'R' ? '0.00R' : mode === '$' ? '$0' : '0.00%';
     if (mode === 'R')  return `${ddR.toFixed(2)}R`;
     if (mode === '$')  return `$${(ddR * capital * 0.01).toFixed(0)}`;
+    if (capital === 0) return '0.00%';
     return `${((ddR * capital * 0.01) / capital * 100).toFixed(2)}%`;
   };
   const modeUnit = mode === 'R' ? 'R' : mode === '$' ? '$' : '%';
@@ -328,7 +338,7 @@ const capital = useMemo(() => {
       {bestTrade && (
         <GlassCard glow="gold" className="animate-fade-up cursor-pointer hover:border-warning/30 transition-all" onClick={() => setShowBestTrade(true)}>
           <div className="flex items-center justify-between mb-2">
-            <p className="text-xs font-bold text-warning uppercase tracking-wide">â­ Meilleur Trade</p>
+            <p className="text-xs font-bold text-warning uppercase tracking-wide">⭐ Meilleur Trade</p>
             <span className="text-xs text-muted-foreground hover:text-primary transition-colors">Voir détail ←’</span>
           </div>
           <div className="flex items-center gap-4 flex-wrap">
@@ -422,32 +432,38 @@ const capital = useMemo(() => {
           </div>
           <div className="h-[220px]">
             {chartView === 'area' && (() => {
-              const isPos = cumData.length > 0 && cumData[cumData.length-1]?.r > 0;
-              const strokeColor = isPos ? '#00D4AA' : '#FF3B5C';
-              const gradId = isPos ? 'equityGradPos' : 'equityGradNeg';
-              const last = cumData[cumData.length-1];
+              const vals = cumData.map(d => d[modeKey as keyof typeof d] as number);
+              const minVal = Math.min(0, ...vals);
+              const maxVal = Math.max(0, ...vals);
+              const range = maxVal - minVal || 1;
+              const zeroOffset = maxVal / range;
+              const last = cumData[cumData.length - 1];
               return (
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={cumData}>
                     <defs>
-                      <linearGradient id="equityGradPos" x1="0" y1="0" x2="0" y2="1">
+                      <linearGradient id="equityGrad" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor="#00D4AA" stopOpacity={0.4} />
-                        <stop offset="100%" stopColor="#00D4AA" stopOpacity={0} />
+                        <stop offset={`${zeroOffset * 100}%`} stopColor="#00D4AA" stopOpacity={0.1} />
+                        <stop offset={`${zeroOffset * 100}%`} stopColor="#FF3B5C" stopOpacity={0.1} />
+                        <stop offset="100%" stopColor="#FF3B5C" stopOpacity={0.4} />
                       </linearGradient>
-                      <linearGradient id="equityGradNeg" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#FF3B5C" stopOpacity={0.4} />
-                        <stop offset="100%" stopColor="#FF3B5C" stopOpacity={0} />
+                      <linearGradient id="equityStroke" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset={`${zeroOffset * 100}%`} stopColor="#00D4AA" />
+                        <stop offset={`${zeroOffset * 100}%`} stopColor="#FF3B5C" />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
                     <XAxis dataKey="date" tick={{ fill:'#8899AA', fontSize:10 }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fill:'#8899AA', fontSize:10 }} axisLine={false} tickLine={false} />
                     <Tooltip contentStyle={tooltipStyle} formatter={(v:number) => [`${v.toFixed(2)}${modeUnit}`,'Cumul']} />
-                    <Area type="monotone" dataKey={modeKey} stroke={strokeColor} strokeWidth={2.5} strokeLinecap="round"
-                      fill={`url(#${gradId})`} isAnimationActive animationDuration={1800} />
+                    <ReferenceLine y={0} stroke="rgba(255,255,255,0.15)" strokeDasharray="4 4" />
+                    <Area type="monotone" dataKey={modeKey} stroke="url(#equityStroke)" strokeWidth={2.5}
+                      strokeLinecap="round" fill="url(#equityGrad)" isAnimationActive animationDuration={1800} />
                     {last && (
                       <ReferenceDot x={last.date} y={last[modeKey as keyof typeof last] as number}
-                        r={5} fill={strokeColor} stroke="white" strokeWidth={2} />
+                        r={5} fill={last[modeKey as keyof typeof last] as number >= 0 ? '#00D4AA' : '#FF3B5C'}
+                        stroke="white" strokeWidth={2} />
                     )}
                   </AreaChart>
                 </ResponsiveContainer>
@@ -615,5 +631,7 @@ const capital = useMemo(() => {
     </div>
   );
 }
+
+
 
 

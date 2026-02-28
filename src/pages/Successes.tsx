@@ -536,10 +536,18 @@ export default function Successes() {
   useEffect(() => { fetchSuccesses(); }, []);
 
   // â”€â”€ Succès automatiques â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  useEffect(() => {
-    if (trades.length === 0 || items.length === 0 && trades.length === 0) return;
-    const existingKeys = items.filter(s => s.badge_key).map(s => s.badge_key);
+useEffect(() => {
+    const autoBadges = items.filter(s => (s as any).badge_key);
 
+    // Si plus de trades — supprimer tous les badges automatiques
+    if (trades.length === 0) {
+      if (autoBadges.length === 0) return;
+      Promise.all(autoBadges.map(s => deleteSuccess(s.id))).then(fetchSuccesses);
+      return;
+    }
+
+    // Ajouter les badges débloqués manquants
+    const existingKeys = autoBadges.map(s => (s as any).badge_key);
     AUTO_BADGES.forEach(async badge => {
       if (existingKeys.includes(badge.key)) return;
       if (!badge.check(trades)) return;
@@ -553,6 +561,15 @@ export default function Successes() {
         });
         await fetchSuccesses();
       } catch {}
+    });
+
+    // Supprimer les badges qui ne sont plus mérités
+    autoBadges.forEach(async s => {
+      const badge = AUTO_BADGES.find(b => b.key === (s as any).badge_key);
+      if (!badge) return;
+      if (!badge.check(trades)) {
+        try { await deleteSuccess(s.id); await fetchSuccesses(); } catch {}
+      }
     });
   }, [trades, items.length]);
 

@@ -94,7 +94,7 @@ export function getMaxDrawdown(trades: Trade[]): number {
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   let peak = 0, cumR = 0, maxDD = 0;
   sorted.forEach(t => {
-    cumR += t.resultR;
+    cumR += t.resultR ?? 0;
     peak = Math.max(peak, cumR);
     maxDD = Math.min(maxDD, cumR - peak);
   });

@@ -5,6 +5,7 @@ import { Trade } from '@/types/trading';
 const API_URL = 'http://localhost:8000/api';
 const getToken = () => localStorage.getItem('mitrad_token');
 
+// Clé globale pour forcer le refresh depuis n'importe où
 let globalRefreshFn: (() => void) | null = null;
 export const refreshTrades = () => globalRefreshFn?.();
 
@@ -14,7 +15,6 @@ export function useFilteredTrades(refreshKey?: number): Trade[] {
   const [tick, setTick] = useState(0);
 
   const fetchTrades = useCallback(() => {
-    // Si activeAccounts vide = tous les comptes
     const targetAccounts = activeAccounts.length > 0 ? activeAccounts : accounts;
     if (targetAccounts.length === 0) return;
 
@@ -26,16 +26,12 @@ export function useFilteredTrades(refreshKey?: number): Trade[] {
             'Accept': 'application/json',
             'Authorization': `Bearer ${getToken()}`,
           }
-        }).then(res => res.ok ? res.json() : [])
-          .catch(() => [])
+        }).then(res => res.json())
       )
     ).then(results => {
       const all = results.flat().map((t: any) => ({
         ...t,
-        id:            String(t.id),
-        accountId:     String(t.trading_account_id),
-        trading_account_id: t.trading_account_id,
-        resultR:       t.result_r != null ? Number(t.result_r) : null,
+        resultR:       Number(t.result_r ?? 0),
         resultDollar:  Number(t.result_dollar ?? 0),
         entryPrice:    Number(t.entry_price ?? 0),
         stopLoss:      Number(t.stop_loss ?? 0),
@@ -44,12 +40,13 @@ export function useFilteredTrades(refreshKey?: number): Trade[] {
         exitPrice:     t.exit_price ?? null,
         entryNote:     t.entry_note ?? '',
         exitNote:      t.exit_note ?? '',
-        planRespected: t.plan_respected ?? null,
+        planRespected: t.plan_respected ?? null, // ← NOUVEAU
       }));
       setTrades(all);
-    });
+    }).catch(() => setTrades([]));
   }, [activeAccounts, accounts]);
 
+  // Enregistre la fonction globale
   useEffect(() => {
     globalRefreshFn = () => setTick(t => t + 1);
     return () => { globalRefreshFn = null; };
@@ -61,5 +58,3 @@ export function useFilteredTrades(refreshKey?: number): Trade[] {
 
   return trades;
 }
-
-
