@@ -14,7 +14,11 @@ export default function Settings() {
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 const [deletePassword, setDeletePassword] = useState('');
-  const [showDeletePassword, setShowDeletePassword] = useState(false);  const [editTarget, setEditTarget] = useState<TradingAccount | null>(null);
+const [showDeletePassword, setShowDeletePassword] = useState(false);
+const [showSetPassword, setShowSetPassword] = useState(false);
+const [newPassword, setNewPassword] = useState('');
+const [newPasswordConfirm, setNewPasswordConfirm] = useState('');
+  const [editTarget, setEditTarget] = useState<TradingAccount | null>(null);
   const [editForm, setEditForm] = useState({ name: '', broker: '', type: 'Personnel' as TradingAccount['type'], capital: '' });
   const [confirmDel, ConfirmModalDel] = useConfirm();
   const [confirmReset, ConfirmModalReset] = useConfirm();
@@ -61,22 +65,41 @@ const [deletePassword, setDeletePassword] = useState('');
     } catch { toast.error('Erreur réseau'); }
   };
 
-  const confirmDelete = async () => {
+const confirmDelete = async () => {
     if (!deleteTarget) return;
-    if (!deletePassword.trim()) { toast.error('Mot de passe requis'); return; }
     try {
-      const loginRes = await fetch('http://localhost:8000/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user!.email, password: deletePassword }),
-      });
-      if (!loginRes.ok) { toast.error('Mot de passe incorrect'); return; }
       const res = await fetch(`http://localhost:8000/api/accounts/${deleteTarget}`, {
         method: 'DELETE',
         headers: { 'Authorization': 'Bearer ' + localStorage.getItem('mitrad_token'), 'Content-Type': 'application/json' },
       });
       if (res.ok) { refreshAccounts(); setDeleteTarget(null); setDeletePassword(''); toast.success('Compte supprimé'); }
       else { toast.error('Erreur lors de la suppression'); }
+    } catch { toast.error('Erreur réseau'); }
+  };
+
+  const [currentPassword, setCurrentPassword] = useState('');
+const handleSetPassword = async () => {
+    if (!newPassword || newPassword.length < 8) { toast.error('Mot de passe trop court (min 8 caractères)'); return; }
+    if (newPassword !== newPasswordConfirm) { toast.error('Les mots de passe ne correspondent pas'); return; }
+    if (user?.password_set && !currentPassword) { toast.error('Ancien mot de passe requis'); return; }
+    try {
+      const url = user?.password_set ? 'http://localhost:8000/api/profile/password' : 'http://localhost:8000/api/profile/set-password';
+      const body = user?.password_set 
+        ? { current_password: currentPassword, password: newPassword, password_confirmation: newPasswordConfirm }
+        : { password: newPassword, password_confirmation: newPasswordConfirm };
+      const res = await fetch(url, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('mitrad_token') },
+        body: JSON.stringify(body),
+      });
+      if (res.ok) { 
+        toast.success(user?.password_set ? 'Mot de passe changé !' : 'Mot de passe défini !'); 
+        setShowSetPassword(false); setNewPassword(''); setNewPasswordConfirm(''); setCurrentPassword('');
+        // Mettre à jour le user local
+        const updatedUser = { ...user, password_set: true };
+        localStorage.setItem('mitrad_user', JSON.stringify(updatedUser));
+      }
+      else { toast.error('Erreur'); }
     } catch { toast.error('Erreur réseau'); }
   };
 
@@ -115,7 +138,7 @@ const [deletePassword, setDeletePassword] = useState('');
       {/* Compte utilisateur */}
       <GlassCard className="animate-fade-up">
         <h3 className="text-sm font-bold text-foreground mb-3">Compte utilisateur</h3>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 mb-3">
           <div className="w-10 h-10 rounded-full gradient-primary flex items-center justify-center text-foreground font-bold">
             {user!.name.charAt(0)}
           </div>
@@ -124,6 +147,22 @@ const [deletePassword, setDeletePassword] = useState('');
             <p className="text-xs text-muted-foreground">{user!.email}</p>
           </div>
         </div>
+        <button onClick={() => setShowSetPassword(true)} className="text-xs px-3 py-1.5 rounded-lg border border-primary/30 text-primary hover:bg-primary/10 transition-colors">
+          🔑 {user?.password_set ? 'Changer le mot de passe' : 'Définir un mot de passe'}
+        </button>
+        {showSetPassword && (
+          <div className="mt-3 space-y-2">
+            {user?.password_set && (
+              <input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} placeholder="Ancien mot de passe" className="input-dark w-full" />
+            )}
+            <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Nouveau mot de passe (min 8 car.)" className="input-dark w-full" />
+            <input type="password" value={newPasswordConfirm} onChange={e => setNewPasswordConfirm(e.target.value)} placeholder="Confirmer le mot de passe" className="input-dark w-full" />
+            <div className="flex gap-2">
+              <button onClick={handleSetPassword} className="flex-1 gradient-btn px-3 py-1.5 text-xs">Enregistrer</button>
+              <button onClick={() => setShowSetPassword(false)} className="flex-1 px-3 py-1.5 text-xs rounded-lg border border-border text-muted-foreground hover:bg-accent transition-colors">Annuler</button>
+            </div>
+          </div>
+        )}
       </GlassCard>
 
       {/* Comptes de trading */}

@@ -61,10 +61,10 @@ export default function Profile() {
   const [showAccounts, setShowAccounts] = useState(false);
 
 const trades = useFilteredTrades();
-const [accounts, setAccounts] = useState([]);
+const [accounts, setAccounts] = useState<any[]>([]);
 
   useEffect(() => {
-    getAccounts().then(data => setAccounts(data));
+    getAccounts().then(data => setAccounts(Array.isArray(data) ? data : []));
   }, []);
   const closed  = trades.filter(t => t.status !== 'RUNNING');
   const wins    = closed.filter(t => t.status === 'WIN');
@@ -110,7 +110,8 @@ const [accounts, setAccounts] = useState([]);
   };
 
   // â”€â”€ KPI Cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  const totalCapital = accounts.reduce((s, a) => s + (a.capital || 0), 0);
+  const accountList = Array.isArray(accounts) ? accounts : [];
+const totalCapital = accountList.reduce((s, a) => s + (a.capital || 0), 0);
   const pnlPercent = totalCapital > 0 ? (totalR / totalCapital) * 100 : null;
   const getLevel = (pct: number | null) => {
     if (pct === null)  return { emoji: "🌱", label: "Starter",   color: "text-muted-foreground" };

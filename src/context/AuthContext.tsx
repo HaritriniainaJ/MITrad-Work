@@ -5,6 +5,7 @@ const API_URL = 'http://localhost:8000/api';
 
 interface AuthContextType {
   user: any | null;
+  loading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   updateProfile: (updates: any) => void;
@@ -19,7 +20,9 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<any | null>(null);
+  const savedUser = localStorage.getItem('mitrad_user');
+  const [user, setUser] = useState<any | null>(savedUser ? JSON.parse(savedUser) : null);
+  const [loading, setLoading] = useState(false);
   const [accounts, setAccounts] = useState<TradingAccount[]>([]);
   const [activeAccount, setActiveAccount] = useState<TradingAccount | null>(null);
   const [activeAccounts, setActiveAccountsState] = useState<TradingAccount[]>([]);
@@ -27,13 +30,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const refreshAccounts = () => {
     getAccounts().then(data => setAccounts(Array.isArray(data) ? data : []));
   };
-
-  useEffect(() => {
-    const savedUser = localStorage.getItem('mitrad_user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-  }, []);
 
   useEffect(() => {
     if (user) {
@@ -51,9 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         },
         body: JSON.stringify({ email, password }),
       });
-
       const data = await response.json();
-
       if (response.ok && data.token) {
         localStorage.setItem('mitrad_token', data.token);
         localStorage.setItem('mitrad_user', JSON.stringify(data.user));
@@ -67,17 +61,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const logout = async () => {
+  const logout = () => {
     const token = localStorage.getItem('mitrad_token');
-    if (token) {
-      await fetch(`${API_URL}/logout`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
-        },
-      });
-    }
     setUser(null);
     setAccounts([]);
     setActiveAccount(null);
@@ -86,6 +71,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('mitrad_user');
     localStorage.removeItem('mitrad_active_account');
     localStorage.removeItem('mitrad_active_accounts');
+    if (token) {
+      fetch(`${API_URL}/logout`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+        },
+      }).catch(() => {});
+    }
   };
 
   const updateProfile = (updates: any) => {
@@ -115,7 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider value={{
-      user, login, logout, updateProfile,
+      user, loading, login, logout, updateProfile,
       accounts,
       activeAccount, setActiveAccount: handleSetActiveAccount,
       activeAccounts, setActiveAccounts: handleSetActiveAccounts,
@@ -131,4 +125,3 @@ export function useAuth() {
   if (!ctx) throw new Error('useAuth must be used within AuthProvider');
   return ctx;
 }
-

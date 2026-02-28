@@ -23,9 +23,17 @@
     <div id="root"></div>
     <script>
     // SPA fallback: restore last path on refresh
-    const path = sessionStorage.getItem("spa_path");
-    if (path && path !== "/") { sessionStorage.removeItem("spa_path"); window.history.replaceState(null, "", path); }
-    window.addEventListener("beforeunload", () => { sessionStorage.setItem("spa_path", window.location.pathname); });
+    // Ne pas écraser l'URL si elle contient un token Discord
+    const hasDiscordToken = window.location.search.includes('token=') || window.location.search.includes('error=');
+    if (!hasDiscordToken) {
+      const path = sessionStorage.getItem("spa_path");
+      if (path && path !== "/") { sessionStorage.removeItem("spa_path"); window.history.replaceState(null, "", path); }
+    }
+    window.addEventListener("beforeunload", () => { 
+      if (!window.location.search.includes('token=')) {
+        sessionStorage.setItem("spa_path", window.location.pathname); 
+      }
+    });
   </script>
   <script type="module" src="/src/main.tsx"></script>
   </body>
