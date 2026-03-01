@@ -4,6 +4,28 @@
 import NProgress from 'nprogress';
 import { isDemo, DEMO_ANALYSES, DEMO_PLAN_RULES, DEMO_OBJECTIVES, DEMO_SUCCESSES } from './demoData';
 
+// ── Demo toast ───────────────────────────────────────────────────────────────
+function demoToast() {
+  const id = 'demo-readonly-toast';
+  if (document.getElementById(id)) return;
+  const el = document.createElement('div');
+  el.id = id;
+  el.textContent = '🔒 Mode démo — lecture seule';
+  Object.assign(el.style, {
+    position: 'fixed', bottom: '24px', left: '50%',
+    transform: 'translateX(-50%)',
+    background: 'rgba(30,30,40,0.95)',
+    color: '#fff', padding: '10px 22px',
+    borderRadius: '12px', fontSize: '14px',
+    fontWeight: '600', zIndex: '99999',
+    border: '1px solid rgba(255,255,255,0.12)',
+    boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
+    pointerEvents: 'none',
+  });
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 2500);
+}
+
 const API_URL = 'http://localhost:8000/api';
 const getToken = () => localStorage.getItem('mitrad_token');
 const headers = () => ({
@@ -35,7 +57,7 @@ export async function getAnalyses() {
 }
 
 export async function createAnalysis(data: { date: string; title?: string; pairs: any[] }) {
-  if (isDemo()) { alert('Mode démo — modifications désactivées'); return null; }
+  if (isDemo()) { demoToast(); return null; }
   const res = await apiFetch(`${API_URL}/analyses`, {
     method: 'POST',
     headers: headers(),
@@ -46,7 +68,7 @@ export async function createAnalysis(data: { date: string; title?: string; pairs
 }
 
 export async function updateAnalysis(id: string, data: { pairs: any[]; title?: string }) {
-  if (isDemo()) { alert('Mode démo — modifications désactivées'); return null; }
+  if (isDemo()) { demoToast(); return null; }
   const res = await apiFetch(`${API_URL}/analyses/${id}`, {
     method: 'PUT',
     headers: headers(),
@@ -57,7 +79,7 @@ export async function updateAnalysis(id: string, data: { pairs: any[]; title?: s
 }
 
 export async function deleteAnalysis(id: string) {
-  if (isDemo()) { alert('Mode démo — modifications désactivées'); return null; }
+  if (isDemo()) { demoToast(); return null; }
   const res = await apiFetch(`${API_URL}/analyses/${id}`, {
     method: 'DELETE',
     headers: headers(),
@@ -96,7 +118,7 @@ export const deleteAccount = async (id: number) => {
 // TRADES
 // ─────────────────────────────────────────────────────────────────────────────
 export async function createTrade(accountId: string, trade: any) {
-  if (isDemo()) { alert('Mode démo — modifications désactivées'); return null; }
+  if (isDemo()) { demoToast(); return null; }
   const res = await apiFetch(`${API_URL}/accounts/${accountId}/trades`, {
     method: 'POST',
     headers: headers(),
@@ -107,7 +129,7 @@ export async function createTrade(accountId: string, trade: any) {
 }
 
 export async function updateTrade(accountId: number, tradeId: number, trade: any) {
-  if (isDemo()) { alert('Mode démo — modifications désactivées'); return null; }
+  if (isDemo()) { demoToast(); return null; }
   const res = await apiFetch(`${API_URL}/accounts/${accountId}/trades/${tradeId}`, {
     method: 'PUT',
     headers: headers(),
@@ -118,7 +140,7 @@ export async function updateTrade(accountId: number, tradeId: number, trade: any
 }
 
 export async function deleteTrade(accountId: number, tradeId: number) {
-  if (isDemo()) { alert('Mode démo — modifications désactivées'); return null; }
+  if (isDemo()) { demoToast(); return null; }
   const res = await apiFetch(`${API_URL}/accounts/${accountId}/trades/${tradeId}`, {
     method: 'DELETE',
     headers: headers(),
@@ -142,7 +164,7 @@ export async function createPlanRule(rule: {
   description: string;
   images: string[];
 }) {
-  if (isDemo()) { alert('Mode démo — modifications désactivées'); return null; }
+  if (isDemo()) { demoToast(); return null; }
   const res = await apiFetch(`${API_URL}/plan`, {
     method: 'POST',
     headers: headers(),
@@ -158,7 +180,7 @@ export async function updatePlanRule(id: string, rule: {
   images?: string[];
   order?: number;
 }) {
-  if (isDemo()) { alert('Mode démo — modifications désactivées'); return null; }
+  if (isDemo()) { demoToast(); return null; }
   const res = await apiFetch(`${API_URL}/plan/${id}`, {
     method: 'PUT',
     headers: headers(),
@@ -169,7 +191,7 @@ export async function updatePlanRule(id: string, rule: {
 }
 
 export async function deletePlanRule(id: string) {
-  if (isDemo()) { alert('Mode démo — modifications désactivées'); return null; }
+  if (isDemo()) { demoToast(); return null; }
   const res = await apiFetch(`${API_URL}/plan/${id}`, {
     method: 'DELETE',
     headers: headers(),
@@ -204,7 +226,7 @@ export async function getObjectives() {
   return res.json();
 }
 export async function updateObjective(id: string, data: any) {
-  if (isDemo()) { alert('Mode démo — modifications désactivées'); return null; }
+  if (isDemo()) { demoToast(); return null; }
   const res = await apiFetch(`${API_URL}/objectives/${id}`, {
     method: 'POST', headers: headers(), body: JSON.stringify(data),
   });
@@ -213,7 +235,7 @@ export async function updateObjective(id: string, data: any) {
 }
 
 export async function deleteObjective(id: string) {
-  if (isDemo()) { alert('Mode démo — modifications désactivées'); return null; }
+  if (isDemo()) { demoToast(); return null; }
   const res = await apiFetch(`${API_URL}/objectives/${id}`, {
     method: 'DELETE', headers: headers(),
   });
@@ -236,7 +258,7 @@ export async function createSuccess(data: {
   type?: string;
   badge_key?: string;
 }) {
-  if (isDemo()) { alert('Mode démo — modifications désactivées'); return null; }
+  if (isDemo()) { demoToast(); return null; }
   const res = await apiFetch(`${API_URL}/successes`, {
     method: 'POST',
     headers: headers(),
@@ -247,7 +269,7 @@ export async function createSuccess(data: {
 }
 
 export async function updateSuccess(id: string, data: any) {
-  if (isDemo()) { alert('Mode démo — modifications désactivées'); return null; }
+  if (isDemo()) { demoToast(); return null; }
   const res = await apiFetch(`${API_URL}/successes/${id}`, {
     method: 'PUT',
     headers: headers(),
@@ -258,7 +280,7 @@ export async function updateSuccess(id: string, data: any) {
 }
 
 export async function deleteSuccess(id: string) {
-  if (isDemo()) { alert('Mode démo — modifications désactivées'); return null; }
+  if (isDemo()) { demoToast(); return null; }
   const res = await apiFetch(`${API_URL}/successes/${id}`, {
     method: 'DELETE',
     headers: headers(),
@@ -310,5 +332,6 @@ export async function importTrades(accountId: string, trades: any[]) {
   if (!res.ok) throw new Error('Erreur import trades');
   return res.json();
 }
+
 
 

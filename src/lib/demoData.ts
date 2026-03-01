@@ -1,4 +1,4 @@
-// ─────────────────────────────────────────────────────────────────────────────
+﻿// ─────────────────────────────────────────────────────────────────────────────
 // DEMO DATA — Données fictives pour le mode démo
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -65,9 +65,30 @@ export const DEMO_SUCCESSES = [
   { id: 'ds2', title: '5 trades gagnants consécutifs', date: '2026-02-13', note: 'Belle série du 10 au 13 février.', images: [], type: 'Série', badge_key: 'fire' },
 ];
 
+// Décale les trades démo vers le mois en cours
+const shiftTradesToCurrentMonth = (trades: any[]) => {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth(); // 0-based
+
+  return trades.map(t => {
+    const original = new Date(t.date);
+    const shifted = new Date(original);
+    shifted.setFullYear(currentYear);
+    shifted.setMonth(currentMonth);
+    // S'assurer que le jour ne dépasse pas la fin du mois
+    const maxDay = new Date(currentYear, currentMonth + 1, 0).getDate();
+    if (shifted.getDate() > maxDay) shifted.setDate(maxDay);
+    return { ...t, date: shifted.toISOString() };
+  });
+};
+
+export const DEMO_TRADES_SHIFTED = shiftTradesToCurrentMonth(DEMO_TRADES);
+
 export const isDemo = () => {
   try {
     const u = JSON.parse(localStorage.getItem('mitrad_user') || '{}');
     return u?.isDemo === true;
   } catch { return false; }
 };
+

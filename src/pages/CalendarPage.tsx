@@ -48,10 +48,17 @@ export default function CalendarPage() {
   const tradingDays = Object.keys(tradesByDay).length;
 
   const fmtDay = (dayR: number, dayDollar: number): string => {
-    const sign = dayR >= 0 ? '+' : '';
-    if (mode === 'R')  return `${sign}${dayR.toFixed(1)}R`;
-    if (mode === '$')  return `${sign}$${dayDollar.toFixed(0)}`;
-    const pct = capital > 0 ? (dayDollar / capital) * 100 : dayR; const pctSign = pct >= 0 ? '+' : ''; return `${pctSign}${pct.toFixed(2)}%`;
+    if (mode === 'R') {
+      const sign = dayR >= 0 ? '+' : '';
+      return `${sign}${dayR.toFixed(1)}R`;
+    }
+    if (mode === '$') {
+      const sign = dayDollar >= 0 ? '+' : '-';
+      return `${sign}$${Math.abs(dayDollar).toFixed(0)}`;
+    }
+    const pct = capital > 0 ? (dayDollar / capital) * 100 : dayR;
+    const sign = pct >= 0 ? '+' : '-';
+    return `${sign}${Math.abs(pct).toFixed(2)}%`;
   };
 
   const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
@@ -165,14 +172,15 @@ export default function CalendarPage() {
             const isToday   = new Date().toDateString() === new Date(year, month, day).toDateString();
             const isSelected = selectedDay === key;
             const isHovered  = hoveredDay === key;
+            const dayValue = mode === 'R' ? dayR : dayDollar;
             const bgClass = !hasTrades
               ? 'bg-accent/20 border-transparent'
-              : dayR > 0 ? 'bg-success/15 hover:bg-success/25'
-              : dayR < 0 ? 'bg-destructive/15 hover:bg-destructive/25'
+              : dayValue > 0 ? 'bg-success/15 hover:bg-success/25'
+              : dayValue < 0 ? 'bg-destructive/15 hover:bg-destructive/25'
               : 'bg-warning/15 hover:bg-warning/25';
             const borderStyle = hasTrades
-              ? dayR > 0 ? '1px solid rgba(0,212,170,0.4)'
-              : dayR < 0 ? '1px solid rgba(255,59,92,0.4)'
+              ? dayValue > 0 ? '1px solid rgba(0,212,170,0.4)'
+              : dayValue < 0 ? '1px solid rgba(255,59,92,0.4)'
               : '1px solid rgba(245,158,11,0.4)'
               : undefined;
             return (
@@ -193,7 +201,7 @@ export default function CalendarPage() {
                   </span>
                   {hasTrades && (
                     <>
-                      <span className={`metric-value text-lg font-bold leading-tight mt-auto ${dayR >= 0 ? 'text-success' : 'text-destructive'}`}>
+                      <span className={`metric-value text-lg font-bold leading-tight mt-auto ${dayValue > 0 ? 'text-success' : dayValue < 0 ? 'text-destructive' : 'text-warning'}`}>
                         {fmtDay(dayR, dayDollar)}
                       </span>
                       <span className="absolute top-2 right-2 text-[10px] bg-white/15 rounded-full px-1.5 py-0.5 font-semibold text-foreground">

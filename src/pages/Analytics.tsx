@@ -229,7 +229,7 @@ const fmtDD = () => {
             </svg>
           </div>
           <p className="text-[10px] uppercase tracking-widest text-muted-foreground">P&L Total</p>
-          <p className={`metric-value text-xl font-bold mt-0.5 ${totalR >= 0 ? 'text-success' : 'text-destructive'}`}>
+          <p className={`metric-value text-xl font-bold mt-0.5 ${totalDollar > 0 ? 'text-success' : totalDollar < 0 ? 'text-destructive' : 'text-warning'}`}>
             {formatResult(totalR, totalDollar, capital)}
           </p>
         </GlassCard>
@@ -259,7 +259,7 @@ const fmtDD = () => {
         </GlassCard>
         <GlassCard className="animate-fade-up stagger-1 !p-5">
           <p className="text-xs text-muted-foreground uppercase tracking-wide">P&L total</p>
-          <p className={`metric-value text-2xl mt-1 ${capitalTotal >= 0 ? 'text-success' : 'text-destructive'}`}>
+          <p className={`metric-value text-2xl mt-1 ${capitalTotal > 0 ? 'text-success' : capitalTotal < 0 ? 'text-destructive' : 'text-warning'}`}>
             {capitalTotal >= 0 ? '+' : ''}${capitalTotal.toFixed(0)}
           </p>
         </GlassCard>
@@ -606,7 +606,7 @@ const fmtDD = () => {
             <tbody>
               {setupData.map(s => (
                 <tr key={s.setup} className="border-b border-border/50 hover:bg-accent/20 transition-colors">
-                  <td className="px-4 py-2.5 font-medium text-foreground">{s.setup}</td>
+                  <td className="px-4 py-2.5 font-medium text-foreground">{s.setup || 'Pas encore défini'}</td>
                   <td className="px-4 py-2.5 text-muted-foreground">{s.count}</td>
                   <td className="px-4 py-2.5 text-foreground">{s.winRate}%</td>
                   <td className={`px-4 py-2.5 metric-value ${s.avgR >= 0 ? 'text-success' : 'text-destructive'}`}>

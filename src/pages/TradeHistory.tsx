@@ -239,9 +239,9 @@ export default function TradeHistory() {
       });
       setEditingTrade(null);
       setRefreshKey(k => k + 1);
-      toast.success('Trade mis Ã  jour !');
+      toast.success('Trade mis à jour !');
     } catch {
-      toast.error('Erreur mise Ã  jour');
+      toast.error('Erreur mise à jour');
     }
   };
 
@@ -318,7 +318,7 @@ export default function TradeHistory() {
                 onClick={() => setSelectedTrade(t)}
               >
                 <td className="px-4 py-3 text-xs text-muted-foreground">
-                  {new Date(t.date).toLocaleDateString('fr', { month: 'short', day: 'numeric' })}
+                  {t.date ? new Date(t.date).toLocaleDateString('fr', { month: 'short', day: 'numeric' }) : '—'}
                 </td>
                 <td className="px-4 py-3 font-medium text-foreground">{t.pair}</td>
                 <td className="px-4 py-3">
@@ -401,7 +401,7 @@ export default function TradeHistory() {
         </div>
       )}
 
-      {/* â”€â”€ MODALE DÉTAIL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ”€”€ MODALE DÉTAIL ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€ */}
       {selectedTrade && !editingTrade && (
         <div className="modal-overlay" onClick={() => setSelectedTrade(null)}>
           <div className="modal-content glass p-6 max-w-lg w-full max-h-[85vh] overflow-y-auto scrollbar-thin" onClick={e => e.stopPropagation()}>
@@ -417,7 +417,7 @@ export default function TradeHistory() {
               {[
                 { label: 'Date',    val: new Date(selectedTrade.date).toLocaleString('fr') },
                 { label: 'Session', val: selectedTrade.session },
-                { label: 'Setup',   val: selectedTrade.setup || 'ï¿½ Non dï¿½fini' },
+                { label: 'Setup',   val: selectedTrade.setup || '— Non d—fini' },
 
                 { label: 'Émotion', val: selectedTrade.emotion },
                 { label: 'Entrée',  val: selectedTrade.entryPrice },
@@ -433,7 +433,7 @@ export default function TradeHistory() {
               ))}
               <div className="flex justify-between py-1 border-b border-border/30">
                 <span className="text-muted-foreground">Qualité</span>
-                {selectedTrade.is_imported && selectedTrade.quality == null ? (<span className="flex items-center gap-1 text-amber-400 text-xs font-bold"><AlertTriangle size={12} /> ï¿½ dï¿½finir</span>) : (<span className="text-foreground font-bold">{getQualityNum(selectedTrade.quality)}/10</span>)}
+                {selectedTrade.is_imported && selectedTrade.quality == null ? (<span className="flex items-center gap-1 text-amber-400 text-xs font-bold"><AlertTriangle size={12} /> — d—finir</span>) : (<span className="text-foreground font-bold">{getQualityNum(selectedTrade.quality)}/10</span>)}
               </div>
               <div className="flex justify-between py-1 border-b border-border/30">
                 <span className="text-muted-foreground">Résultat</span>
@@ -455,7 +455,7 @@ export default function TradeHistory() {
                   selectedTrade.planRespected === false ? 'bg-destructive/20 text-destructive' :
                   'bg-accent/40 text-muted-foreground'
                 }`}>
-                  {selectedTrade.planRespected === true ? 'âœ… Oui' : selectedTrade.planRespected === false ? 'âŒ Non' : '"” NSP'}
+                  {selectedTrade.planRespected === true ? '✅ Oui' : selectedTrade.planRespected === false ? 'Œ Non' : '"” NSP'}
                 </span>
               </div>
               {selectedTrade.entryNote && (
@@ -494,7 +494,7 @@ export default function TradeHistory() {
         </div>
       )}
 
-      {/* â”€â”€ MODALE ÉDITION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ”€”€ MODALE ÉDITION ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€ */}
       {editingTrade && (
         <div className="modal-overlay" onClick={() => setEditingTrade(null)}>
           <div className="modal-content glass p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto scrollbar-thin" onClick={e => e.stopPropagation()}>
@@ -504,7 +504,7 @@ export default function TradeHistory() {
             </div>
             <div className="space-y-4">
 
-              {/* â”€â”€ Compte "” lecture seule â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+              {/* ”€”€ Compte "” lecture seule ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€ */}
               {editingAccount && (
                 <div>
                   <label className="text-xs text-muted-foreground">Compte</label>
@@ -513,7 +513,7 @@ export default function TradeHistory() {
                     <div className="w-2 h-2 rounded-full bg-primary shrink-0" />
                     <div>
                       <p className="text-sm font-medium text-foreground">{editingAccount.name}</p>
-                      <p className="text-xs text-muted-foreground">{editingAccount.broker} Â· {editingAccount.type}</p>
+                      <p className="text-xs text-muted-foreground">{editingAccount.broker} · {editingAccount.type}</p>
                     </div>
                     <span className="ml-auto text-[10px] text-primary/70 font-medium">Compte actif</span>
                   </div>
@@ -568,7 +568,7 @@ export default function TradeHistory() {
                         className="select-dark flex-1"
                       >
                         {allSetups.map(s => <option key={s} value={s}>{s}</option>)}
-                        <option value="__custom__">âž• Autre setup...</option>
+                        <option value="__custom__">ž• Autre setup...</option>
                       </select>
                     </div>
                     {(!allSetups.includes(editingTrade.setup) || editingTrade.setup === '__custom__') && (
@@ -667,13 +667,13 @@ export default function TradeHistory() {
                 </div>
               </div>
 
-              {/* â”€â”€ Plan respecté "” toggle éditable â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+              {/* ”€”€ Plan respecté "” toggle éditable ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€ */}
               <div>
                 <label className="text-xs text-muted-foreground">Plan de trading respecté ?</label>
                 <div className="flex gap-2 mt-2">
                   {([
-                    { value: true,  label: 'âœ… Oui', active: 'bg-success/20 border-success/50 text-success' },
-                    { value: false, label: 'âŒ Non',  active: 'bg-destructive/20 border-destructive/50 text-destructive' },
+                    { value: true,  label: '✅ Oui', active: 'bg-success/20 border-success/50 text-success' },
+                    { value: false, label: 'Œ Non',  active: 'bg-destructive/20 border-destructive/50 text-destructive' },
                     { value: null,  label: '"” NSP',   active: 'bg-accent/60 border-border text-muted-foreground' },
                   ] as const).map(opt => (
                     <button
@@ -745,7 +745,7 @@ export default function TradeHistory() {
 
       {ConfirmModal}
 
-      {/* â”€â”€ ZOOM IMAGE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ”€”€ ZOOM IMAGE ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€ */}
       {zoomImg && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90" onClick={() => setZoomImg(null)}>
           <button className="absolute top-4 right-4 text-white hover:text-gray-300" onClick={() => setZoomImg(null)}>
@@ -757,6 +757,7 @@ export default function TradeHistory() {
     </div>
   );
 }
+
 
 
 

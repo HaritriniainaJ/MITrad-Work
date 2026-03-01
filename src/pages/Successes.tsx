@@ -18,9 +18,11 @@ interface Success {
   date: string;
   note: string;
   images: string[];
+  type?: string;
+  badge_key?: string;
 }
 
-// â”€â”€ CSS injecté une seule fois â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── CSS injecté une seule fois ────────────────────────────────────────────────
 const STYLES = `
 @keyframes su-fadeUp {
   from { opacity: 0; transform: translateY(18px); }
@@ -44,10 +46,6 @@ if (typeof document !== 'undefined' && !document.getElementById('su-styles')) {
   document.head.appendChild(s);
 }
 
-// â”€â”€ Lightbox "” rendue via Portal directement dans document.body â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Raison : si rendue Ã  l'intérieur d'un parent avec overflow:hidden ou
-// z-index limité, la lightbox sera clippée/bloquée dans ce conteneur.
-// createPortal() l'échappe complètement du DOM parent.
 function Lightbox({ images, index, onClose }: {
   images: string[];
   index: number;
@@ -79,7 +77,6 @@ function Lightbox({ images, index, onClose }: {
 
   const content = (
     <div style={overlayStyle} onClick={onClose}>
-      {/* Fermer */}
       <button
         onClick={onClose}
         style={{ ...btnStyle, position: 'absolute', top: 16, right: 16 }}
@@ -89,7 +86,6 @@ function Lightbox({ images, index, onClose }: {
         <X size={18} />
       </button>
 
-      {/* Zone image "” stopPropagation pour ne pas fermer en cliquant l'image */}
       <div
         className="su-scale-in"
         style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '0 20px', maxWidth: '100%' }}
@@ -104,7 +100,6 @@ function Lightbox({ images, index, onClose }: {
           </button>
         )}
 
-        {/* Image : max 78vw Ã— 78vh "” jamais plein écran, jamais dans le box */}
         <img
           src={images[current]}
           alt=""
@@ -142,11 +137,9 @@ function Lightbox({ images, index, onClose }: {
     </div>
   );
 
-  // Portal ←’ rendu directement dans body, échappe tout parent DOM
   return createPortal(content, document.body);
 }
 
-// â”€â”€ Galerie compacte côté droit de la carte â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function CompactGallery({ images }: { images: string[] }) {
   const [lightbox, setLightbox] = useState<number | null>(null);
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
@@ -160,7 +153,7 @@ function CompactGallery({ images }: { images: string[] }) {
           flexShrink: 0,
           width: images.length === 1 ? 100 : 152,
           borderRadius: 12,
-          overflow: 'hidden', // overflow:hidden ici "” mais Lightbox échappe via Portal
+          overflow: 'hidden',
           boxShadow: '0 4px 20px rgba(0,0,0,.25), 0 1px 4px rgba(0,0,0,.15)',
           border: '1px solid rgba(255,255,255,.07)',
         }}
@@ -209,7 +202,6 @@ function CompactGallery({ images }: { images: string[] }) {
         </div>
       </div>
 
-      {/* Portal lightbox "” rendu dans body, pas dans ce div */}
       {lightbox !== null && (
         <Lightbox images={images} index={lightbox} onClose={() => setLightbox(null)} />
       )}
@@ -217,7 +209,6 @@ function CompactGallery({ images }: { images: string[] }) {
   );
 }
 
-// â”€â”€ Galerie dans le modal (pleine largeur) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function ModalGallery({
   images,
   onRemove,
@@ -290,10 +281,6 @@ function ModalGallery({
   );
 }
 
-// â”€â”€ Modal formulaire â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// BUG MODAL FERMETURE : handleSubmit appelle onSave() PUIS onClose().
-// onClose() est appelé ici-même, pas délégué au parent "” garanti de toujours
-// se fermer après la sauvegarde, quelle que soit la logique parent.
 function SuccessModal({
   initial,
   onSave,
@@ -308,7 +295,6 @@ function SuccessModal({
   const [note, setNote]     = useState(initial?.note   ?? '');
   const [images, setImages] = useState<string[]>(initial?.images ?? []);
 
-  // Refs pour lire les valeurs les plus récentes sans recréer handleSubmit
   const rTitle  = useRef(title);  rTitle.current  = title;
   const rDate   = useRef(date);   rDate.current   = date;
   const rNote   = useRef(note);   rNote.current   = note;
@@ -316,14 +302,12 @@ function SuccessModal({
 
   const handleSubmit = () => {
     if (!rTitle.current.trim()) { toast.error('Le titre est requis'); return; }
-    // 1. Sauvegarder
     onSave({
       title:  rTitle.current.trim(),
       date:   rDate.current,
       note:   rNote.current.trim(),
       images: rImages.current,
     });
-    // 2. Fermer "” appelé ICI, toujours, après onSave
     onClose();
   };
 
@@ -421,7 +405,6 @@ function SuccessModal({
   );
 }
 
-// â”€â”€ Carte succès â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function SuccessCard({ item, onEdit, onDelete, index }: {
   item: Success; onEdit: () => void; onDelete: () => void; index: number;
 }) {
@@ -429,7 +412,6 @@ function SuccessCard({ item, onEdit, onDelete, index }: {
   return (
     <GlassCard className={`su-fade-up ${stagger} overflow-visible`}>
       <div className="flex gap-4 items-start">
-        {/* Colonne gauche "” texte */}
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2 mb-1.5">
             <div className="flex items-start gap-2.5 min-w-0">
@@ -460,15 +442,13 @@ function SuccessCard({ item, onEdit, onDelete, index }: {
           )}
         </div>
 
-        {/* Colonne droite "” galerie compacte */}
         {item.images.length > 0 && <CompactGallery images={item.images} />}
       </div>
     </GlassCard>
   );
 }
 
-// â”€â”€ Page principale â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// â”€â”€ Définition des badges automatiques â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Définition des badges automatiques ────────────────────────────────────────
 const AUTO_BADGES = [
   { key: 'first_win',      emoji: '🏆', title: 'Premier trade gagnant',          check: (t: any[]) => t.filter(x => x.status === 'WIN').length >= 1 },
   { key: 'win_3',          emoji: '🔥', title: '3 wins consécutifs',              check: (t: any[]) => getMaxStreak(t) >= 3 },
@@ -516,73 +496,91 @@ export default function Successes() {
   const { user } = useAuth();
   const trades = useFilteredTrades();
 
-  const [items, setItems]         = useState<Success[]>([]);
-  const [showAdd, setShowAdd]     = useState(false);
+  const [items, setItems]           = useState<Success[]>([]);
+  const [showAdd, setShowAdd]       = useState(false);
   const [editTarget, setEditTarget] = useState<Success | null>(null);
-  const [addKey, setAddKey]       = useState(0);
-  const [editKey, setEditKey]     = useState(0);
-  const [activeTab, setActiveTab] = useState<'all' | 'auto' | 'manual'>('all');
+  const [addKey, setAddKey]         = useState(0);
+  const [editKey, setEditKey]       = useState(0);
+  const [activeTab, setActiveTab]   = useState<'all' | 'auto' | 'manual'>('all');
 
-  const fetchSuccesses = async () => {
+  const fetchSuccesses = async (): Promise<Success[]> => {
     try {
       const data = await getSuccesses();
-      setItems(Array.isArray(data) ? data.map((s: any) => ({
+      const parsed: Success[] = Array.isArray(data) ? data.map((s: any) => ({
         ...s,
         images: s.images || [],
-      })) : []);
-    } catch { setItems([]); }
+      })) : [];
+      setItems(parsed);
+      return parsed;
+    } catch { setItems([]); return []; }
   };
 
   useEffect(() => { fetchSuccesses(); }, []);
 
-  // â”€â”€ Succès automatiques â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-useEffect(() => {
-    const autoBadges = items.filter(s => (s as any).badge_key);
+  // ── Clé de signature des trades : recalculée seulement quand les données métier changent ──
+  // CORRECTION : on calcule la signature HORS du tableau de dépendances
+  // pour éviter l'erreur "array in deps" qui empêchait le useEffect de tourner.
+  const tradesSignature = trades
+    .map(t => `${t.id}:${t.status}:${t.resultR ?? 0}`)
+    .join('|');
 
-    // Si plus de trades — supprimer tous les badges automatiques
-    if (trades.length === 0) {
-      if (autoBadges.length === 0) return;
-      Promise.all(autoBadges.map(s => deleteSuccess(s.id))).then(fetchSuccesses);
-      return;
-    }
+  useEffect(() => {
+    if (!trades || trades.length === 0) return;
 
-    // Ajouter les badges débloqués manquants
-    const existingKeys = autoBadges.map(s => (s as any).badge_key);
-    AUTO_BADGES.forEach(async badge => {
-      if (existingKeys.includes(badge.key)) return;
-      if (!badge.check(trades)) return;
-      try {
-        await createSuccess({
-          title:     `${badge.emoji} ${badge.title}`,
-          date:      new Date().toISOString().split('T')[0],
-          note:      'Badge débloqué automatiquement par Mentor-X',
-          type:      'auto',
-          badge_key: badge.key,
-        });
-        await fetchSuccesses();
-      } catch {}
-    });
+    let cancelled = false;
 
-    // Supprimer les badges qui ne sont plus mérités
-    autoBadges.forEach(async s => {
-      const badge = AUTO_BADGES.find(b => b.key === (s as any).badge_key);
-      if (!badge) return;
-      if (!badge.check(trades)) {
-        try { await deleteSuccess(s.id); await fetchSuccesses(); } catch {}
+    const checkAndSync = async () => {
+      const current = await fetchSuccesses();
+      if (cancelled) return;
+
+      const autoBadges = current.filter((s: Success) => s.badge_key);
+      const existingKeys = autoBadges.map((s: Success) => s.badge_key);
+
+      let changed = false;
+
+      for (const badge of AUTO_BADGES) {
+        const earned = badge.check(trades);
+        const has    = existingKeys.includes(badge.key);
+
+        if (earned && !has) {
+          try {
+            await createSuccess({
+              title:     `${badge.emoji} ${badge.title}`,
+              date:      new Date().toISOString().split('T')[0],
+              note:      'Badge débloqué automatiquement par Mentor-X',
+              type:      'auto',
+              badge_key: badge.key,
+            } as any);
+            changed = true;
+          } catch {}
+        }
+
+        if (!earned && has) {
+          const toDelete = autoBadges.find((s: Success) => s.badge_key === badge.key);
+          if (toDelete) {
+            try { await deleteSuccess(toDelete.id); changed = true; } catch {}
+          }
+        }
       }
-    });
-  }, [trades, items.length]);
+
+      if (!cancelled && changed) await fetchSuccesses();
+    };
+
+    checkAndSync();
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tradesSignature]);
 
   const handleAdd = async (data: Omit<Success, 'id'>) => {
     try {
       await createSuccess({ ...data, type: 'manual' });
       await fetchSuccesses();
-      toast.success('ðŸ† Succès ajouté !');
+      toast.success('🏆 Succès ajouté !');
       setShowAdd(false);
     } catch { toast.error('Erreur ajout'); }
   };
 
-const handleUpdate = async (id: string, data: Omit<Success, 'id'>) => {
+  const handleUpdate = async (id: string, data: Omit<Success, 'id'>) => {
     try {
       await updateSuccess(id, {
         title:  data.title,
@@ -591,9 +589,9 @@ const handleUpdate = async (id: string, data: Omit<Success, 'id'>) => {
         images: data.images,
       });
       await fetchSuccesses();
-      toast.success('âœ… Succès mis Ã  jour');
+      toast.success('✅ Succès mis à jour');
       setEditTarget(null);
-    } catch { toast.error('Erreur mise Ã  jour'); }
+    } catch { toast.error('Erreur mise à jour'); }
   };
 
   const handleDelete = async (id: string) => {
@@ -615,7 +613,6 @@ const handleUpdate = async (id: string, data: Omit<Success, 'id'>) => {
   const autoCount   = items.filter(s => s.type === 'auto').length;
   const manualCount = items.filter(s => s.type !== 'auto').length;
 
-  // â”€â”€ Badges non encore débloqués â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const lockedBadges = useMemo(() => {
     const existingKeys = items.filter(s => s.badge_key).map(s => s.badge_key);
     return AUTO_BADGES.filter(b => !existingKeys.includes(b.key));
@@ -671,7 +668,6 @@ const handleUpdate = async (id: string, data: Omit<Success, 'id'>) => {
 
       <div className="space-y-4">
         {filtered.filter(item => item.type !== "auto").map((item, idx) => (
-
           <div key={item.id} className="flex gap-3">
             <div className="flex flex-col items-center">
               <div className={`w-3 h-3 rounded-full mt-4 shrink-0 ${item.type === 'auto' ? 'bg-primary' : 'bg-warning'}`} />
@@ -704,6 +700,7 @@ const handleUpdate = async (id: string, data: Omit<Success, 'id'>) => {
           })}
         </div>
       </div>
+
       {items.length === 0 && (
         <GlassCard className="text-center py-16 su-fade-up su-s2">
           <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
@@ -711,7 +708,7 @@ const handleUpdate = async (id: string, data: Omit<Success, 'id'>) => {
           </div>
           <p className="text-foreground font-semibold text-base">Aucun succès enregistré</p>
           <p className="text-muted-foreground text-sm mt-1 max-w-xs mx-auto">
-            Célèbre tes victoires, même les petites "” elles comptent toutes.
+            Célèbre tes victoires, même les petites — elles comptent toutes.
           </p>
           <button onClick={() => { setAddKey(k => k+1); setShowAdd(true); }}
             className="gradient-btn px-5 py-2 text-sm mt-5 inline-flex items-center gap-2">
@@ -730,5 +727,3 @@ const handleUpdate = async (id: string, data: Omit<Success, 'id'>) => {
     </div>
   );
 }
-
-

@@ -17,10 +17,8 @@ const FEATURES = [
   { icon: TrendingUp,title: 'Suivi de croissance',  desc: 'Capital réel, P&L cumulé, progression visuelle.', color: '#EC4899' },
 ];
 const CONTACTS = [
-  { label: 'Email',    icon: Mail,          href: 'mailto:contact@promitrad.com' },
-  { label: 'Telegram', icon: Send,          href: 'https://t.me/promitrad' },
-  { label: 'Discord',  icon: MessageCircle, href: 'https://discord.gg/promitrad' },
-  { label: 'WhatsApp', icon: MessageCircle, href: 'https://wa.me/promitrad' },
+  { label: 'Email',    icon: Mail,          href: 'https://mail.google.com/mail/?view=cm&to=Investhari04@gmail.com' },
+  { label: 'WhatsApp', icon: MessageCircle, href: 'https://wa.me/261345628584' },
 ];
 const CHART_DATA = [{ v:0 },{ v:1.2 },{ v:0.8 },{ v:2.1 },{ v:1.9 },{ v:3.4 },{ v:2.8 },{ v:4.1 },{ v:3.7 },{ v:5.2 }];
 
@@ -240,9 +238,7 @@ useEffect(() => {
         <motion.div initial={{ opacity:0, x:-40 }} animate={{ opacity:1, x:0 }} transition={{ duration:0.7, ease:'easeOut' }}
           className="hidden lg:flex flex-col gap-8">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shadow-lg">
-              <TrendingUp size={20} className="text-white" />
-            </div>
+            <img src="/logo.png" alt="Logo" className="w-10 h-10 object-contain" />
             <div>
               <span className="text-xl font-black gradient-text tracking-tight">Pro MITrad</span>
               <div className="flex items-center gap-1 mt-0.5">
@@ -330,14 +326,12 @@ useEffect(() => {
                   animate={{ rotate:-360 }} transition={{ repeat:Infinity, duration:12, ease:'linear' }} />
                 <motion.div initial={{ scale:0.8, opacity:0 }} animate={{ scale:1, opacity:1 }}
                   transition={{ duration:0.6, type:'spring', bounce:0.3 }} className="relative z-10"
-                  style={{ borderRadius:20, boxShadow:'0 0 0 1px rgba(26,107,255,0.3),0 0 32px rgba(26,107,255,0.25),0 0 64px rgba(124,58,237,0.15)' }}>
-                  <div className="w-16 h-16 rounded-2xl gradient-primary flex items-center justify-center shadow-[0_0_30px_rgba(26,107,255,0.5)]">
-                    <TrendingUp size={28} className="text-white" />
-                  </div>
+                  style={{ borderRadius:'50%', boxShadow:'0 0 0 1px rgba(26,107,255,0.3),0 0 32px rgba(26,107,255,0.25),0 0 64px rgba(124,58,237,0.15)' }}>
+                  <img src="/logo.png" alt="Logo" className="w-20 h-20 object-cover rounded-full" style={{ filter: "drop-shadow(0 0 20px rgba(26,107,255,0.6))", boxShadow: "0 0 0 2px rgba(26,107,255,0.4), 0 0 32px rgba(26,107,255,0.3)" }} />
                 </motion.div>
               </div>
               <h2 className="text-2xl font-black gradient-text">Pro MITrad Journal</h2>
-              <p className="text-muted-foreground text-sm mt-1">Connecte-toi Ã  ton espace de trading</p>
+              <p className="text-muted-foreground text-sm mt-1">Connecte-toi à ton espace de trading</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -428,7 +422,7 @@ useEffect(() => {
 
             <div className="mt-4 p-3.5 rounded-xl bg-accent/30 border border-border/40 text-center">
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Pour accéder Ã  ce journal, contacte l'administrateur "” ton compte sera activé sous 24h.
+                Pour accéder à ce journal, contacte l'administrateur "” ton compte sera activé sous 24h.
               </p>
               <div className="flex items-center justify-center gap-3 mt-3 lg:hidden">
                 {CONTACTS.map(c => (
@@ -444,6 +438,13 @@ useEffect(() => {
     </div>
   );
 }
+
+
+
+
+
+
+
 
 
 

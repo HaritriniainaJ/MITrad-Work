@@ -1,8 +1,8 @@
-﻿// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+﻿// ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
 // PAGE : Support
 // Formulaire de contact : bug, amélioration, question.
 // Stockage localStorage + bouton copier/mailto pour envoi manuel.
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import GlassCard from '@/components/GlassCard';
@@ -52,7 +52,7 @@ export default function Support() {
     if (!form.message.trim()) { toast.error('Le message est requis'); return; }
 
     try {
-      const res = await fetch('https://formspree.io/f/mdalbjaa', {
+      const res = await fetch('https://formspree.io/f/xreavaee', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({ name: form.name, email: user?.email || form.email, type: form.type, message: form.message.trim() }),
@@ -101,7 +101,7 @@ ${form.message}
       {/* En-tête */}
       <div>
         <h1 className="text-2xl md:text-3xl font-bold gradient-text">Support</h1>
-        <p className="text-muted-foreground text-sm mt-1">Un bug ? Une idée ? Une question ? On est lÃ .</p>
+        <p className="text-muted-foreground text-sm mt-1">Un bug ? Une idée ? Une question ? On est là.</p>
       </div>
 
       {submitted ? (
@@ -237,5 +237,6 @@ ${form.message}
     </div>
   );
 }
+
 
 

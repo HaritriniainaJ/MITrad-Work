@@ -11,9 +11,9 @@ import { ZoomableImage } from '@/components/ImageLightbox';
 import { Objective } from '@/types/trading';
 import { getObjectives, createObjective, updateObjective, deleteObjective } from '@/lib/api';
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
 // LIGHTBOX
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
 function Lightbox({ src, onClose }: { src: string; onClose: () => void }) {
   return (
     <div
@@ -42,9 +42,9 @@ function Lightbox({ src, onClose }: { src: string; onClose: () => void }) {
   );
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
 // VISION BOARD "” grille responsive adaptive selon nombre d'images remplies
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
 function VisionBoard({ email }: { email: string }) {
   const storageKey = `mitrad_visionboard_${email}`;
   const TOTAL_SLOTS = 9;
@@ -94,7 +94,7 @@ function VisionBoard({ email }: { email: string }) {
 
   const filledCount = orderedSlots.filter(s => s.img !== null).length;
 
-  // â”€â”€ Styles de grille selon nombre d'images â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ”€”€ Styles de grille selon nombre d'images ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
   // 0        ←’ grille 3Ã—3 vide (invitation)
   // 1        ←’ 1 image grande (16:9 pleine largeur)
   // 2        ←’ 2 colonnes 1:1
@@ -129,7 +129,7 @@ function VisionBoard({ email }: { email: string }) {
       if (displayIdx < 5) return { aspectRatio: '1/1' };
       return null;
     }
-    // 6 Ã  9 : grille 3 cols uniforme
+    // 6 à 9 : grille 3 cols uniforme
     if (displayIdx < count) return { aspectRatio: '1/1' };
     return null;
   };
@@ -145,7 +145,7 @@ function VisionBoard({ email }: { email: string }) {
         boxShadow: '0 4px 32px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.04)',
       }}
     >
-      {/* â”€â”€ En-tête â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ”€”€ En-tête ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€ */}
       <div className="px-5 pt-5 pb-4 flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-3">
           <div
@@ -158,8 +158,8 @@ function VisionBoard({ email }: { email: string }) {
             <h3 className="font-bold text-foreground text-base">Mon Vision Board</h3>
             <p className="text-xs mt-0.5 text-muted-foreground/70">
               {filledCount === 0
-                ? "Ajoute tes inspirations Â· jusqu'Ã  9 images"
-                : `${filledCount} image${filledCount > 1 ? 's' : ''} Â· Visualise tes ambitions`}
+                ? "Ajoute tes inspirations · jusqu'à 9 images"
+                : `${filledCount} image${filledCount > 1 ? 's' : ''}· Visualise tes ambitions`}
             </p>
           </div>
         </div>
@@ -182,7 +182,7 @@ function VisionBoard({ email }: { email: string }) {
         </div>
       </div>
 
-      {/* â”€â”€ Grille images â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ”€”€ Grille images ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€ */}
       <div className="px-4 pb-4">
         {filledCount === 0 ? (
           /* État vide : 9 cellules en pointillés avec icône */
@@ -363,7 +363,7 @@ function VisionBoard({ email }: { email: string }) {
   );
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
 // PAGE PRINCIPALE
 // ─────────────────────────────────────────────────────────────────────────────
 // MODAL OBJECTIF
@@ -408,7 +408,7 @@ function ObjectiveModal({ onSave, onClose, initial }: {
   );
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
 export default function Objectives() {
   // Modale de confirmation glassmorphism (remplace window.confirm)
   const [confirm, ConfirmModal] = useConfirm();
@@ -444,7 +444,7 @@ export default function Objectives() {
 
   const updateObjective = (id: string, data: Omit<Objective, 'id' | 'completed' | 'createdAt'>) => {
     persist(items.map(o => o.id === id ? { ...o, ...data } : o));
-    toast.success('Objectif mis Ã  jour');
+    toast.success('Objectif mis à jour');
   };
 
   const toggleComplete = (id: string) =>
@@ -461,7 +461,7 @@ export default function Objectives() {
   const completed = items.filter(o => o.completed);
   const progress  = items.length > 0 ? Math.round((completed.length / items.length) * 100) : 0;
 
-  // â”€â”€ Carte objectif â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ”€”€ Carte objectif ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
   const ObjectiveCard = ({ obj }: { obj: Objective }) => (
     <div
       className="rounded-2xl overflow-hidden transition-all duration-300"
@@ -656,5 +656,6 @@ export default function Objectives() {
     </div>
   );
 }
+
 
 

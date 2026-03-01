@@ -408,7 +408,7 @@ export default function TradingPlan() {
             Mon Plan de Trading
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
-            {rules.length} règle{rules.length !== 1 ? 's' : ''} définie{rules.length !== 1 ? 's' : ''} s· glisse pour réordonner
+            {rules.length} règle{rules.length !== 1 ? 's' : ''} définie{rules.length !== 1 ? 's' : ''}· glisse pour réordonner
           </p>
         </div>
         <motion.button

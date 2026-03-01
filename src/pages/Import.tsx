@@ -1,6 +1,6 @@
-﻿// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+﻿// ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
 // PAGE : Import "” MT5 & Tradovate
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
 import { useState, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { parseMT5CSV } from '@/lib/importers/mt5Parser';
@@ -59,7 +59,7 @@ const INSTRUCTIONS: Record<Platform, React.ReactNode> = {
   mt5: (
     <ol className="space-y-1 text-sm text-muted-foreground list-decimal list-inside">
       <li>Ouvrez MetaTrader 5</li>
-      <li>Allez dans <strong className="text-foreground">Boîte Ã  outils ←’ Historique</strong></li>
+      <li>Allez dans <strong className="text-foreground">Boîte à outils ←’ Historique</strong></li>
       <li>Clic droit sur la liste ←’ <strong className="text-foreground">Rapport ←’ Rapport en CSV</strong></li>
       <li>Ou : Clic droit ←’ <strong className="text-foreground">Enregistrer comme rapport détaillé (CSV)</strong></li>
     </ol>
@@ -226,7 +226,7 @@ const confirmImport = async () => {
         </p>
       </div>
 
-      {/* â”€â”€ ÉTAPE 1 : Sélection â”€â”€ */}
+      {/* ”€”€ ÉTAPE 1 : Sélection ”€”€ */}
       {step === 'select' && (
         <>
           {/* Choix plateforme */}
@@ -268,7 +268,7 @@ const confirmImport = async () => {
                 ))}
               </select>
               <p className="text-xs text-muted-foreground mt-2">
-                Si sélectionné, les trades seront liés Ã  ce compte dans vos statistiques.
+                Si sélectionné, les trades seront liés à ce compte dans vos statistiques.
               </p>
             </GlassCard>
           )}
@@ -312,7 +312,7 @@ const confirmImport = async () => {
         </>
       )}
 
-      {/* â”€â”€ ÉTAPE 2 : Aperçu â”€â”€ */}
+      {/* ”€”€ ÉTAPE 2 : Aperçu ”€”€ */}
       {step === 'preview' && (
         <GlassCard className="animate-fade-up">
           <div className="flex items-start justify-between mb-5">
@@ -411,13 +411,13 @@ const confirmImport = async () => {
         </GlassCard>
       )}
 
-      {/* â”€â”€ ÉTAPE 3 : Succès â”€â”€ */}
+      {/* ”€”€ ÉTAPE 3 : Succès ”€”€ */}
       {step === 'done' && (
         <GlassCard className="animate-fade-up text-center py-12">
           <CheckCircle size={60} className="text-success mx-auto mb-4" />
           <h3 className="text-xl font-bold text-foreground mb-2">Import réussi !</h3>
           <p className="text-muted-foreground text-sm mb-2">
-            <span className="font-bold text-foreground">{preview.length} trade{preview.length > 1 ? 's' : ''}</span> ajouté{preview.length > 1 ? 's' : ''} Ã  votre journal.
+            <span className="font-bold text-foreground">{preview.length} trade{preview.length > 1 ? 's' : ''}</span> ajouté{preview.length > 1 ? 's' : ''} à votre journal.
           </p>
           <p className="text-xs text-muted-foreground mb-6">
             Les données sont maintenant visibles dans le Dashboard, l'Historique et les Analytiques.
@@ -432,6 +432,7 @@ const confirmImport = async () => {
     </div>
   );
 }
+
 
 
 

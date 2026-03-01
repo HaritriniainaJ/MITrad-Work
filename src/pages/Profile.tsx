@@ -55,25 +55,20 @@ function BadgeChip({ name, description }: { name: string; description: string })
 
 // â”€â”€ Page Profile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function Profile() {
-  const { user, updateProfile } = useAuth();
+  const { user, updateProfile, activeAccounts, accounts: authAccounts } = useAuth();
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ bio: "", name: "", country: "", experience: "", tradingStyle: "", broker: "", ...user! });
   const [showAccounts, setShowAccounts] = useState(false);
-
-const trades = useFilteredTrades();
-const [accounts, setAccounts] = useState<any[]>([]);
-
-  useEffect(() => {
-    getAccounts().then(data => setAccounts(Array.isArray(data) ? data : []));
-  }, []);
+  const trades = useFilteredTrades();
+  const accounts = authAccounts;
   const closed  = trades.filter(t => t.status !== 'RUNNING');
   const wins    = closed.filter(t => t.status === 'WIN');
   const losses  = closed.filter(t => t.status === 'LOSS');
   const winRate = closed.length ? (wins.length / closed.length * 100) : 0;
-  const totalR  = closed.reduce((s, t) => s + t.resultR, 0);
-  const grossProfit = wins.reduce((s, t) => s + t.resultR, 0);
-  const grossLoss   = Math.abs(losses.reduce((s, t) => s + t.resultR, 0));
-  const pf = grossLoss > 0 ? grossProfit / grossLoss : grossProfit > 0 ? 99 : 0;
+ const totalDollar = closed.reduce((s, t) => s + (t.resultDollar ?? 0), 0);
+  const grossProfit = wins.reduce((s, t) => s + (t.resultDollar ?? 0), 0);
+  const grossLoss   = Math.abs(losses.reduce((s, t) => s + (t.resultDollar ?? 0), 0));
+  const pf = grossLoss > 0 ? Math.round((grossProfit / grossLoss) * 100) / 100 : grossProfit > 0 ? 99 : 0;
   const badges = useMemo(() => calculateBadges(closed), [closed]);
 
   const cumData = useMemo(() => {
@@ -111,8 +106,9 @@ const [accounts, setAccounts] = useState<any[]>([]);
 
   // â”€â”€ KPI Cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const accountList = Array.isArray(accounts) ? accounts : [];
-const totalCapital = accountList.reduce((s, a) => s + (a.capital || 0), 0);
-  const pnlPercent = totalCapital > 0 ? (totalR / totalCapital) * 100 : null;
+  const relevantAccounts = activeAccounts.length > 0 ? activeAccounts : accountList;
+  const totalCapital = relevantAccounts.reduce((s, a) => s + (Number(a.capital) || 0), 0);
+  const pnlPercent = totalCapital > 0 ? (totalDollar / totalCapital) * 100 : null;
   const getLevel = (pct: number | null) => {
     if (pct === null)  return { emoji: "🌱", label: "Starter",   color: "text-muted-foreground" };
     if (pct < 0)       return { emoji: "🌱", label: "Starter",   color: "text-muted-foreground" };
@@ -125,8 +121,7 @@ const totalCapital = accountList.reduce((s, a) => s + (a.capital || 0), 0);
   const level = getLevel(pnlPercent);
   const kpis = [
     { label: 'Win Rate',      value: winRate,  suffix: '%',  decimals: 0, icon: Target,    color: 'text-primary' },
-    { label: 'P&L Total',     value: totalR,   suffix: 'R',  decimals: 1, icon: TrendingUp, color: totalR >= 0 ? 'text-success' : 'text-destructive', showSign: true },
-    { label: 'Profit Factor', value: pf,       suffix: '',   decimals: 2, icon: BarChart2,  color: 'text-foreground' },
+    { label: 'P&L Total', value: totalDollar, suffix: '$', decimals: 0, icon: TrendingUp, color: totalDollar >= 0 ? 'text-success' : 'text-destructive', showSign: true },    { label: 'Profit Factor', value: pf,       suffix: '',   decimals: 2, icon: BarChart2,  color: 'text-foreground' },
     { label: 'Trades',        value: closed.length, suffix: '', decimals: 0, icon: Zap,  color: 'text-foreground' },
   ];
 

@@ -47,6 +47,7 @@ const SIDEBAR_MINI = 68;
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { user, logout, accounts, activeAccounts, setActiveAccounts } = useAuth();
+  const isDemoMode = (user as any)?.isDemo === true;
   usePageProgress();
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
@@ -149,6 +150,23 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <X size={20} />
           </button>
         </div>
+
+        {/* Badge DEMO */}
+        {isDemoMode && !collapsed && (
+          <div className="mx-3 mb-1 px-3 py-2 rounded-xl flex items-center gap-2"
+            style={{ background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.3)' }}>
+            <span style={{ fontSize: 13 }}>🔒</span>
+            <div className="min-w-0">
+              <p className="text-xs font-bold" style={{ color: '#f59e0b' }}>Mode Démo</p>
+              <p className="text-[10px] text-muted-foreground">Lecture seule</p>
+            </div>
+          </div>
+        )}
+        {isDemoMode && collapsed && (
+          <div className="flex justify-center py-1" title="Mode Démo — Lecture seule">
+            <span style={{ fontSize: 16 }}>🔒</span>
+          </div>
+        )}
 
         {/* Sélecteur de compte */}
         {accounts.length > 0 && !collapsed && (
@@ -374,6 +392,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+
 
 
 

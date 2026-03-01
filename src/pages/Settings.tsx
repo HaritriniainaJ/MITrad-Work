@@ -9,15 +9,16 @@ import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Settings() {
-  const { user, logout, accounts, refreshAccounts } = useAuth();
+  const { user, logout, accounts, refreshAccounts, updateProfile } = useAuth();
   const { theme, setTheme } = useTheme();
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
-const [deletePassword, setDeletePassword] = useState('');
-const [showDeletePassword, setShowDeletePassword] = useState(false);
-const [showSetPassword, setShowSetPassword] = useState(false);
-const [newPassword, setNewPassword] = useState('');
-const [newPasswordConfirm, setNewPasswordConfirm] = useState('');
+  const [deletePassword, setDeletePassword] = useState('');
+  const [showDeletePassword, setShowDeletePassword] = useState(false);
+  const [showSetPassword, setShowSetPassword] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [newPasswordConfirm, setNewPasswordConfirm] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
   const [editTarget, setEditTarget] = useState<TradingAccount | null>(null);
   const [editForm, setEditForm] = useState({ name: '', broker: '', type: 'Personnel' as TradingAccount['type'], capital: '' });
   const [confirmDel, ConfirmModalDel] = useConfirm();
@@ -65,8 +66,18 @@ const [newPasswordConfirm, setNewPasswordConfirm] = useState('');
     } catch { toast.error('Erreur réseau'); }
   };
 
-const confirmDelete = async () => {
+  const confirmDelete = async () => {
     if (!deleteTarget) return;
+    // Si mot de passe défini, vérifier avant suppression
+    if (user?.password_set) {
+      if (!deletePassword.trim()) { toast.error('Mot de passe requis'); return; }
+      const loginRes = await fetch('http://localhost:8000/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user!.email, password: deletePassword }),
+      }).catch(() => null);
+      if (!loginRes || !loginRes.ok) { toast.error('Mot de passe incorrect'); return; }
+    }
     try {
       const res = await fetch(`http://localhost:8000/api/accounts/${deleteTarget}`, {
         method: 'DELETE',
@@ -77,14 +88,15 @@ const confirmDelete = async () => {
     } catch { toast.error('Erreur réseau'); }
   };
 
-  const [currentPassword, setCurrentPassword] = useState('');
-const handleSetPassword = async () => {
+  const handleSetPassword = async () => {
     if (!newPassword || newPassword.length < 8) { toast.error('Mot de passe trop court (min 8 caractères)'); return; }
     if (newPassword !== newPasswordConfirm) { toast.error('Les mots de passe ne correspondent pas'); return; }
     if (user?.password_set && !currentPassword) { toast.error('Ancien mot de passe requis'); return; }
     try {
-      const url = user?.password_set ? 'http://localhost:8000/api/profile/password' : 'http://localhost:8000/api/profile/set-password';
-      const body = user?.password_set 
+      const url = user?.password_set
+        ? 'http://localhost:8000/api/profile/password'
+        : 'http://localhost:8000/api/profile/set-password';
+      const body = user?.password_set
         ? { current_password: currentPassword, password: newPassword, password_confirmation: newPasswordConfirm }
         : { password: newPassword, password_confirmation: newPasswordConfirm };
       const res = await fetch(url, {
@@ -92,14 +104,17 @@ const handleSetPassword = async () => {
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('mitrad_token') },
         body: JSON.stringify(body),
       });
-      if (res.ok) { 
-        toast.success(user?.password_set ? 'Mot de passe changé !' : 'Mot de passe défini !'); 
-        setShowSetPassword(false); setNewPassword(''); setNewPasswordConfirm(''); setCurrentPassword('');
-        // Mettre à jour le user local
-        const updatedUser = { ...user, password_set: true };
-        localStorage.setItem('mitrad_user', JSON.stringify(updatedUser));
+      if (res.ok) {
+        toast.success(user?.password_set ? 'Mot de passe changé !' : 'Mot de passe défini !');
+        setShowSetPassword(false);
+        setNewPassword('');
+        setNewPasswordConfirm('');
+        setCurrentPassword('');
+        updateProfile({ password_set: true });
+      } else {
+        const data = await res.json().catch(() => ({}));
+        toast.error(data?.message || 'Erreur lors de la mise à jour du mot de passe');
       }
-      else { toast.error('Erreur'); }
     } catch { toast.error('Erreur réseau'); }
   };
 
@@ -147,22 +162,58 @@ const handleSetPassword = async () => {
             <p className="text-xs text-muted-foreground">{user!.email}</p>
           </div>
         </div>
-        <button onClick={() => setShowSetPassword(true)} className="text-xs px-3 py-1.5 rounded-lg border border-primary/30 text-primary hover:bg-primary/10 transition-colors">
+        <button
+          onClick={() => setShowSetPassword(v => !v)}
+          className="text-xs px-3 py-1.5 rounded-lg border border-primary/30 text-primary hover:bg-primary/10 transition-colors"
+        >
           🔑 {user?.password_set ? 'Changer le mot de passe' : 'Définir un mot de passe'}
         </button>
-        {showSetPassword && (
-          <div className="mt-3 space-y-2">
-            {user?.password_set && (
-              <input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} placeholder="Ancien mot de passe" className="input-dark w-full" />
-            )}
-            <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Nouveau mot de passe (min 8 car.)" className="input-dark w-full" />
-            <input type="password" value={newPasswordConfirm} onChange={e => setNewPasswordConfirm(e.target.value)} placeholder="Confirmer le mot de passe" className="input-dark w-full" />
-            <div className="flex gap-2">
-              <button onClick={handleSetPassword} className="flex-1 gradient-btn px-3 py-1.5 text-xs">Enregistrer</button>
-              <button onClick={() => setShowSetPassword(false)} className="flex-1 px-3 py-1.5 text-xs rounded-lg border border-border text-muted-foreground hover:bg-accent transition-colors">Annuler</button>
-            </div>
-          </div>
-        )}
+        <AnimatePresence>
+          {showSetPassword && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden"
+            >
+              <div className="mt-3 space-y-2">
+                {user?.password_set && (
+                  <input
+                    type="password"
+                    value={currentPassword}
+                    onChange={e => setCurrentPassword(e.target.value)}
+                    placeholder="Ancien mot de passe"
+                    className="input-dark w-full"
+                  />
+                )}
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={e => setNewPassword(e.target.value)}
+                  placeholder="Nouveau mot de passe (min 8 car.)"
+                  className="input-dark w-full"
+                />
+                <input
+                  type="password"
+                  value={newPasswordConfirm}
+                  onChange={e => setNewPasswordConfirm(e.target.value)}
+                  placeholder="Confirmer le mot de passe"
+                  className="input-dark w-full"
+                />
+                <div className="flex gap-2">
+                  <button onClick={handleSetPassword} className="flex-1 gradient-btn px-3 py-1.5 text-xs">Enregistrer</button>
+                  <button
+                    onClick={() => { setShowSetPassword(false); setNewPassword(''); setNewPasswordConfirm(''); setCurrentPassword(''); }}
+                    className="flex-1 px-3 py-1.5 text-xs rounded-lg border border-border text-muted-foreground hover:bg-accent transition-colors"
+                  >
+                    Annuler
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </GlassCard>
 
       {/* Comptes de trading */}
@@ -308,7 +359,7 @@ const handleSetPassword = async () => {
         {deleteTarget && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4"
-            onClick={() => { setDeleteTarget(null); setDeletePassword(''); }}>
+            onClick={() => { setDeleteTarget(null); setDeletePassword(''); setShowDeletePassword(false); }}>
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} transition={{ duration: 0.2 }}
               className="w-full max-w-md rounded-2xl border border-white/10 bg-card shadow-[0_4px_40px_rgba(0,0,0,0.6)] p-6"
               onClick={e => e.stopPropagation()}>
@@ -323,37 +374,39 @@ const handleSetPassword = async () => {
                 Tous les trades liés à ce compte resteront dans ton historique, mais le compte sera définitivement supprimé.{' '}
                 <span className="text-destructive font-medium">Cette action est irréversible.</span>
               </p>
-              <div className="mb-4">
-                <label className="text-xs text-muted-foreground">Confirmez avec votre mot de passe</label>
-                <div className="relative mt-1">
-                  <input
-                    type={showDeletePassword ? 'text' : 'password'}
-                    value={deletePassword}
-                    onChange={e => setDeletePassword(e.target.value)}
-                    className="input-dark w-full pr-10"
-                    placeholder="Votre mot de passe"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowDeletePassword(p => !p)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {showDeletePassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
+              {user?.password_set && (
+                <div className="mb-4">
+                  <label className="text-xs text-muted-foreground">Confirmez avec votre mot de passe</label>
+                  <div className="relative mt-1">
+                    <input
+                      type={showDeletePassword ? 'text' : 'password'}
+                      value={deletePassword}
+                      onChange={e => setDeletePassword(e.target.value)}
+                      className="input-dark w-full pr-10"
+                      placeholder="Votre mot de passe"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowDeletePassword(p => !p)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {showDeletePassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
               <div className="flex gap-3">
-                <button onClick={() => { setDeleteTarget(null); setDeletePassword(''); }} className="flex-1 px-4 py-2.5 rounded-lg border border-border text-foreground text-sm font-medium hover:bg-accent transition-colors">Annuler</button>
+                <button onClick={() => { setDeleteTarget(null); setDeletePassword(''); setShowDeletePassword(false); }} className="flex-1 px-4 py-2.5 rounded-lg border border-border text-foreground text-sm font-medium hover:bg-accent transition-colors">Annuler</button>
                 <button onClick={confirmDelete} className="flex-1 px-4 py-2.5 rounded-lg bg-destructive text-white text-sm font-bold hover:bg-destructive/80 transition-colors">Supprimer</button>
               </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
+
       {ConfirmModalDel}
       {ConfirmModalReset}
       {ConfirmModalLogout}
     </div>
   );
 }
-

@@ -1,7 +1,7 @@
 ﻿import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Trade } from '@/types/trading';
-import { isDemo, DEMO_TRADES } from '@/lib/demoData';
+import { isDemo, DEMO_TRADES_SHIFTED } from '@/lib/demoData';
 
 const API_URL = 'http://localhost:8000/api';
 const getToken = () => localStorage.getItem('mitrad_token');
@@ -16,7 +16,7 @@ export function useFilteredTrades(refreshKey?: number): Trade[] {
 
   const fetchTrades = useCallback(() => {
     if (isDemo()) {
-      setTrades(DEMO_TRADES as any);
+      setTrades(DEMO_TRADES_SHIFTED as any);
       return;
     }
     const targetAccounts = activeAccounts.length > 0 ? activeAccounts : accounts;
