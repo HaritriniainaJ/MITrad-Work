@@ -383,7 +383,7 @@ useEffect(() => {
             <motion.button
               type="button"
               whileHover={{ scale:1.02 }} whileTap={{ scale:0.98 }}
-              onClick={() => { window.location.href = 'https://mitrad-backend.onrender.com/auth/discord/redirect'; }}
+              onClick={() => { window.location.href = 'https://mitrad-backend.onrender.com/api/auth/discord/redirect'; }}
               className="w-full py-3 mt-4 flex items-center justify-center gap-3 rounded-xl font-bold text-sm transition-all"
               style={{ background:'#5865F2', color:'#fff', border:'1px solid #4752C4', boxShadow:'0 4px 20px rgba(88,101,242,0.35)' }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
