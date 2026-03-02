@@ -251,26 +251,21 @@ const fmtDD = () => {
         </GlassCard>
       </div>
 
-      {/* â”€â”€ CAPITAL + CROISSANCE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-      <div className="grid grid-cols-2 gap-4">
+{/* ── CAPITAL + CROISSANCE + KPI ─────────────────────────── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <GlassCard className="animate-fade-up !p-5">
           <p className="text-xs text-muted-foreground uppercase tracking-wide">Capital initial</p>
           <p className="metric-value text-2xl text-foreground mt-1">${capital.toLocaleString('fr')}</p>
         </GlassCard>
+
         <GlassCard className="animate-fade-up stagger-1 !p-5">
           <p className="text-xs text-muted-foreground uppercase tracking-wide">Croissance</p>
           <p className={`metric-value text-2xl mt-1 ${croissancePct >= 0 ? 'text-success' : 'text-destructive'}`}>
             {croissancePct >= 0 ? '+' : ''}{croissancePct.toFixed(2)}%
           </p>
         </GlassCard>
-      </div>
 
-            {/* â”€â”€ KPI ROW 2 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-
-           
-
-        <GlassCard className="animate-fade-up stagger-3 !p-5 relative overflow-hidden">
+        <GlassCard className="animate-fade-up stagger-2 !p-5 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent pointer-events-none rounded-2xl" />
           <div className="w-9 h-9 rounded-xl bg-orange-500/15 flex items-center justify-center mb-3">
             <svg width="16" height="16" fill="none" stroke="#FF6B35" strokeWidth="2" viewBox="0 0 24 24">
@@ -285,7 +280,7 @@ const fmtDD = () => {
           <p className="text-[10px] text-muted-foreground mt-1">affiché en {modeUnit}</p>
         </GlassCard>
 
-        <GlassCard className="animate-fade-up stagger-4 !p-5 relative overflow-hidden">
+        <GlassCard className="animate-fade-up stagger-3 !p-5 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-400/5 to-transparent pointer-events-none rounded-2xl" />
           <div className="w-9 h-9 rounded-xl bg-blue-400/15 flex items-center justify-center mb-3">
             <svg width="16" height="16" fill="none" stroke="#60A5FA" strokeWidth="2" viewBox="0 0 24 24">
