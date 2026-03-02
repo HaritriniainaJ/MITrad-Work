@@ -252,18 +252,12 @@ const fmtDD = () => {
       </div>
 
       {/* â”€â”€ CAPITAL + CROISSANCE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 gap-4">
         <GlassCard className="animate-fade-up !p-5">
           <p className="text-xs text-muted-foreground uppercase tracking-wide">Capital initial</p>
           <p className="metric-value text-2xl text-foreground mt-1">${capital.toLocaleString('fr')}</p>
         </GlassCard>
         <GlassCard className="animate-fade-up stagger-1 !p-5">
-          <p className="text-xs text-muted-foreground uppercase tracking-wide">P&L total</p>
-          <p className={`metric-value text-2xl mt-1 ${capitalTotal > 0 ? 'text-success' : capitalTotal < 0 ? 'text-destructive' : 'text-warning'}`}>
-            {capitalTotal >= 0 ? '+' : ''}${capitalTotal.toFixed(0)}
-          </p>
-        </GlassCard>
-        <GlassCard className="animate-fade-up stagger-2 !p-5">
           <p className="text-xs text-muted-foreground uppercase tracking-wide">Croissance</p>
           <p className={`metric-value text-2xl mt-1 ${croissancePct >= 0 ? 'text-success' : 'text-destructive'}`}>
             {croissancePct >= 0 ? '+' : ''}{croissancePct.toFixed(2)}%
