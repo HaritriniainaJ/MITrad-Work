@@ -61,9 +61,21 @@ const [form, setForm] = useState({
   bio: "", name: "", country: "", experience: "Moins de 1 an", tradingStyle: "", broker: "", 
   ...user!,
   experience: user?.experience || "Moins de 1 an",
-  tradingStyle: user?.tradingStyle || user?.trading_style || "",
+  tradingStyle: user?.tradingStyle || (user as any)?.trading_style || "",
   country: user?.country || "",
 });
+
+  useEffect(() => {
+    if (user) {
+      setForm(prev => ({
+        ...prev,
+        ...user,
+        tradingStyle: user.tradingStyle || (user as any).trading_style || "",
+        experience: user.experience || "Moins de 1 an",
+        country: user.country || "",
+      }));
+    }
+  }, [user]);
   const [showAccounts, setShowAccounts] = useState(false);
   const trades = useFilteredTrades();
   const accounts = authAccounts;
