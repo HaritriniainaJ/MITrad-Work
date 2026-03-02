@@ -1,5 +1,6 @@
-﻿import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import NProgress from 'nprogress';
 import { useAuth } from '@/context/AuthContext';
 import {
@@ -421,6 +422,9 @@ useEffect(() => {
             </div>
 
             <div className="mt-4 p-3.5 rounded-xl bg-accent/30 border border-border/40 text-center">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Pas encore de compte ?{' '}<Link to="/register" className="font-semibold hover:text-foreground transition-colors" style={{ color:'#1A6BFF' }}>S'inscrire</Link><br/><br/>Pas encore de compte ? <Link to="/register" style={{ color:'#1A6BFF', fontWeight:600 }}>S'inscrire</Link>
+              </p>
               <p className="text-xs text-muted-foreground leading-relaxed">
                 Pour accéder à ce journal, contacte l'administrateur "” ton compte sera activé sous 24h.
               </p>
