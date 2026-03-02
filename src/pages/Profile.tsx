@@ -66,13 +66,13 @@ const [form, setForm] = useState({
 });
 
 useEffect(() => {
-  if (user) {
+  if (user && !editing) {
     setForm(prev => ({
       ...prev,
       ...user,
-      tradingStyle: (user as any).trading_style || user.tradingStyle || prev.tradingStyle || "",
-      experience: user.experience || prev.experience || "Moins de 1 an",
-      country: user.country || prev.country || "",
+      tradingStyle: (user as any).trading_style || user.tradingStyle || "",
+      experience: user.experience || "Moins de 1 an",
+      country: user.country || "",
     }));
   }
 }, [user]);
