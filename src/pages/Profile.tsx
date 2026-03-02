@@ -95,8 +95,8 @@ export default function Profile() {
   };
 
   const handleSave = () => {
-    if (!form.name || !form.bio || !form.country || !form.experience || !form.tradingStyle || !form.broker) {
-      toast.error('Tous les champs sont requis');
+    if (!form.name) {
+      toast.error('Le nom est requis');
       return;
     }
     updateProfile(form);
