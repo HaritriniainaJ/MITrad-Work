@@ -57,7 +57,13 @@ function BadgeChip({ name, description }: { name: string; description: string })
 export default function Profile() {
   const { user, updateProfile, activeAccounts, accounts: authAccounts } = useAuth();
   const [editing, setEditing] = useState(false);
-  const [form, setForm] = useState({ bio: "", name: "", country: "", experience: "", tradingStyle: "", broker: "", ...user! });
+const [form, setForm] = useState({ 
+  bio: "", name: "", country: "", experience: "Moins de 1 an", tradingStyle: "", broker: "", 
+  ...user!,
+  experience: user?.experience || "Moins de 1 an",
+  tradingStyle: user?.trading_style || "",
+  country: user?.country || "",
+});
   const [showAccounts, setShowAccounts] = useState(false);
   const trades = useFilteredTrades();
   const accounts = authAccounts;
@@ -317,8 +323,8 @@ export default function Profile() {
               <div>
                 <label className="text-xs text-muted-foreground">Expérience *</label>
                 <select value={form.experience} onChange={e => setForm(prev => ({ ...prev, experience: e.target.value }))} className="select-dark mt-1">
-                  {EXPERIENCE_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
-                </select>
+                  {!form.experience && <option value="">-- Sélectionner --</option>}
+                  {EXPERIENCE_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}                </select>
               </div>
               <div>
                 <label className="text-xs text-muted-foreground">Style de trading *</label>
