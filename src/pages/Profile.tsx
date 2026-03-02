@@ -58,21 +58,23 @@ export default function Profile() {
   const { user, updateProfile, activeAccounts, accounts: authAccounts } = useAuth();
   const [editing, setEditing] = useState(false);
 const [form, setForm] = useState({
-  bio: "", name: "", country: "", experience: "Moins de 1 an", tradingStyle: "", broker: "",
+  bio: "", name: "", country: "", experience: "Moins de 1 an", tradingStyle: "Scalping", broker: "",
   ...user!,
   experience: user?.experience || "Moins de 1 an",
-  tradingStyle: (user as any)?.trading_style || user?.tradingStyle || "",
+  tradingStyle: (user as any)?.trading_style || user?.tradingStyle || "Scalping",
   country: user?.country || "",
 });
 
 useEffect(() => {
   if (user && !editing) {
+    const ts = (user as any).trading_style || user.tradingStyle || "Scalping";
+    const exp = user.experience || "Moins de 1 an";
     setForm(prev => ({
       ...prev,
       ...user,
-      tradingStyle: (user as any).trading_style || user.tradingStyle || "",
-      experience: user.experience || "Moins de 1 an",
-      country: user.country || "",
+      tradingStyle: ts,
+      experience: exp,
+      country: user.country || prev.country || "",
     }));
   }
 }, [user]);
@@ -112,15 +114,17 @@ useEffect(() => {
     reader.readAsDataURL(file);
   };
 
-  const handleSave = () => {
-    if (!form.name) {
-      toast.error('Le nom est requis');
-      return;
-    }
-    updateProfile(form);
-    setEditing(false);
-    toast.success('Profil mis À  jour !');
-  };
+
+const handleSave = () => {
+  console.log('FORM COMPLET:', JSON.stringify(form));
+  if (!form.name) {
+    toast.error('Le nom est requis');
+    return;
+  }
+  updateProfile(form);
+  setEditing(false);
+  toast.success('Profil mis à jour !');
+};
 
   // â”€â”€ KPI Cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const accountList = Array.isArray(accounts) ? accounts : [];

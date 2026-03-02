@@ -71,7 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const updated = { 
   ...parsed, 
   ...profile,
-  tradingStyle: profile.trading_style ?? parsed.tradingStyle,
+  tradingStyle: profile.trading_style || parsed.tradingStyle || "",
 };
           localStorage.setItem('mitrad_user', JSON.stringify(updated));
           setUser(updated);
@@ -137,10 +137,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const updateProfile = (updates: any) => {
     if (!user) return;
     const updated = { 
-  ...user, 
-  ...updates,
-  tradingStyle: updates.tradingStyle || updates.trading_style || user.tradingStyle || "",
-};
+      ...user, 
+      ...updates,
+      tradingStyle: updates.tradingStyle || user.tradingStyle || "",
+      trading_style: updates.tradingStyle || user.tradingStyle || "",
+    };
     localStorage.setItem('mitrad_user', JSON.stringify(updated));
     setUser(updated);
 
