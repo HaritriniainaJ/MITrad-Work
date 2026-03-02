@@ -355,7 +355,7 @@ const [form, setForm] = useState({
             <div className="grid grid-cols-2 gap-4 mt-3">
               {[
                 { label: 'Expérience',    value: user!.experience },
-                { label: 'Style',         value: user!.tradingStyle },
+                { label: 'Style',         value: user!.trading_style },
                 { label: 'Broker',        value: user!.broker },
                 { label: 'Pays',          value: user!.country },
               ].map(({ label, value }) => (
