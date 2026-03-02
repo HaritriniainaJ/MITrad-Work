@@ -267,8 +267,8 @@ const fmtDD = () => {
 
         <GlassCard className="animate-fade-up stagger-2 !p-5 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent pointer-events-none rounded-2xl" />
-          <div className="w-9 h-9 rounded-xl bg-orange-500/15 flex items-center justify-center mb-3">
-            <svg width="16" height="16" fill="none" stroke="#FF6B35" strokeWidth="2" viewBox="0 0 24 24">
+          <div className="w-6 h-6 rounded-lg bg-orange-500/15 flex items-center justify-center mb-2">
+            <svg width="11" height="11" fill="none" stroke="#FF6B35" strokeWidth="2" viewBox="0 0 24 24">
               <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/>
               <polyline points="17 18 23 18 23 12"/>
             </svg>
@@ -282,8 +282,8 @@ const fmtDD = () => {
 
         <GlassCard className="animate-fade-up stagger-3 !p-5 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-400/5 to-transparent pointer-events-none rounded-2xl" />
-          <div className="w-9 h-9 rounded-xl bg-blue-400/15 flex items-center justify-center mb-3">
-            <svg width="16" height="16" fill="none" stroke="#60A5FA" strokeWidth="2" viewBox="0 0 24 24">
+          <div className="w-6 h-6 rounded-lg bg-blue-400/15 flex items-center justify-center mb-2">
+            <svg width="11" height="11" fill="none" stroke="#60A5FA" strokeWidth="2" viewBox="0 0 24 24">
               <line x1="18" y1="20" x2="18" y2="10"/>
               <line x1="12" y1="20" x2="12" y2="4"/>
               <line x1="6"  y1="20" x2="6"  y2="14"/>
