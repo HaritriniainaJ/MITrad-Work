@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -23,7 +23,6 @@ import Objectives from "@/pages/Objectives";
 import Import from "@/pages/Import";
 import Support from "@/pages/Support";
 import NotFound from "@/pages/NotFound";
-import Register from "@/pages/Register";
 
 const queryClient = new QueryClient();
 
@@ -57,7 +56,7 @@ function AppRoutes() {
 
   return (
     <Routes>
-      <Route path="/register" element={<Register />} />`n      <Route path="/login" element={<><DiscordCallback />{user ? <Navigate to="/analytics" replace /> : <Login />}</>} />
+      <Route path="/login" element={<><DiscordCallback />{user ? <Navigate to="/analytics" replace /> : <Login />}</>} />
       <Route path="/" element={<Navigate to={user ? "/analytics" : "/login"} replace />} />
 
       <Route path="/analytics"      element={<ProtectedRoute><Analytics /></ProtectedRoute>} />

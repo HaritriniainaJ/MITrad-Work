@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 import { TradingAccount, ACCOUNT_TYPES } from '@/types/trading';
@@ -31,7 +31,7 @@ export default function Settings() {
   const addAccount = async () => {
     if (!newAccount.name || !newAccount.broker) { toast.error('Nom et broker requis'); return; }
     try {
-      const res = await fetch('https://mitrad-backend.onrender.com/api/accounts', {
+      const res = await fetch('http://localhost:8000/api/accounts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('mitrad_token') },
         body: JSON.stringify({ name: newAccount.name, broker: newAccount.broker, type: newAccount.type, capital: parseFloat(newAccount.capital) || 10000 }),
@@ -56,7 +56,7 @@ export default function Settings() {
     const cap = parseFloat(editForm.capital);
     if (isNaN(cap) || cap <= 0) { toast.error('Capital invalide'); return; }
     try {
-      const res = await fetch(`https://mitrad-backend.onrender.com/api/accounts/${editTarget.id}`, {
+      const res = await fetch(`http://localhost:8000/api/accounts/${editTarget.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('mitrad_token') },
         body: JSON.stringify({ name: editForm.name, broker: editForm.broker, type: editForm.type, capital: cap }),
@@ -71,7 +71,7 @@ export default function Settings() {
     // Si mot de passe défini, vérifier avant suppression
     if (user?.password_set) {
       if (!deletePassword.trim()) { toast.error('Mot de passe requis'); return; }
-      const loginRes = await fetch('https://mitrad-backend.onrender.com/api/login', {
+      const loginRes = await fetch('http://localhost:8000/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: user!.email, password: deletePassword }),
@@ -79,7 +79,7 @@ export default function Settings() {
       if (!loginRes || !loginRes.ok) { toast.error('Mot de passe incorrect'); return; }
     }
     try {
-      const res = await fetch(`https://mitrad-backend.onrender.com/api/accounts/${deleteTarget}`, {
+      const res = await fetch(`http://localhost:8000/api/accounts/${deleteTarget}`, {
         method: 'DELETE',
         headers: { 'Authorization': 'Bearer ' + localStorage.getItem('mitrad_token'), 'Content-Type': 'application/json' },
       });
@@ -94,8 +94,8 @@ export default function Settings() {
     if (user?.password_set && !currentPassword) { toast.error('Ancien mot de passe requis'); return; }
     try {
       const url = user?.password_set
-        ? 'https://mitrad-backend.onrender.com/api/profile/password'
-        : 'https://mitrad-backend.onrender.com/api/profile/set-password';
+        ? 'http://localhost:8000/api/profile/password'
+        : 'http://localhost:8000/api/profile/set-password';
       const body = user?.password_set
         ? { current_password: currentPassword, password: newPassword, password_confirmation: newPasswordConfirm }
         : { password: newPassword, password_confirmation: newPasswordConfirm };
