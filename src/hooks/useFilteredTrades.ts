@@ -1,9 +1,9 @@
-﻿import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Trade } from '@/types/trading';
 import { isDemo, DEMO_TRADES_SHIFTED } from '@/lib/demoData';
 
-const API_URL = 'http://localhost:8000/api';
+const API_URL = 'https://mitrad-backend.onrender.com/api';
 const getToken = () => localStorage.getItem('mitrad_token');
 
 let globalRefreshFn: (() => void) | null = null;
