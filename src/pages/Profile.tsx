@@ -61,7 +61,7 @@ const [form, setForm] = useState({
   bio: "", name: "", country: "", experience: "Moins de 1 an", tradingStyle: "", broker: "", 
   ...user!,
   experience: user?.experience || "Moins de 1 an",
-  tradingStyle: user?.trading_style || "",
+  tradingStyle: user?.tradingStyle || user?.trading_style || "",
   country: user?.country || "",
 });
   const [showAccounts, setShowAccounts] = useState(false);
@@ -355,7 +355,7 @@ const [form, setForm] = useState({
             <div className="grid grid-cols-2 gap-4 mt-3">
               {[
                 { label: 'Expérience',    value: user!.experience },
-                { label: 'Style',         value: user!.trading_style },
+                { label: 'Style',         value: user!.tradingStyle || user!.trading_style },
                 { label: 'Broker',        value: user!.broker },
                 { label: 'Pays',          value: user!.country },
               ].map(({ label, value }) => (
