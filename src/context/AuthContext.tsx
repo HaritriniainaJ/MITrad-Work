@@ -1,8 +1,8 @@
-﻿import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { TradingAccount } from '@/types/trading';
 import { getAccounts } from '@/lib/api';
 
-const API_URL = 'http://localhost:8000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://mitrad-backend.onrender.com/api';
 
 interface AuthContextType {
   user: any | null;
