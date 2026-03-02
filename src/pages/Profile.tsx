@@ -57,25 +57,25 @@ function BadgeChip({ name, description }: { name: string; description: string })
 export default function Profile() {
   const { user, updateProfile, activeAccounts, accounts: authAccounts } = useAuth();
   const [editing, setEditing] = useState(false);
-const [form, setForm] = useState({ 
-  bio: "", name: "", country: "", experience: "Moins de 1 an", tradingStyle: "", broker: "", 
+const [form, setForm] = useState({
+  bio: "", name: "", country: "", experience: "Moins de 1 an", tradingStyle: "", broker: "",
   ...user!,
   experience: user?.experience || "Moins de 1 an",
-  tradingStyle: user?.tradingStyle || (user as any)?.trading_style || "",
+  tradingStyle: (user as any)?.trading_style || user?.tradingStyle || "",
   country: user?.country || "",
 });
 
-  useEffect(() => {
-    if (user) {
-      setForm(prev => ({
-        ...prev,
-        ...user,
-        tradingStyle: user.tradingStyle || (user as any).trading_style || "",
-        experience: user.experience || "Moins de 1 an",
-        country: user.country || "",
-      }));
-    }
-  }, [user]);
+useEffect(() => {
+  if (user) {
+    setForm(prev => ({
+      ...prev,
+      ...user,
+      tradingStyle: (user as any).trading_style || user.tradingStyle || prev.tradingStyle || "",
+      experience: user.experience || prev.experience || "Moins de 1 an",
+      country: user.country || prev.country || "",
+    }));
+  }
+}, [user]);
   const [showAccounts, setShowAccounts] = useState(false);
   const trades = useFilteredTrades();
   const accounts = authAccounts;
