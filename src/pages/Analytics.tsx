@@ -274,31 +274,7 @@ const fmtDD = () => {
             {/* â”€â”€ KPI ROW 2 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
 
-        <GlassCard className="animate-fade-up stagger-1 !p-5 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-success/5 to-transparent pointer-events-none rounded-2xl" />
-          <div className="w-9 h-9 rounded-xl bg-success/15 flex items-center justify-center mb-3">
-            <svg width="16" height="16" fill="none" stroke="#00D4AA" strokeWidth="2" viewBox="0 0 24 24">
-              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-            </svg>
-          </div>
-          <p className="text-xs text-muted-foreground uppercase tracking-wide">Max Win Streak</p>
-          <p className="metric-value text-3xl text-success mt-1">{maxWS}</p>
-          <p className="text-[10px] text-muted-foreground mt-1">trades gagnants consécutifs</p>
-        </GlassCard>
-
-        <GlassCard className="animate-fade-up stagger-2 !p-5 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-destructive/5 to-transparent pointer-events-none rounded-2xl" />
-          <div className="w-9 h-9 rounded-xl bg-destructive/15 flex items-center justify-center mb-3">
-            <svg width="16" height="16" fill="none" stroke="#FF4757" strokeWidth="2" viewBox="0 0 24 24">
-              <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-              <line x1="12" y1="9" x2="12" y2="13"/>
-              <line x1="12" y1="17" x2="12.01" y2="17"/>
-            </svg>
-          </div>
-          <p className="text-xs text-muted-foreground uppercase tracking-wide">Max Loss Streak</p>
-          <p className="metric-value text-3xl text-destructive mt-1">{maxLS}</p>
-          <p className="text-[10px] text-muted-foreground mt-1">trades perdants consécutifs</p>
-        </GlassCard>
+           
 
         <GlassCard className="animate-fade-up stagger-3 !p-5 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent pointer-events-none rounded-2xl" />
