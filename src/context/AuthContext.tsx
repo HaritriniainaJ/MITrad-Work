@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+﻿import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { TradingAccount } from '@/types/trading';
 import { getAccounts } from '@/lib/api';
 
@@ -136,7 +136,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const updateProfile = (updates: any) => {
     if (!user) return;
-    const updated = { ...user, ...updates };
+    const updated = { 
+  ...user, 
+  ...updates,
+  tradingStyle: updates.tradingStyle || updates.trading_style || user.tradingStyle || "",
+};
     localStorage.setItem('mitrad_user', JSON.stringify(updated));
     setUser(updated);
 
@@ -161,6 +165,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         banner:        updates.banner,
         is_public:     updates.isPublic,
       }),
+    }).then(async (r) => {
+      if (r && r.ok) {
+        const profile = await r.json();
+        if (profile) {
+          const synced = {
+            ...updated,
+            tradingStyle: profile.trading_style || updated.tradingStyle || "",
+          };
+          localStorage.setItem('mitrad_user', JSON.stringify(synced));
+          setUser(synced);
+        }
+      }
     }).catch(() => {});
   };
 
