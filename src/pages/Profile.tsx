@@ -116,7 +116,6 @@ useEffect(() => {
 
 
 const handleSave = () => {
-  console.log('FORM COMPLET:', JSON.stringify(form));
   if (!form.name) {
     toast.error('Le nom est requis');
     return;
