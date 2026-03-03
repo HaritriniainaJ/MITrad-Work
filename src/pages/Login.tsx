@@ -233,7 +233,7 @@ useEffect(() => {
         <StatBadge label="P&L Mensuel" value="+8.4R"  color="#1A6BFF" delay={0.6} style={{ bottom: '34%', left: '20px' }} IconComp={TrendingUp} />
       </div>
 
-      <div className="relative z-10 w-full max-w-6xl mx-4 grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-10 lg:gap-16 items-center py-16 px-12">
+      <div className="relative z-10 w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-10 lg:gap-16 items-center py-8 lg:py-16 px-4 sm:px-8 lg:px-12">
 
         {/* Colonne gauche */}
         <motion.div initial={{ opacity:0, x:-40 }} animate={{ opacity:1, x:0 }} transition={{ duration:0.7, ease:'easeOut' }}
@@ -312,7 +312,7 @@ useEffect(() => {
         <motion.div style={{ rotateX:sRotX, rotateY:sRotY, transformPerspective:1200 }}
           onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave}
           initial={{ opacity:0, y:30 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.6, delay:0.2 }} className="w-full">
-          <div className="glass rounded-3xl p-8 md:p-10 border border-white/8 shadow-[0_32px_80px_rgba(0,0,0,0.6)] relative overflow-hidden">
+          <div className="glass rounded-3xl p-5 sm:p-8 md:p-10 border border-white/8 shadow-[0_32px_80px_rgba(0,0,0,0.6)] relative overflow-hidden">
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-32 pointer-events-none"
               style={{ background:'radial-gradient(ellipse at 50% 0%,rgba(26,107,255,0.2) 0%,transparent 70%)' }} />
 
