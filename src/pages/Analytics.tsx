@@ -192,8 +192,7 @@ const fmtDD = () => {
         </div>
       </GlassCard>
       {/* â”€â”€ KPI ROW 1 (compact) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <GlassCard className="animate-fade-up stagger-1 !py-3 !px-4 relative overflow-hidden"
           style={{ boxShadow: totalR >= 0 ? '0 0 16px rgba(0,212,170,0.08)' : '0 0 16px rgba(255,59,92,0.08)' }}>
           <div className="flex items-center gap-1.5 mb-1.5">
@@ -252,7 +251,7 @@ const fmtDD = () => {
       </div>
 
 {/* ── CAPITAL + CROISSANCE + KPI ─────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <GlassCard className="animate-fade-up !p-5">
           <p className="text-xs text-muted-foreground uppercase tracking-wide">Capital initial</p>
           <p className="metric-value text-2xl text-foreground mt-1">${capital.toLocaleString('fr')}</p>
@@ -372,7 +371,7 @@ const fmtDD = () => {
       )}
 
       {/* â”€â”€ GRAPHIQUES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
         <GlassCard>
           <div className="flex items-center justify-between mb-3">

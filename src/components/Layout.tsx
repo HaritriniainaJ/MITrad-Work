@@ -360,9 +360,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <motion.main
         animate={{ marginLeft: sidebarWidth }}
         transition={{ duration: 0.28, ease: 'easeInOut' }}
-        className="flex-1 min-w-0"
-        style={{ marginLeft: SIDEBAR_W }}
-      >
+        className="flex-1 min-w-0 lg:ml-0"
+          style={{ marginLeft: typeof window !== 'undefined' && window.innerWidth >= 1024 ? sidebarWidth : 0 }}      >
         {/* Header mobile */}
         <header className="lg:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-3 border-b border-border"
           style={{ background: 'rgba(10,13,22,0.9)', backdropFilter: 'blur(20px)' }}>
