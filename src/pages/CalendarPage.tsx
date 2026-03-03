@@ -80,7 +80,7 @@ export default function CalendarPage() {
         <DisplayModeToggle />
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <GlassCard className="animate-fade-up stagger-1 !p-5 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500/8 to-transparent pointer-events-none rounded-2xl" />
           <div className="w-8 h-8 rounded-xl bg-blue-500/20 flex items-center justify-center mb-2">
@@ -156,12 +156,15 @@ export default function CalendarPage() {
 
         <div className="grid grid-cols-7 gap-1 mb-2 border-b border-white/5 pb-2">
           {dayNames.map(d => (
-            <div key={d} className="text-center text-[11px] uppercase tracking-[0.15em] font-semibold text-muted-foreground/60 py-1">{d}</div>
+            <div key={d} className="text-center text-[9px] sm:text-[11px] uppercase tracking-[0.1em] font-semibold text-muted-foreground/60 py-1">
+              <span className="hidden sm:inline">{d}</span>
+              <span className="sm:hidden">{d.charAt(0)}</span>
+            </div>
           ))}
         </div>
 
         <div className="grid grid-cols-7 gap-1.5">
-          {Array.from({ length: firstDay }, (_, i) => <div key={`empty-${i}`} className="min-h-[100px]" />)}
+          {Array.from({ length: firstDay }, (_, i) => <div key={`empty-${i}`} className="min-h-[48px] sm:min-h-[100px]" />)}
           {Array.from({ length: daysInMonth }, (_, i) => {
             const day       = i + 1;
             const key       = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -189,7 +192,7 @@ export default function CalendarPage() {
                   onClick={() => hasTrades && setSelectedDay(isSelected ? null : key)}
                   onMouseEnter={() => hasTrades && setHoveredDay(key)}
                   onMouseLeave={() => setHoveredDay(null)}
-                  className={`min-h-[100px] w-full rounded-xl border p-1.5 text-xs transition-all duration-200 flex flex-col items-center justify-start relative
+                  className={`min-h-[48px] sm:min-h-[100px] w-full rounded-xl border p-1 sm:p-1.5 text-xs transition-all duration-200 flex flex-col items-center justify-start relative
                     ${bgClass}
                     ${hasTrades ? 'cursor-pointer hover:scale-[1.04]' : 'cursor-default border-transparent'}
                     ${isSelected ? 'ring-2 ring-primary/60 scale-[1.04]' : ''}
@@ -201,10 +204,10 @@ export default function CalendarPage() {
                   </span>
                   {hasTrades && (
                     <>
-                      <span className={`metric-value text-lg font-bold leading-tight mt-auto ${dayValue > 0 ? 'text-success' : dayValue < 0 ? 'text-destructive' : 'text-warning'}`}>
+                      <span className={`metric-value text-[10px] sm:text-lg font-bold leading-tight mt-auto ${dayValue > 0 ? 'text-success' : dayValue < 0 ? 'text-destructive' : 'text-warning'}`}>
                         {fmtDay(dayR, dayDollar)}
                       </span>
-                      <span className="absolute top-2 right-2 text-[10px] bg-white/15 rounded-full px-1.5 py-0.5 font-semibold text-foreground">
+                      <span className="hidden sm:block absolute top-2 right-2 text-[10px] bg-white/15 rounded-full px-1.5 py-0.5 font-semibold text-foreground">
                         {dayTrades.length}T
                       </span>
                     </>
@@ -245,7 +248,7 @@ export default function CalendarPage() {
           })}
         </div>
 
-        <div className="flex items-center gap-4 mt-5 pt-4 border-t border-border/30">
+        <div className="flex items-center flex-wrap gap-3 mt-5 pt-4 border-t border-border/30">
           {[
             { bg: 'bg-success/30 border-success/40', label: 'Jour positif' },
             { bg: 'bg-destructive/30 border-destructive/40', label: 'Jour négatif' },
