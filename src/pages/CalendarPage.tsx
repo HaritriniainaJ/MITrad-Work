@@ -242,7 +242,7 @@ export default function CalendarPage() {
                     })}
                     {/* Total semaine */}
                     <div className={`min-h-[48px] sm:min-h-[90px] rounded-xl border p-2 flex flex-col items-center justify-center text-center ${!hasAnyTrade ? 'bg-accent/10 border-border/20' : weekValue > 0 ? 'bg-success/10 border-success/25' : weekValue < 0 ? 'bg-destructive/10 border-destructive/25' : 'bg-warning/10 border-warning/25'}`}>
-                      <span className="text-[8px] sm:text-[9px] text-muted-foreground uppercase tracking-wide mb-1">Week {wIdx + 1}</span>
+                      <span className="text-[8px] sm:text-[9px] text-muted-foreground uppercase tracking-wide mb-1">Sem. {wIdx + 1}</span>
                       {hasAnyTrade ? (
                         <>
                           <span className={`metric-value text-[9px] sm:text-sm font-bold ${weekValue > 0 ? 'text-success' : weekValue < 0 ? 'text-destructive' : 'text-warning'}`}>{fmtDay(week.R, week.dollar)}</span>
