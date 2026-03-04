@@ -154,7 +154,7 @@ useEffect(() => {
     }
     if (error) {
       const msg = params.get('msg');
-      setError('Erreur Discord: ' + (msg ? decodeURIComponent(msg) : 'Réessaie.'));
+      setError('❌ Connexion Discord échouée. Réessaie dans quelques instants.');
       return;
     }
     if (token && userStr) {
