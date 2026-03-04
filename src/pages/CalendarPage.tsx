@@ -12,7 +12,6 @@ export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay]  = useState<string | null>(null);
   const [hoveredDay, setHoveredDay]    = useState<string | null>(null);
-  const [calView, setCalView] = useState<'month' | 'week'>('month');
 
   const capital = useMemo(() => { const targets = activeAccounts.length > 0 ? activeAccounts : accounts; if (targets.length === 0) return 0; return targets.reduce((sum, acc) => sum + Number(acc.capital || 0), 0); }, [activeAccounts, accounts]);
   const trades  = useFilteredTrades();
@@ -99,17 +98,7 @@ export default function CalendarPage() {
           <h1 className="text-2xl md:text-3xl font-bold gradient-text">Calendrier</h1>
           <p className="text-muted-foreground text-sm mt-1">Vue d'ensemble de tes journées de trading</p>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1 p-1 rounded-xl bg-accent/40 border border-border/40">
-            <button onClick={() => setCalView('month')} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${calView === 'month' ? 'bg-primary text-white shadow' : 'text-muted-foreground hover:text-foreground'}`}>
-              <LayoutGrid size={12} /> Mois
-            </button>
-            <button onClick={() => setCalView('week')} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${calView === 'week' ? 'bg-primary text-white shadow' : 'text-muted-foreground hover:text-foreground'}`}>
-              <CalendarDays size={12} /> Semaine
-            </button>
-          </div>
-          <DisplayModeToggle />
-        </div>
+        <DisplayModeToggle />
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -161,7 +150,6 @@ export default function CalendarPage() {
         </div>
 
         {/* ── VUE MOIS ── */}
-        {calView === 'month' && (
           <>
             <div className="grid grid-cols-8 gap-1 mb-2 border-b border-white/5 pb-2">
               {dayNames.map(d => (
@@ -260,7 +248,6 @@ export default function CalendarPage() {
         )}
 
         {/* ── VUE SEMAINE ── */}
-        {calView === 'week' && (
           <div className="space-y-3">
             {weeks.map((week, idx) => {
               const weekValue = mode === 'R' ? week.R : week.dollar;
@@ -270,14 +257,10 @@ export default function CalendarPage() {
               return (
                 <div key={idx} className={`rounded-2xl border p-4 transition-all ${!hasAnyTrade ? 'border-border/30 bg-accent/10' : weekValue > 0 ? 'border-success/30 bg-success/5' : weekValue < 0 ? 'border-destructive/30 bg-destructive/5' : 'border-warning/30 bg-warning/5'}`}>
                   <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{week.label}</span>
-                      <span className="text-[10px] text-muted-foreground">{week.days[0]} – {week.days[week.days.length - 1]} {currentDate.toLocaleDateString('fr', { month: 'short' })}</span>
+        <DisplayModeToggle />
                     </div>
                     {hasAnyTrade ? (
-                      <div className="flex items-center gap-3">
-                        <span className="text-[10px] text-muted-foreground">{week.trades.length} trade{week.trades.length > 1 ? 's' : ''}</span>
-                        <span className={`text-sm font-bold metric-value ${weekValue > 0 ? 'text-success' : weekValue < 0 ? 'text-destructive' : 'text-warning'}`}>{fmtDay(week.R, week.dollar)}</span>
+        <DisplayModeToggle />
                       </div>
                     ) : (
                       <span className="text-[10px] text-muted-foreground italic">Aucun trade</span>
