@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import NProgress from 'nprogress';
@@ -153,8 +153,8 @@ useEffect(() => {
       return;
     }
     if (error) {
-      setError('Erreur Discord. Réessaie.');
-      window.history.replaceState({}, '', '/login');
+      const msg = params.get('msg');
+      setError('Erreur Discord: ' + (msg ? decodeURIComponent(msg) : 'Réessaie.'));
       return;
     }
     if (token && userStr) {
