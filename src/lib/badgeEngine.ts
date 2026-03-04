@@ -94,20 +94,29 @@ export function getMaxDrawdown(trades: Trade[], capital = 0): { r: number, dolla
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   if (sorted.length === 0) return { r: 0, dollar: 0, pct: 0 };
 
-  let cumD = 0, maxDDD = 0;
-  let cumR = 0, maxDDR = 0;
+  let cumD = capital;
+  let peakD = capital;
+  let maxDDD = 0;
+  let cumR = 0;
+  let peakR = 0;
+  let maxDDR = 0;
 
   sorted.forEach(t => {
     cumD += t.resultDollar ?? 0;
-    if (cumD < 0 && Math.abs(cumD) > maxDDD) maxDDD = Math.abs(cumD);
+    if (cumD > peakD) peakD = cumD;
+    const ddD = cumD - peakD;
+    if (Math.abs(ddD) > maxDDD) maxDDD = Math.abs(ddD);
 
     const r = (t.resultR ?? 0) !== 0 ? (t.resultR ?? 0) : capital > 0 ? (t.resultDollar / (capital * 0.01)) : 0;
     cumR += r;
-    if (cumR < 0 && Math.abs(cumR) > maxDDR) maxDDR = Math.abs(cumR);
+    if (cumR > peakR) peakR = cumR;
+    const ddR = cumR - peakR;
+    if (Math.abs(ddR) > maxDDR) maxDDR = Math.abs(ddR);
   });
 
   const dollar = Math.round(maxDDD * 100) / 100;
-  const pct = capital > 0 ? Math.round((dollar / capital) * 10000) / 100 : 0;
+  const pct = peakD > 0 ? Math.round((maxDDD / peakD) * 10000) / 100 : 0;
   const r = Math.round(maxDDR * 100) / 100;
   return { r, dollar, pct };
+}
 }
