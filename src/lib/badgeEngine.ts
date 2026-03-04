@@ -119,4 +119,3 @@ export function getMaxDrawdown(trades: Trade[], capital = 0): { r: number, dolla
   const r = Math.round(maxDDR * 100) / 100;
   return { r, dollar, pct };
 }
-}
