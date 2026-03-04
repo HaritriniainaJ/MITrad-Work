@@ -4,6 +4,7 @@
 import { useState, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { parseMT5CSV } from '@/lib/importers/mt5Parser';
+import { parseCTraderCSV } from '@/lib/importers/ctraderParser';
 import { parseTradovateCSV } from '@/lib/importers/tradovateParser';
 import { parseGenericCSV } from '@/lib/importers/genericParser';
 import { Trade } from '@/types/trading';
@@ -14,7 +15,6 @@ import { Upload, CheckCircle, AlertCircle, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import { parseTradovatePairedFills } from '@/lib/importers/tradovateFilledParser';
 import * as XLSX from 'xlsx';
-
 type Platform = 'mt5' | 'tradovate' | 'mt4' | 'generic';
 
 const PLATFORMS: {
@@ -51,6 +51,13 @@ const PLATFORMS: {
     desc: 'Tout format avec colonnes standards',
     format: 'CSV générique',
     color: 'border-orange-500/40 bg-orange-500/5',
+  },
+  {
+    id: 'ctrader' as Platform,
+    label: 'cTrader',
+    desc: 'Export Transactions depuis cTrader Web',
+    format: 'CSV cTrader',
+    color: 'border-cyan-500/40 bg-cyan-500/5',
   },
 ];
 
@@ -124,6 +131,8 @@ const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
           trades = parseTradovatePairedFills(csvText, user!.email, accountId || undefined);
         } else if (platform === 'mt5' || platform === 'mt4') {
           trades = parseMT5CSV(csvText, user!.email, accountId || undefined);
+        } else if (platform === 'ctrader') {
+          trades = parseCTraderCSV(csvText, user!.email, accountId || undefined);
         } else {
           trades = parseGenericCSV(csvText, user!.email, accountId || undefined);
         }
@@ -134,6 +143,8 @@ const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
           trades = parseMT5CSV(text, user!.email, accountId || undefined);
         } else if (platform === 'tradovate') {
           trades = parseTradovatePairedFills(text, user!.email, accountId || undefined);
+        } else if (platform === 'ctrader') {
+          trades = parseCTraderCSV(text, user!.email, accountId || undefined);
         } else {
           trades = parseGenericCSV(text, user!.email, accountId || undefined);
         }
