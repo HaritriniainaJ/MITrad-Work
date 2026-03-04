@@ -58,7 +58,9 @@ export default function Profile() {
   const { user, updateProfile, activeAccounts, accounts: authAccounts } = useAuth();
   const [editing, setEditing] = useState(false);
 const [form, setForm] = useState({
-  bio: "", name: "", country: "", experience: "Moins de 1 an", tradingStyle: "Scalping", broker: "",
+  bio: "",
+  name: "",
+  broker: "",
   ...user!,
   experience: user?.experience || "Moins de 1 an",
   tradingStyle: (user as any)?.trading_style || user?.tradingStyle || "Scalping",
