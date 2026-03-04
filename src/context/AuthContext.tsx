@@ -37,43 +37,63 @@ const DEMO_ACCOUNT = {
   currency: 'USD',
 };
 
+// Clé unique par utilisateur
+const getUserKey = (userId: string | number) => `mitrad_user_${userId}`;
+const getTokenKey = (userId: string | number) => `mitrad_token_${userId}`;
+
+// Récupère l'utilisateur actif (via clé générique qui pointe vers son ID)
+const getActiveUser = () => {
+  const activeId = localStorage.getItem('mitrad_active_id');
+  if (!activeId) {
+    // Fallback : ancienne clé pour migration
+    const legacy = localStorage.getItem('mitrad_user');
+    return legacy ? JSON.parse(legacy) : null;
+  }
+  const saved = localStorage.getItem(getUserKey(activeId));
+  return saved ? JSON.parse(saved) : null;
+};
+
+const getActiveToken = () => {
+  const activeId = localStorage.getItem('mitrad_active_id');
+  if (!activeId) return localStorage.getItem('mitrad_token');
+  return localStorage.getItem(getTokenKey(activeId));
+};
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const savedUser = localStorage.getItem('mitrad_user');
-  const parsedSaved = savedUser ? JSON.parse(savedUser) : null;
-  const [user, setUser] = useState<any | null>(savedUser ? JSON.parse(savedUser) : null);
+  const savedUser = getActiveUser();
+  const [user, setUser] = useState<any | null>(savedUser);
   const [loading, setLoading] = useState(false);
 
   const [accounts, setAccounts] = useState<TradingAccount[]>(
-    parsedSaved?.isDemo ? [{ id: 'demo-account', name: 'Compte Démo', type: 'Démo', capital: 10000, currency: 'USD' } as any] : []
+    savedUser?.isDemo ? [{ id: 'demo-account', name: 'Compte Démo', type: 'Démo', capital: 10000, currency: 'USD' } as any] : []
   );
   const [activeAccount, setActiveAccount] = useState<TradingAccount | null>(null);
   const [activeAccounts, setActiveAccountsState] = useState<TradingAccount[]>([]);
 
   const refreshAccounts = () => {
-    const savedUser = JSON.parse(localStorage.getItem('mitrad_user') || '{}');
-    if (savedUser?.isDemo) return;
+    const currentUser = getActiveUser();
+    if (!currentUser || currentUser?.isDemo) return;
     getAccounts().then(data => setAccounts(Array.isArray(data) ? data : []));
   };
 
   // Recharge le profil frais depuis le serveur au démarrage
   useEffect(() => {
-    const token = localStorage.getItem('mitrad_token');
-    const saved = localStorage.getItem('mitrad_user');
+    const token = getActiveToken();
+    const saved = getActiveUser();
     if (!token || !saved) return;
-    const parsed = JSON.parse(saved);
-    if (parsed?.isDemo) return;
+    if (saved?.isDemo) return;
     fetch(`${API_URL}/profile`, {
       headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' },
     })
       .then(r => r.ok ? r.json() : null)
       .then(profile => {
         if (profile) {
-          const updated = { 
-  ...parsed, 
-  ...profile,
-  tradingStyle: profile.trading_style || parsed.tradingStyle || "",
-};
-          localStorage.setItem('mitrad_user', JSON.stringify(updated));
+          const updated = {
+            ...saved,
+            ...profile,
+            tradingStyle: profile.trading_style || saved.tradingStyle || "",
+          };
+          localStorage.setItem(getUserKey(updated.id), JSON.stringify(updated));
           setUser(updated);
           refreshAccounts();
         }
@@ -83,8 +103,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string): Promise<boolean> => {
     if (email === 'demo@mitrad.com' && password === 'mitrad123') {
-      localStorage.setItem('mitrad_token', 'demo-token');
-      localStorage.setItem('mitrad_user', JSON.stringify(DEMO_USER));
+      localStorage.setItem('mitrad_active_id', 'demo');
+      localStorage.setItem(getUserKey('demo'), JSON.stringify(DEMO_USER));
+      localStorage.setItem(getTokenKey('demo'), 'demo-token');
       setUser(DEMO_USER);
       setAccounts([DEMO_ACCOUNT as any]);
       setActiveAccount(DEMO_ACCOUNT as any);
@@ -101,6 +122,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       const data = await response.json();
       if (response.ok && data.token) {
+        const userId = data.user.id;
+        localStorage.setItem('mitrad_active_id', String(userId));
+        localStorage.setItem(getUserKey(userId), JSON.stringify(data.user));
+        localStorage.setItem(getTokenKey(userId), data.token);
+        // Compatibilité ancienne clé
         localStorage.setItem('mitrad_token', data.token);
         localStorage.setItem('mitrad_user', JSON.stringify(data.user));
         setUser(data.user);
@@ -114,11 +140,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
-    const token = localStorage.getItem('mitrad_token');
+    const token = getActiveToken();
+    const activeId = localStorage.getItem('mitrad_active_id');
     setUser(null);
     setAccounts([]);
     setActiveAccount(null);
     setActiveAccountsState([]);
+    if (activeId) {
+      localStorage.removeItem(getUserKey(activeId));
+      localStorage.removeItem(getTokenKey(activeId));
+    }
+    localStorage.removeItem('mitrad_active_id');
     localStorage.removeItem('mitrad_token');
     localStorage.removeItem('mitrad_user');
     localStorage.removeItem('mitrad_active_account');
@@ -136,17 +168,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const updateProfile = (updates: any) => {
     if (!user) return;
-    const updated = { 
-      ...user, 
+    const updated = {
+      ...user,
       ...updates,
       tradingStyle: updates.tradingStyle || user.tradingStyle || "",
       trading_style: updates.tradingStyle || user.tradingStyle || "",
     };
-    localStorage.setItem('mitrad_user', JSON.stringify(updated));
+    localStorage.setItem(getUserKey(user.id), JSON.stringify(updated));
+    localStorage.setItem('mitrad_user', JSON.stringify(updated)); // compatibilité
     setUser(updated);
 
-    // Sauvegarde aussi dans le backend
-    const token = localStorage.getItem('mitrad_token');
+    const token = getActiveToken();
     if (!token || updated.isDemo) return;
     fetch(`${API_URL}/profile`, {
       method: 'PUT',
@@ -174,6 +206,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             ...updated,
             tradingStyle: profile.trading_style || updated.tradingStyle || "",
           };
+          localStorage.setItem(getUserKey(user.id), JSON.stringify(synced));
           localStorage.setItem('mitrad_user', JSON.stringify(synced));
           setUser(synced);
         }
