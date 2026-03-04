@@ -46,18 +46,18 @@ const PLATFORMS: {
     color: 'border-purple-500/40 bg-purple-500/5',
   },
   {
-    id: 'generic',
-    label: 'Autre CSV',
-    desc: 'Tout format avec colonnes standards',
-    format: 'CSV générique',
-    color: 'border-orange-500/40 bg-orange-500/5',
-  },
-  {
     id: 'ctrader' as Platform,
     label: 'cTrader',
     desc: 'Export Transactions depuis cTrader Web',
     format: 'CSV cTrader',
     color: 'border-cyan-500/40 bg-cyan-500/5',
+  },
+  {
+    id: 'generic',
+    label: 'Autre CSV',
+    desc: 'Tout format avec colonnes standards',
+    format: 'CSV générique',
+    color: 'border-orange-500/40 bg-orange-500/5',
   },
 ];
 
