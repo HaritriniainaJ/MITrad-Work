@@ -100,20 +100,43 @@ useEffect(() => {
   }, [closed]);
 
   // â”€â”€ Banner & Avatar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  const handleBanner = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || file.size > 5 * 1024 * 1024) { toast.error('Max 5 Mo'); return; }
-    const reader = new FileReader();
-    reader.onload = () => setForm(prev => ({ ...prev, banner: reader.result as string }));
-    reader.readAsDataURL(file);
+  const compressImage = (file: File, maxWidth: number, quality: number): Promise<string> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d')!;
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.src = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    });
   };
 
-  const handleAvatar = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBanner = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || file.size > 5 * 1024 * 1024) { toast.error('Max 5 Mo'); return; }
-    const reader = new FileReader();
-    reader.onload = () => setForm(prev => ({ ...prev, avatar: reader.result as string }));
-    reader.readAsDataURL(file);
+    const compressed = await compressImage(file, 1200, 0.7);
+    setForm(prev => ({ ...prev, banner: compressed }));
+  };
+
+  const handleAvatar = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || file.size > 5 * 1024 * 1024) { toast.error('Max 5 Mo'); return; }
+    const compressed = await compressImage(file, 400, 0.8);
+    setForm(prev => ({ ...prev, avatar: compressed }));
   };
 
 
