@@ -4,21 +4,25 @@ import { useDisplayMode, DisplayModeToggle } from '@/context/DisplayModeContext'
 import { useFilteredTrades } from '@/hooks/useFilteredTrades';
 import { Trade } from '@/types/trading';
 import GlassCard from '@/components/GlassCard';
-import { ChevronLeft, ChevronRight, X, CalendarDays, LayoutGrid } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 
 export default function CalendarPage() {
   const { accounts, activeAccounts } = useAuth();
   const { mode, formatResult } = useDisplayMode();
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedDay, setSelectedDay]  = useState<string | null>(null);
-  const [hoveredDay, setHoveredDay]    = useState<string | null>(null);
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
+  const [hoveredDay, setHoveredDay] = useState<string | null>(null);
 
-  const capital = useMemo(() => { const targets = activeAccounts.length > 0 ? activeAccounts : accounts; if (targets.length === 0) return 0; return targets.reduce((sum, acc) => sum + Number(acc.capital || 0), 0); }, [activeAccounts, accounts]);
-  const trades  = useFilteredTrades();
+  const capital = useMemo(() => {
+    const targets = activeAccounts.length > 0 ? activeAccounts : accounts;
+    if (targets.length === 0) return 0;
+    return targets.reduce((sum, acc) => sum + Number(acc.capital || 0), 0);
+  }, [activeAccounts, accounts]);
 
-  const year        = currentDate.getFullYear();
-  const month       = currentDate.getMonth();
-  const firstDay    = new Date(year, month, 1).getDay();
+  const trades = useFilteredTrades();
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
   const tradesByDay = useMemo(() => {
@@ -38,15 +42,13 @@ export default function CalendarPage() {
     trades.filter(t => {
       const d = new Date(t.date);
       return d.getMonth() === month && d.getFullYear() === year && t.status !== 'RUNNING';
-    }),
-  [trades, month, year]);
+    }), [trades, month, year]);
 
-  const monthR      = closedMonth.reduce((s, t) => s + t.resultR, 0);
+  const monthR = closedMonth.reduce((s, t) => s + t.resultR, 0);
   const monthDollar = closedMonth.reduce((s, t) => s + t.resultDollar, 0);
-  const monthWR     = closedMonth.length ? (closedMonth.filter(t => t.status === 'WIN').length / closedMonth.length * 100) : 0;
+  const monthWR = closedMonth.length ? (closedMonth.filter(t => t.status === 'WIN').length / closedMonth.length * 100) : 0;
   const tradingDays = Object.keys(tradesByDay).length;
 
-  // ── Calcul semaines ──
   const weeks = useMemo(() => {
     const result: { label: string; days: number[]; trades: Trade[]; R: number; dollar: number; wins: number; losses: number }[] = [];
     let weekDays: number[] = [];
@@ -88,7 +90,7 @@ export default function CalendarPage() {
   const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
   const dayNames = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
   const selectedDayTrades = selectedDay ? tradesByDay[selectedDay] || [] : [];
-  const selectedDayR      = selectedDayTrades.reduce((s, t) => s + t.resultR, 0);
+  const selectedDayR = selectedDayTrades.reduce((s, t) => s + t.resultR, 0);
   const selectedDayDollar = selectedDayTrades.reduce((s, t) => s + t.resultDollar, 0);
 
   return (
@@ -111,6 +113,7 @@ export default function CalendarPage() {
           <p className="metric-value text-2xl text-foreground mt-0.5">{closedMonth.length}</p>
           <p className="text-[10px] text-muted-foreground mt-1">{tradingDays} jours actifs</p>
         </GlassCard>
+
         <GlassCard className="animate-fade-up stagger-2 !p-5 relative overflow-hidden">
           <div className={`absolute inset-0 pointer-events-none rounded-2xl ${monthR >= 0 ? 'bg-gradient-to-br from-success/8 to-transparent' : 'bg-gradient-to-br from-destructive/8 to-transparent'}`} />
           <div className={`w-8 h-8 rounded-xl flex items-center justify-center mb-2 ${monthR >= 0 ? 'bg-success/20' : 'bg-destructive/20'}`}>
@@ -119,6 +122,7 @@ export default function CalendarPage() {
           <p className="text-xs text-muted-foreground uppercase tracking-wide">P&L du mois</p>
           <p className={`metric-value text-2xl mt-0.5 ${monthR >= 0 ? 'text-success' : 'text-destructive'}`}>{formatResult(monthR, monthDollar, capital)}</p>
         </GlassCard>
+
         <GlassCard className="animate-fade-up stagger-3 !p-5 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-success/5 to-transparent pointer-events-none rounded-2xl" />
           <div className="w-8 h-8 rounded-xl bg-success/15 flex items-center justify-center mb-2">
@@ -130,6 +134,7 @@ export default function CalendarPage() {
             <div className="h-full rounded-full bg-success/50 transition-all duration-1000" style={{ width: `${monthWR}%` }} />
           </div>
         </GlassCard>
+
         <GlassCard className="animate-fade-up stagger-4 !p-5 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent pointer-events-none rounded-2xl" />
           <div className="w-8 h-8 rounded-xl bg-purple-500/15 flex items-center justify-center mb-2">
@@ -149,173 +154,97 @@ export default function CalendarPage() {
           <button onClick={nextMonth} className="w-9 h-9 rounded-xl glass flex items-center justify-center hover:bg-accent/60 transition-all text-muted-foreground hover:text-foreground"><ChevronRight size={16} /></button>
         </div>
 
-        {/* ── VUE MOIS ── */}
-          <>
-            <div className="grid grid-cols-8 gap-1 mb-2 border-b border-white/5 pb-2">
-              {dayNames.map(d => (
-                <div key={d} className="text-center text-[9px] sm:text-[11px] uppercase tracking-[0.1em] font-semibold text-muted-foreground/60 py-1">
-                  <span className="hidden sm:inline">{d}</span>
-                  <span className="sm:hidden">{d.charAt(0)}</span>
-                </div>
-              ))}
-              <div className="text-center text-[9px] sm:text-[11px] uppercase tracking-[0.1em] font-semibold text-muted-foreground/60 py-1">Total</div>
+        {/* En-têtes jours */}
+        <div className="grid grid-cols-8 gap-1 mb-2 border-b border-white/5 pb-2">
+          {dayNames.map(d => (
+            <div key={d} className="text-center text-[9px] sm:text-[11px] uppercase tracking-[0.1em] font-semibold text-muted-foreground/60 py-1">
+              <span className="hidden sm:inline">{d}</span>
+              <span className="sm:hidden">{d.charAt(0)}</span>
             </div>
+          ))}
+          <div className="text-center text-[9px] sm:text-[11px] uppercase tracking-[0.1em] font-semibold text-muted-foreground/60 py-1">Total</div>
+        </div>
 
-            {/* Rangées par semaine */}
-            <div className="space-y-1.5">
-              {weeks.map((week, wIdx) => {
-                const weekValue = mode === 'R' ? week.R : week.dollar;
-                const hasAnyTrade = week.trades.length > 0;
-                const firstDayOfWeekDow = (firstDay + week.days[0] - 1) % 7;
-                return (
-                  <div key={wIdx} className="grid grid-cols-8 gap-1.5 items-stretch">
-                    {/* Jours vides avant le début de la semaine */}
-                    {wIdx === 0 && Array.from({ length: firstDayOfWeekDow }, (_, i) => (
-                      <div key={`pad-${i}`} className="min-h-[48px] sm:min-h-[90px]" />
-                    ))}
-                    {/* Jours de la semaine */}
-                    {dayNames.map((_, di) => {
-                      const diff = di - (wIdx === 0 ? firstDayOfWeekDow : 0);
-                      const dayIdx = wIdx === 0 ? di - firstDayOfWeekDow : di;
-                      const day = week.days[dayIdx];
-                      const validDay = day !== undefined && day >= 1 && day <= daysInMonth;
-                      const key = validDay ? `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` : '';
-                      const dayTrades = validDay ? (tradesByDay[key] || []) : [];
-                      const dayR = dayTrades.reduce((s, t) => s + t.resultR, 0);
-                      const dayDollar = dayTrades.reduce((s, t) => s + t.resultDollar, 0);
-                      const hasTrades = dayTrades.length > 0;
-                      const isToday = validDay && new Date().toDateString() === new Date(year, month, day).toDateString();
-                      const isSelected = selectedDay === key;
-                      const isHovered = hoveredDay === key;
-                      const dv = mode === 'R' ? dayR : dayDollar;
-                      const bgClass = !validDay ? '' : !hasTrades ? 'bg-accent/20 border-transparent' : dv > 0 ? 'bg-success/15 hover:bg-success/25' : dv < 0 ? 'bg-destructive/15 hover:bg-destructive/25' : 'bg-warning/15 hover:bg-warning/25';
-                      const borderStyle = validDay && hasTrades ? dv > 0 ? '1px solid rgba(0,212,170,0.4)' : dv < 0 ? '1px solid rgba(255,59,92,0.4)' : '1px solid rgba(245,158,11,0.4)' : undefined;
-                      if (!validDay) return <div key={`empty-${wIdx}-${di}`} className="min-h-[48px] sm:min-h-[90px]" />;
-                      return (
-                        <div key={day} className="relative">
-                          <button
-                            onClick={() => hasTrades && setSelectedDay(isSelected ? null : key)}
-                            onMouseEnter={() => hasTrades && setHoveredDay(key)}
-                            onMouseLeave={() => setHoveredDay(null)}
-                            className={`min-h-[48px] sm:min-h-[90px] w-full rounded-xl border p-1 sm:p-1.5 text-xs transition-all duration-200 flex flex-col items-center justify-start relative ${bgClass} ${hasTrades ? 'cursor-pointer hover:scale-[1.04]' : 'cursor-default border-transparent'} ${isSelected ? 'ring-2 ring-primary/60 scale-[1.04]' : ''} ${isToday && !hasTrades ? 'border-primary/30 bg-primary/10' : ''}`}
-                            style={{ border: borderStyle }}>
-                            <span className={`font-semibold leading-tight self-start text-xs ${isToday ? 'text-primary' : hasTrades ? 'text-foreground' : 'text-muted-foreground/60'}`}>{day}</span>
-                            {hasTrades && (
-                              <>
-                                <span className={`metric-value text-[9px] sm:text-sm font-bold leading-tight mt-auto ${dv > 0 ? 'text-success' : dv < 0 ? 'text-destructive' : 'text-warning'}`}>{fmtDay(dayR, dayDollar)}</span>
-                                <span className="text-[8px] sm:text-[10px] text-muted-foreground">{dayTrades.length}T</span>
-                              </>
-                            )}
-                            {!hasTrades && <div className="w-1.5 h-1.5 rounded-full bg-white/10 mx-auto mt-4" />}
-                          </button>
-                          {isHovered && hasTrades && (
-                            <div className="absolute z-50 bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 pointer-events-none" style={{ minWidth: 180 }}>
-                              <div className="rounded-xl p-3 shadow-[0_8px_32px_rgba(0,0,0,0.6)]" style={{ background:'#0A0D16', border:'1px solid rgba(255,255,255,0.08)' }}>
-                                <p className="text-xs font-semibold text-foreground mb-2">{new Date(key + 'T12:00:00').toLocaleDateString('fr', { weekday:'short', day:'numeric', month:'short' })}</p>
-                                {dayTrades.map(t => (
-                                  <div key={t.id} className="flex items-center justify-between gap-3 text-[10px] mb-1">
-                                    <span className="text-muted-foreground">{t.pair} {t.direction}</span>
-                                    <span className={t.resultR >= 0 ? 'text-success' : 'text-destructive'}>{t.resultR >= 0 ? '+' : ''}{t.resultR.toFixed(1)}R</span>
-                                  </div>
-                                ))}
-                                <div className="border-t border-white/8 mt-2 pt-1.5 flex justify-between">
-                                  <span className="text-[10px] text-muted-foreground">Total</span>
-                                  <span className={`text-xs font-bold ${dayR >= 0 ? 'text-success' : 'text-destructive'}`}>{dayR >= 0 ? '+' : ''}{dayR.toFixed(2)}R</span>
-                                </div>
+        {/* Rangées par semaine */}
+        <div className="space-y-1.5">
+          {weeks.map((week, wIdx) => {
+            const weekValue = mode === 'R' ? week.R : week.dollar;
+            const hasAnyTrade = week.trades.length > 0;
+            const firstDayOfWeekDow = (firstDay + week.days[0] - 1) % 7;
+            return (
+              <div key={wIdx} className="grid grid-cols-8 gap-1.5 items-stretch">
+                {wIdx === 0 && Array.from({ length: firstDayOfWeekDow }, (_, i) => (
+                  <div key={`pad-${i}`} className="min-h-[48px] sm:min-h-[90px]" />
+                ))}
+                {dayNames.map((_, di) => {
+                  const dayIdx = wIdx === 0 ? di - firstDayOfWeekDow : di;
+                  const day = week.days[dayIdx];
+                  const validDay = day !== undefined && day >= 1 && day <= daysInMonth;
+                  const key = validDay ? `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` : '';
+                  const dayTrades = validDay ? (tradesByDay[key] || []) : [];
+                  const dayR = dayTrades.reduce((s, t) => s + t.resultR, 0);
+                  const dayDollar = dayTrades.reduce((s, t) => s + t.resultDollar, 0);
+                  const hasTrades = dayTrades.length > 0;
+                  const isToday = validDay && new Date().toDateString() === new Date(year, month, day).toDateString();
+                  const isSelected = selectedDay === key;
+                  const isHovered = hoveredDay === key;
+                  const dv = mode === 'R' ? dayR : dayDollar;
+                  const bgClass = !validDay ? '' : !hasTrades ? 'bg-accent/20 border-transparent' : dv > 0 ? 'bg-success/15 hover:bg-success/25' : dv < 0 ? 'bg-destructive/15 hover:bg-destructive/25' : 'bg-warning/15 hover:bg-warning/25';
+                  const borderStyle = validDay && hasTrades ? dv > 0 ? '1px solid rgba(0,212,170,0.4)' : dv < 0 ? '1px solid rgba(255,59,92,0.4)' : '1px solid rgba(245,158,11,0.4)' : undefined;
+                  if (!validDay) return <div key={`empty-${wIdx}-${di}`} className="min-h-[48px] sm:min-h-[90px]" />;
+                  return (
+                    <div key={day} className="relative">
+                      <button
+                        onClick={() => hasTrades && setSelectedDay(isSelected ? null : key)}
+                        onMouseEnter={() => hasTrades && setHoveredDay(key)}
+                        onMouseLeave={() => setHoveredDay(null)}
+                        className={`min-h-[48px] sm:min-h-[90px] w-full rounded-xl border p-1 sm:p-1.5 text-xs transition-all duration-200 flex flex-col items-center justify-start relative ${bgClass} ${hasTrades ? 'cursor-pointer hover:scale-[1.04]' : 'cursor-default border-transparent'} ${isSelected ? 'ring-2 ring-primary/60 scale-[1.04]' : ''} ${isToday && !hasTrades ? 'border-primary/30 bg-primary/10' : ''}`}
+                        style={{ border: borderStyle }}>
+                        <span className={`font-semibold leading-tight self-start text-xs ${isToday ? 'text-primary' : hasTrades ? 'text-foreground' : 'text-muted-foreground/60'}`}>{day}</span>
+                        {hasTrades && (
+                          <>
+                            <span className={`metric-value text-[9px] sm:text-sm font-bold leading-tight mt-auto ${dv > 0 ? 'text-success' : dv < 0 ? 'text-destructive' : 'text-warning'}`}>{fmtDay(dayR, dayDollar)}</span>
+                            <span className="text-[8px] sm:text-[10px] text-muted-foreground">{dayTrades.length}T</span>
+                          </>
+                        )}
+                        {!hasTrades && <div className="w-1.5 h-1.5 rounded-full bg-white/10 mx-auto mt-4" />}
+                      </button>
+                      {isHovered && hasTrades && (
+                        <div className="absolute z-50 bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 pointer-events-none" style={{ minWidth: 180 }}>
+                          <div className="rounded-xl p-3 shadow-[0_8px_32px_rgba(0,0,0,0.6)]" style={{ background: '#0A0D16', border: '1px solid rgba(255,255,255,0.08)' }}>
+                            <p className="text-xs font-semibold text-foreground mb-2">{new Date(key + 'T12:00:00').toLocaleDateString('fr', { weekday: 'short', day: 'numeric', month: 'short' })}</p>
+                            {dayTrades.map(t => (
+                              <div key={t.id} className="flex items-center justify-between gap-3 text-[10px] mb-1">
+                                <span className="text-muted-foreground">{t.pair} {t.direction}</span>
+                                <span className={t.resultR >= 0 ? 'text-success' : 'text-destructive'}>{t.resultR >= 0 ? '+' : ''}{t.resultR.toFixed(1)}R</span>
                               </div>
+                            ))}
+                            <div className="border-t border-white/8 mt-2 pt-1.5 flex justify-between">
+                              <span className="text-[10px] text-muted-foreground">Total</span>
+                              <span className={`text-xs font-bold ${dayR >= 0 ? 'text-success' : 'text-destructive'}`}>{dayR >= 0 ? '+' : ''}{dayR.toFixed(2)}R</span>
                             </div>
-                          )}
+                          </div>
                         </div>
-                      );
-                    })}
-                    {/* Total semaine */}
-                    <div className={`min-h-[48px] sm:min-h-[90px] rounded-xl border p-2 flex flex-col items-center justify-center text-center ${!hasAnyTrade ? 'bg-accent/10 border-border/20' : weekValue > 0 ? 'bg-success/10 border-success/25' : weekValue < 0 ? 'bg-destructive/10 border-destructive/25' : 'bg-warning/10 border-warning/25'}`}>
-                      <span className="text-[8px] sm:text-[9px] text-muted-foreground uppercase tracking-wide mb-1">Sem. {wIdx + 1}</span>
-                      {hasAnyTrade ? (
-                        <>
-                          <span className={`metric-value text-[9px] sm:text-sm font-bold ${weekValue > 0 ? 'text-success' : weekValue < 0 ? 'text-destructive' : 'text-warning'}`}>{fmtDay(week.R, week.dollar)}</span>
-                          <span className="text-[8px] text-muted-foreground mt-0.5">{week.trades.length}T</span>
-                        </>
-                      ) : (
-                        <span className="text-[9px] text-muted-foreground/40">—</span>
                       )}
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          </>
-        )}
-
-        {/* ── VUE SEMAINE ── */}
-          <div className="space-y-3">
-            {weeks.map((week, idx) => {
-              const weekValue = mode === 'R' ? week.R : week.dollar;
-              const hasAnyTrade = week.trades.length > 0;
-              const wr = (week.wins + week.losses) > 0 ? (week.wins / (week.wins + week.losses) * 100) : 0;
-              const firstDayOfWeekDow = (firstDay + week.days[0] - 1) % 7;
-              return (
-                <div key={idx} className={`rounded-2xl border p-4 transition-all ${!hasAnyTrade ? 'border-border/30 bg-accent/10' : weekValue > 0 ? 'border-success/30 bg-success/5' : weekValue < 0 ? 'border-destructive/30 bg-destructive/5' : 'border-warning/30 bg-warning/5'}`}>
-                  <div className="flex items-center justify-between mb-3">
-        <DisplayModeToggle />
-                    </div>
-                    {hasAnyTrade ? (
-        <DisplayModeToggle />
-                      </div>
-                    ) : (
-                      <span className="text-[10px] text-muted-foreground italic">Aucun trade</span>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-7 gap-1">
-                    {dayNames.map((dn, di) => {
-                      const diff = di - firstDayOfWeekDow;
-                      const day = week.days[0] + diff;
-                      const validDay = day >= week.days[0] && day <= week.days[week.days.length - 1] && day >= 1 && day <= daysInMonth;
-                      const key = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                      const dayTrades = validDay ? (tradesByDay[key] || []) : [];
-                      const dayR = dayTrades.reduce((s, t) => s + t.resultR, 0);
-                      const dayDollar = dayTrades.reduce((s, t) => s + t.resultDollar, 0);
-                      const hasTrades = dayTrades.length > 0;
-                      const isToday = validDay && new Date().toDateString() === new Date(year, month, day).toDateString();
-                      const dv = mode === 'R' ? dayR : dayDollar;
-                      return (
-                        <div key={di} className="flex flex-col items-center">
-                          <span className="text-[9px] text-muted-foreground/50 mb-1">{dn.charAt(0)}</span>
-                          {validDay ? (
-                            <button onClick={() => hasTrades && setSelectedDay(selectedDay === key ? null : key)}
-                              className={`w-full rounded-lg p-1.5 text-center transition-all min-h-[52px] flex flex-col items-center justify-start border ${!hasTrades ? 'bg-accent/20 border-transparent cursor-default' : dv > 0 ? 'bg-success/15 border-success/30 cursor-pointer hover:bg-success/25' : dv < 0 ? 'bg-destructive/15 border-destructive/30 cursor-pointer hover:bg-destructive/25' : 'bg-warning/15 border-warning/30 cursor-pointer'} ${isToday ? 'ring-1 ring-primary/50' : ''} ${selectedDay === key ? 'ring-2 ring-primary/60' : ''}`}>
-                              <span className={`text-xs font-semibold ${isToday ? 'text-primary' : hasTrades ? 'text-foreground' : 'text-muted-foreground/40'}`}>{day}</span>
-                              {hasTrades && (
-                                <>
-                                  <span className={`text-[9px] font-bold mt-1 ${dv > 0 ? 'text-success' : dv < 0 ? 'text-destructive' : 'text-warning'}`}>{fmtDay(dayR, dayDollar)}</span>
-                                  <span className="text-[8px] text-muted-foreground">{dayTrades.length}T</span>
-                                </>
-                              )}
-                            </button>
-                          ) : (
-                            <div className="w-full min-h-[52px] rounded-lg bg-accent/5 border border-transparent" />
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {hasAnyTrade && (
-                    <div className="flex items-center gap-4 mt-3 pt-3 border-t border-white/5">
-                      <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-success/60" /><span className="text-[10px] text-muted-foreground">{week.wins}W</span></div>
-                      <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-destructive/60" /><span className="text-[10px] text-muted-foreground">{week.losses}L</span></div>
-                      <div className="flex-1 h-1 rounded-full bg-white/5 overflow-hidden">
-                        <div className="h-full rounded-full bg-success/50 transition-all duration-700" style={{ width: `${wr}%` }} />
-                      </div>
-                      <span className="text-[10px] font-medium text-muted-foreground">{wr.toFixed(0)}% WR</span>
-                    </div>
+                  );
+                })}
+                {/* Total semaine */}
+                <div className={`min-h-[48px] sm:min-h-[90px] rounded-xl border p-2 flex flex-col items-center justify-center text-center ${!hasAnyTrade ? 'bg-accent/10 border-border/20' : weekValue > 0 ? 'bg-success/10 border-success/25' : weekValue < 0 ? 'bg-destructive/10 border-destructive/25' : 'bg-warning/10 border-warning/25'}`}>
+                  <span className="text-[8px] sm:text-[9px] text-muted-foreground uppercase tracking-wide mb-1">Sem. {wIdx + 1}</span>
+                  {hasAnyTrade ? (
+                    <>
+                      <span className={`metric-value text-[9px] sm:text-sm font-bold ${weekValue > 0 ? 'text-success' : weekValue < 0 ? 'text-destructive' : 'text-warning'}`}>{fmtDay(week.R, week.dollar)}</span>
+                      <span className="text-[8px] text-muted-foreground mt-0.5">{week.trades.length}T</span>
+                    </>
+                  ) : (
+                    <span className="text-[9px] text-muted-foreground/40">—</span>
                   )}
                 </div>
-              );
-            })}
-          </div>
-        )}
+              </div>
+            );
+          })}
+        </div>
 
         <div className="flex items-center flex-wrap gap-3 mt-5 pt-4 border-t border-border/30">
           {[{ bg: 'bg-success/30 border-success/40', label: 'Positif' }, { bg: 'bg-destructive/30 border-destructive/40', label: 'Négatif' }, { bg: 'bg-warning/30 border-warning/40', label: 'Breakeven' }].map(item => (
