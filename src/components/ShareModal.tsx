@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react';
+﻿import { useState, useMemo, useRef } from 'react';
 import { X, Calendar, Check, Download, ChevronDown, Loader2 } from 'lucide-react';
 import { Trade, TradingAccount } from '@/types/trading';
 import { calculateBadges } from '@/lib/badgeEngine';
@@ -36,7 +36,8 @@ export default function ShareModal({ onClose, trades, user, capital, accounts }:
   const [dateTo, setDateTo]                   = useState(today);
   const [selectedAccIds, setSelectedAccIds]   = useState<string[]>([]);
   const [showAccDropdown, setShowAccDropdown] = useState(false);
-  const [exporting, setExporting]             = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [showReport, setShowReport] = useState(false);
   const reportRef                             = useRef<HTMLDivElement>(null);
 
   const activeAccs      = selectedAccIds.length === 0 ? accounts : accounts.filter(a => selectedAccIds.includes(String(a.id)));
@@ -99,6 +100,8 @@ export default function ShareModal({ onClose, trades, user, capital, accounts }:
   const handleExport = async () => {
     if (!reportRef.current || filtered.length === 0) return;
     setExporting(true);
+    setShowReport(true);
+    await new Promise(r => setTimeout(r, 800));
     try {
       const { default: html2canvas } = await import('html2canvas');
       const { jsPDF } = await import('jspdf');
@@ -123,6 +126,7 @@ export default function ShareModal({ onClose, trades, user, capital, accounts }:
     } catch (e) {
       console.error('PDF error:', e);
     } finally {
+      setShowReport(false);
       setExporting(false);
     }
   };
@@ -258,7 +262,7 @@ export default function ShareModal({ onClose, trades, user, capital, accounts }:
           </button>
 
           {/* ── RAPPORT (caché visuellement mais rendu pour html2canvas) ── */}
-          <div style={{ position: 'absolute', left: '-9999px', top: 0, width: 900 }}>
+          <div style={{ position: 'fixed', left: showReport ? '0' : '-9999px', top: 0, zIndex: showReport ? 9999 : -1, width: 900, background: '#060D1A' }}>
             <div ref={reportRef} style={{
               background: '#060D1A', color: '#fff', padding: '40px',
               fontFamily: "'Inter', sans-serif", width: 900,
