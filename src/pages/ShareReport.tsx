@@ -232,7 +232,6 @@ export default function ShareReport() {
               <div style={{ fontSize: 12, color: '#8899AA', textAlign: 'right' }}>{fmtDate(dateFrom)} → {fmtDate(dateTo)}</div>
               {accountNames.length > 0 && <div style={{ fontSize: 11, color: '#445566', textAlign: 'right' }}>{accountNames.join(' · ')}</div>}
             </div>
-            </div>
           </div>
 
           {/* ── KPIs ── */}
