@@ -1,247 +1,243 @@
-import { useEffect, useState } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
-import {
-  AreaChart, Area, BarChart, Bar, XAxis, YAxis,
-  CartesianGrid, Tooltip, ResponsiveContainer, Cell, ReferenceLine,
-} from 'recharts';
-
-const tooltipStyle = {
-  background: '#0A1628',
-  border: '1px solid rgba(255,255,255,0.08)',
-  borderRadius: 10,
-  color: '#fff',
-  fontSize: 12,
-};
-
-interface ReportData {
-  trader: string;
-  avatar: string | null;
-  dateFrom: string;
-  dateTo: string;
-  accountNames: string[];
-  stats: {
-    trades: number; wins: number; losses: number;
-    winRate: number; totalR: number; totalDollar: number;
-    pf: number; avgR: number; croissance: number; capital: number;
-  };
-  badges: string[];
-  equity: { date: string; r: number }[];
-  dayPerf: { day: string; r: number }[];
-  pairPerf: { pair: string; r: number }[];
-}
+﻿import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 
 const BADGE_MAP: Record<string, { emoji: string; name: string }> = {
-  sniper:     { emoji: '🎯', name: 'Sniper' },
-  diamond:    { emoji: '💎', name: 'Diamond Hands' },
-  fire:       { emoji: '🔥', name: 'On Fire' },
-  speed:      { emoji: '⚡', name: 'Speed Trader' },
-  lion:       { emoji: '🦁', name: 'Lion' },
-  strategist: { emoji: '🧠', name: 'Strategist' },
-  consistent: { emoji: '📅', name: 'Consistent' },
-  rookie:     { emoji: '🚀', name: 'Rookie Star' },
-  icecold:    { emoji: '❄️', name: 'Ice Cold' },
-  champion:   { emoji: '🏆', name: 'Champion' },
+  sniper: { emoji: '🎯', name: 'Sniper' }, diamond: { emoji: '💎', name: 'Diamond Hands' },
+  fire: { emoji: '🔥', name: 'On Fire' }, speed: { emoji: '⚡', name: 'Speed Trader' },
+  lion: { emoji: '🦁', name: 'Lion' }, strategist: { emoji: '🧠', name: 'Strategist' },
+  consistent: { emoji: '📅', name: 'Consistent' }, rookie: { emoji: '🚀', name: 'Rookie Star' },
+  icecold: { emoji: '❄️', name: 'Ice Cold' }, champion: { emoji: '🏆', name: 'Champion' },
 };
 
+function BarH({ value, max, color }: { value: number; max: number; color: string }) {
+  const pct = max === 0 ? 0 : Math.abs(value) / max * 100;
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, height: 22 }}>
+      <div style={{ flex: 1, background: 'rgba(255,255,255,0.06)', borderRadius: 4, height: 10, overflow: 'hidden' }}>
+        <div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: 4 }} />
+      </div>
+      <span style={{ fontSize: 11, color, minWidth: 48, textAlign: 'right', fontWeight: 700 }}>
+        {value >= 0 ? '+' : ''}{value.toFixed(2)}R
+      </span>
+    </div>
+  );
+}
+
+function BarV({ value, max, label }: { value: number; max: number; label: string }) {
+  const color = value >= 0 ? '#00D4AA' : '#FF3B5C';
+  const pct = max === 0 ? 0 : Math.abs(value) / max * 100;
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flex: 1 }}>
+      <span style={{ fontSize: 10, color, fontWeight: 700 }}>{value >= 0 ? '+' : ''}{value.toFixed(1)}</span>
+      <div style={{ width: '100%', height: 80, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+        <div style={{ width: '60%', height: `${pct}%`, minHeight: 4, background: color, borderRadius: '3px 3px 0 0' }} />
+      </div>
+      <span style={{ fontSize: 10, color: '#556677' }}>{label}</span>
+    </div>
+  );
+}
+
 export default function ShareReport() {
-  const { token } = useParams<{ token: string }>();
-  const [searchParams] = useSearchParams();
-  const isPrint = searchParams.get('print') === '1';
-  const [data, setData] = useState<ReportData | null>(null);
-  const [error, setError] = useState('');
+  const { token: key } = useParams<{ token: string }>();
+  const [data, setData] = useState<any>(null);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
-    if (!token) { setError('Rapport introuvable.'); return; }
+    if (!key) return setError(true);
+    const raw = sessionStorage.getItem(key);
+    if (!raw) return setError(true);
     try {
-      const raw = sessionStorage.getItem(token);
-      if (!raw) { setError('Le rapport a expiré ou est introuvable.\nLes rapports sont disponibles uniquement sur votre appareil.'); return; }
       setData(JSON.parse(raw));
     } catch {
-      setError('Rapport invalide.');
+      setError(true);
     }
-  }, [token]);
+  }, [key]);
 
   useEffect(() => {
-    if (isPrint && data) {
-      document.title = `MITrad — ${data.trader} — Rapport`;
+    if (data) {
+      setTimeout(() => window.print(), 800);
     }
-  }, [isPrint, data]);
-
-  const fmtDate = (d: string) =>
-    new Date(d).toLocaleDateString('fr', { day: 'numeric', month: 'long', year: 'numeric' });
-
-  const S: React.CSSProperties = {
-    fontFamily: "'Inter', -apple-system, sans-serif",
-    WebkitFontSmoothing: 'antialiased',
-  };
+  }, [data]);
 
   if (error) return (
-    <div style={{ ...S, minHeight: '100vh', background: '#060D1A', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-      <div style={{ textAlign: 'center', color: '#8899AA', maxWidth: 400 }}>
-        <div style={{ fontSize: 52, marginBottom: 16 }}>📄</div>
-        <p style={{ fontSize: 18, color: '#fff', marginBottom: 12, whiteSpace: 'pre-line' }}>{error}</p>
-        <p style={{ fontSize: 13, marginBottom: 20, lineHeight: 1.6 }}>
-          Pour partager un rapport, exportez-le depuis votre Dashboard et envoyez le fichier PDF directement.
-        </p>
-        <a href="/" style={{ color: '#1A6BFF', fontSize: 14 }}>Retour à MITrad Journal</a>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#060D1A', color: '#fff', fontFamily: 'sans-serif' }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ fontSize: 48, marginBottom: 16 }}>❌</div>
+        <div style={{ fontSize: 18, color: '#8899AA' }}>Rapport introuvable ou expiré</div>
+        <div style={{ fontSize: 13, color: '#445566', marginTop: 8 }}>Retournez sur l'app et regénérez le rapport</div>
       </div>
     </div>
   );
 
   if (!data) return (
-    <div style={{ ...S, minHeight: '100vh', background: '#060D1A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ color: '#8899AA', fontSize: 14 }}>Chargement...</div>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#060D1A', color: '#fff', fontFamily: 'sans-serif' }}>
+      <div style={{ fontSize: 14, color: '#8899AA' }}>Chargement...</div>
     </div>
   );
 
-  const { stats, equity, dayPerf, pairPerf, badges } = data;
-  const isPos = stats.totalR >= 0;
+  const { trader, avatar, dateFrom, dateTo, accountNames, level, kpis, badges, equity, dayPerf, pairPerf, isPos } = data;
 
-  const kpis = [
-    { label: 'Win Rate',      value: `${stats.winRate}%`,                                            color: stats.winRate >= 50 ? '#00D4AA' : '#FF3B5C' },
-    { label: 'Profit Factor', value: stats.pf.toFixed(2),                                             color: stats.pf >= 1.5 ? '#00D4AA' : stats.pf >= 1 ? '#F59E0B' : '#FF3B5C' },
-    { label: 'R Total',       value: `${stats.totalR >= 0 ? '+' : ''}${stats.totalR.toFixed(2)}R`,   color: isPos ? '#00D4AA' : '#FF3B5C' },
-    { label: 'R Moyen',       value: `${stats.avgR >= 0 ? '+' : ''}${stats.avgR.toFixed(2)}R`,       color: stats.avgR >= 0 ? '#00D4AA' : '#FF3B5C' },
-    { label: 'Croissance',    value: `${stats.croissance >= 0 ? '+' : ''}${stats.croissance.toFixed(2)}%`, color: stats.croissance >= 0 ? '#00D4AA' : '#FF3B5C' },
-    { label: 'Trades',        value: `${stats.wins}W / ${stats.losses}L`,                            color: '#C0CCD8' },
-  ];
+  const fmtDate = (d: string) => new Date(d).toLocaleDateString('fr', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  const maxDay  = Math.max(...dayPerf.map((d: any) => Math.abs(d.r)), 0.01);
+  const maxPair = Math.max(...pairPerf.map((p: any) => Math.abs(p.r)), 0.01);
+
+  // Equity curve SVG
+  const eqValues = equity.map((e: any) => e.r);
+  const eqMin    = Math.min(...eqValues, 0);
+  const eqMax    = Math.max(...eqValues, 0.01);
+  const eqRange  = eqMax - eqMin || 1;
+  const W = 760, H = 160;
+  const pts = equity.map((e: any, i: number) => {
+    const x = (i / Math.max(equity.length - 1, 1)) * W;
+    const y = H - ((e.r - eqMin) / eqRange) * H;
+    return `${x},${y}`;
+  }).join(' ');
+  const lineColor = isPos ? '#00D4AA' : '#FF3B5C';
+  const zeroY = H - ((0 - eqMin) / eqRange) * H;
+  const fillPts = `0,${H} ${pts} ${W},${H}`;
 
   return (
-    <div style={{ ...S, minHeight: '100vh', background: '#060D1A', color: '#fff' }}>
+    <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #060D1A; color: #fff; font-family: -apple-system, 'Inter', sans-serif; }
         @media print {
-          body { background: #060D1A !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
           .no-print { display: none !important; }
+          @page { margin: 0; size: A4; }
         }
-        * { box-sizing: border-box; }
       `}</style>
 
-      <div style={{ maxWidth: 900, margin: '0 auto', padding: isPrint ? '32px 40px' : '28px 24px' }}>
+      {/* Bouton imprimer - visible seulement à l'écran */}
+      <div className="no-print" style={{ position: 'fixed', top: 16, right: 16, zIndex: 999, display: 'flex', gap: 8 }}>
+        <button onClick={() => window.print()}
+          style={{ background: '#1A6BFF', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 20px', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
+          🖨️ Imprimer / Sauvegarder PDF
+        </button>
+        <button onClick={() => window.close()}
+          style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 16px', fontSize: 14, cursor: 'pointer' }}>
+          ✕
+        </button>
+      </div>
 
-        {/* ── HEADER ── */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28, paddingBottom: 22, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <img src="/logo.png" alt="MITrad" style={{ height: 44, width: 'auto', objectFit: 'contain' }}
-              onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+      {/* RAPPORT */}
+      <div style={{ maxWidth: 900, margin: '0 auto', padding: '48px 48px 40px' }}>
+
+        {/* ── Header ── */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 36, paddingBottom: 28, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <img src="/logo.png" alt="MITrad" style={{ height: 52 }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             <div>
-              <div style={{ fontSize: 20, fontWeight: 800, background: 'linear-gradient(90deg,#1A6BFF,#6C3AFF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                MITrad Journal
-              </div>
-              <div style={{ fontSize: 11, color: '#8899AA', marginTop: 2 }}>Rapport de Performance</div>
+              <div style={{ fontSize: 26, fontWeight: 900, color: '#1A6BFF', letterSpacing: '-0.5px' }}>MITrad Journal</div>
+              <div style={{ fontSize: 11, color: '#556677', marginTop: 2, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Rapport de Performance</div>
             </div>
           </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            {avatar && <img src={avatar} alt="" style={{ width: 52, height: 52, borderRadius: '50%', border: `2px solid ${level.color}` }} />}
             <div style={{ textAlign: 'right' }}>
-              <div style={{ fontWeight: 700, fontSize: 16 }}>{data.trader}</div>
-              <div style={{ fontSize: 11, color: '#8899AA', marginTop: 3 }}>
-                {fmtDate(data.dateFrom)} → {fmtDate(data.dateTo)}
+              <div style={{ fontWeight: 800, fontSize: 20, color: '#fff', marginBottom: 6 }}>{trader}</div>
+              <div style={{ display: 'inline-block', fontSize: 12, fontWeight: 700, color: level.color, background: level.bg, border: `1px solid ${level.border}`, borderRadius: 20, padding: '4px 12px', marginBottom: 8 }}>
+                {level.emoji} {level.label}
               </div>
-              {data.accountNames?.length > 0 && (
-                <div style={{ fontSize: 11, color: '#556677', marginTop: 2 }}>
-                  {data.accountNames.join(' · ')}
-                </div>
-              )}
-              {badges.length > 0 && (
-                <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end', marginTop: 6, flexWrap: 'wrap' }}>
-                  {badges.map(id => BADGE_MAP[id] && (
-                    <span key={id} style={{ fontSize: 10, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.10)', borderRadius: 20, padding: '2px 7px' }}>
-                      {BADGE_MAP[id].emoji} {BADGE_MAP[id].name}
-                    </span>
-                  ))}
-                </div>
-              )}
+              <div style={{ fontSize: 12, color: '#8899AA' }}>{fmtDate(dateFrom)} → {fmtDate(dateTo)}</div>
+              {accountNames.length > 0 && <div style={{ fontSize: 11, color: '#445566', marginTop: 3 }}>{accountNames.join(' · ')}</div>}
             </div>
-            {data.avatar && (
-              <img src={data.avatar} alt={data.trader} style={{ width: 48, height: 48, borderRadius: '50%', border: '2px solid rgba(26,107,255,0.4)' }} />
-            )}
           </div>
         </div>
 
         {/* ── KPIs ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, marginBottom: 24 }}>
-          {kpis.map(k => (
-            <div key={k.label} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, padding: '14px 18px' }}>
-              <div style={{ fontSize: 10, color: '#8899AA', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>{k.label}</div>
-              <div style={{ fontSize: 22, fontWeight: 800, color: k.color, fontVariantNumeric: 'tabular-nums' }}>{k.value}</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, marginBottom: 28 }}>
+          {kpis.map((k: any) => (
+            <div key={k.label} style={{ background: `${k.color}12`, border: `1px solid ${k.color}30`, borderLeft: `4px solid ${k.color}`, borderRadius: 14, padding: '18px 20px' }}>
+              <div style={{ fontSize: 10, color: '#8899AA', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 10 }}>{k.label}</div>
+              <div style={{ fontSize: k.value.length > 8 ? 20 : 28, fontWeight: 900, color: k.color }}>{k.value}</div>
             </div>
           ))}
         </div>
 
-        {/* ── EQUITY CURVE ── */}
+        {/* ── Badges ── */}
+        {badges.length > 0 && (
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 28, justifyContent: 'center' }}>
+            {badges.map((id: string) => BADGE_MAP[id] && (
+              <div key={id} style={{ fontSize: 12, fontWeight: 600, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 20, padding: '6px 14px', color: '#C0CCD8' }}>
+                {BADGE_MAP[id].emoji} {BADGE_MAP[id].name}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ── Equity Curve SVG ── */}
         {equity.length > 1 && (
-          <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, padding: '18px 18px 10px', marginBottom: 18 }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: '#8899AA', marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Equity Curve</div>
-            <ResponsiveContainer width="100%" height={170}>
-              <AreaChart data={equity}>
-                <defs>
-                  <linearGradient id="grad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={isPos ? '#00D4AA' : '#FF3B5C'} stopOpacity={0.3} />
-                    <stop offset="100%" stopColor={isPos ? '#00D4AA' : '#FF3B5C'} stopOpacity={0.02} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                <XAxis dataKey="date" tick={{ fill: '#8899AA', fontSize: 10 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: '#8899AA', fontSize: 10 }} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`${v.toFixed(2)}R`, 'Cumul']} />
-                <ReferenceLine y={0} stroke="rgba(255,255,255,0.15)" strokeDasharray="4 4" />
-                <Area type="monotone" dataKey="r" stroke={isPos ? '#00D4AA' : '#FF3B5C'} strokeWidth={2.5} fill="url(#grad)" isAnimationActive={!isPrint} />
-              </AreaChart>
-            </ResponsiveContainer>
+          <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, padding: '20px 24px 16px', marginBottom: 20 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#8899AA', marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.12em' }}>📈 Equity Curve</div>
+            <svg width="100%" viewBox={`0 0 ${W} ${H + 20}`} style={{ overflow: 'visible' }}>
+              {/* Grid */}
+              {[0, 0.25, 0.5, 0.75, 1].map(v => (
+                <line key={v} x1={0} y1={H * v} x2={W} y2={H * v} stroke="rgba(255,255,255,0.04)" strokeWidth={1} />
+              ))}
+              {/* Zero line */}
+              <line x1={0} y1={zeroY} x2={W} y2={zeroY} stroke="rgba(255,255,255,0.15)" strokeWidth={1} strokeDasharray="4 4" />
+              {/* Fill */}
+              <polygon points={fillPts} fill={lineColor} fillOpacity={0.08} />
+              {/* Line */}
+              <polyline points={pts} fill="none" stroke={lineColor} strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" />
+              {/* Labels X */}
+              {equity.filter((_: any, i: number) => i % Math.ceil(equity.length / 8) === 0).map((e: any, i: number, arr: any[]) => {
+                const origIdx = equity.indexOf(e);
+                const x = (origIdx / Math.max(equity.length - 1, 1)) * W;
+                return <text key={i} x={x} y={H + 16} textAnchor="middle" fontSize={9} fill="#556677">{e.date}</text>;
+              })}
+            </svg>
           </div>
         )}
 
-        {/* ── PAR JOUR + PAR PAIRE ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 24 }}>
-          {dayPerf.length > 0 && (
-            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, padding: '16px 14px 10px' }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: '#8899AA', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Par Jour</div>
-              <ResponsiveContainer width="100%" height={130}>
-                <BarChart data={dayPerf}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                  <XAxis dataKey="day" tick={{ fill: '#8899AA', fontSize: 9 }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: '#8899AA', fontSize: 9 }} axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`${v.toFixed(2)}R`, 'P&L']} />
-                  <Bar dataKey="r" radius={[4,4,0,0]} isAnimationActive={!isPrint}>
-                    {dayPerf.map((e, i) => <Cell key={i} fill={e.r >= 0 ? '#00D4AA' : '#FF3B5C'} />)}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+        {/* ── Par Jour + Par Paire ── */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 32 }}>
+          {/* Par Jour */}
+          <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, padding: '20px 20px 16px' }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#8899AA', marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.12em' }}>📅 Par Jour</div>
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 100 }}>
+              {dayPerf.map((d: any) => (
+                <BarV key={d.day} value={d.r} max={maxDay} label={d.day} />
+              ))}
             </div>
-          )}
-          {pairPerf.length > 0 && (
-            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, padding: '16px 14px 10px' }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: '#8899AA', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Par Paire</div>
-              <ResponsiveContainer width="100%" height={130}>
-                <BarChart data={pairPerf} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                  <XAxis type="number" tick={{ fill: '#8899AA', fontSize: 9 }} axisLine={false} tickLine={false} />
-                  <YAxis type="category" dataKey="pair" tick={{ fill: '#8899AA', fontSize: 9 }} axisLine={false} tickLine={false} width={52} />
-                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`${v.toFixed(2)}R`, 'P&L']} />
-                  <Bar dataKey="r" radius={[0,4,4,0]} isAnimationActive={!isPrint}>
-                    {pairPerf.map((e, i) => <Cell key={i} fill={e.r >= 0 ? '#00D4AA' : '#FF3B5C'} />)}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-        </div>
-
-        {/* ── FOOTER ── */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 18, borderTop: '1px solid rgba(255,255,255,0.06)', fontSize: 11, color: '#445566' }}>
-          <span>Généré avec MITrad Journal · projournalmitrad.vercel.app</span>
-          <span>Rapport du {new Date().toLocaleDateString('fr')}</span>
-        </div>
-
-        {!isPrint && (
-          <div className="no-print" style={{ textAlign: 'center', marginTop: 28 }}>
-            <a href="/" style={{ display: 'inline-block', padding: '10px 24px', background: 'linear-gradient(135deg,#1A6BFF,#6C3AFF)', color: '#fff', borderRadius: 12, textDecoration: 'none', fontSize: 13, fontWeight: 600 }}>
-              Accéder à MITrad Journal
-            </a>
           </div>
-        )}
+          {/* Par Paire */}
+          <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, padding: '20px 20px 16px' }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#8899AA', marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.12em' }}>💱 Par Paire</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {pairPerf.map((p: any) => (
+                <div key={p.pair}>
+                  <div style={{ fontSize: 10, color: '#8899AA', marginBottom: 3 }}>{p.pair}</div>
+                  <BarH value={p.r} max={maxPair} color={p.r >= 0 ? '#00D4AA' : '#FF3B5C'} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* ── Footer ── */}
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 20 }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(26,107,255,0.10)', border: '1px solid rgba(26,107,255,0.25)', borderRadius: 24, padding: '10px 24px' }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="12" fill="#1A6BFF"/>
+                <path d="M6 12.5L10 16.5L18 8" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span style={{ fontSize: 14, fontWeight: 700, color: '#C0D8FF' }}>Vérifié par Hari Invest</span>
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11, color: '#334455' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#1A6BFF' }} />
+              <span>projournalmitrad.vercel.app</span>
+            </div>
+            <span>Généré le {new Date().toLocaleDateString('fr', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+          </div>
+        </div>
+
       </div>
-    </div>
+    </>
   );
 }
