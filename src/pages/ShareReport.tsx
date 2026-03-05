@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 const BADGE_MAP: Record<string, { emoji: string; name: string }> = {
@@ -41,6 +41,14 @@ export default function ShareReport() {
   const { token: key } = useParams<{ token: string }>();
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    setIsMobile(window.innerWidth < 700);
+    const handler = () => setIsMobile(window.innerWidth < 700);
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
 
   useEffect(() => {
     if (!key) return setError(true);
@@ -52,12 +60,6 @@ export default function ShareReport() {
       setError(true);
     }
   }, [key]);
-
-  useEffect(() => {
-    if (data) {
-      setTimeout(() => window.print(), 800);
-    }
-  }, [data]);
 
   if (error) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#060D1A', color: '#fff', fontFamily: 'sans-serif' }}>
@@ -82,7 +84,6 @@ export default function ShareReport() {
   const maxDay  = Math.max(...dayPerf.map((d: any) => Math.abs(d.r)), 0.01);
   const maxPair = Math.max(...pairPerf.map((p: any) => Math.abs(p.r)), 0.01);
 
-  // Equity curve SVG
   const eqValues = equity.map((e: any) => e.r);
   const eqMin    = Math.min(...eqValues, 0);
   const eqMax    = Math.max(...eqValues, 0.01);
@@ -97,23 +98,45 @@ export default function ShareReport() {
   const zeroY = H - ((0 - eqMin) / eqRange) * H;
   const fillPts = `0,${H} ${pts} ${W},${H}`;
 
+  const pad = isMobile ? '24px 16px 32px' : '48px 48px 40px';
+  const kpiCols = isMobile ? 'repeat(2,1fr)' : 'repeat(3,1fr)';
+  const chartsGrid = isMobile ? '1fr' : '1fr 1fr';
+  const headerDir = isMobile ? 'column' : 'row';
+  const headerAlign = isMobile ? 'flex-start' : 'center';
+
   return (
     <>
       <style>{`
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #060D1A; color: #fff; font-family: -apple-system, 'Inter', sans-serif; }
+        html, body {
+          background: #060D1A !important;
+          color: #fff;
+          font-family: -apple-system, 'Inter', sans-serif;
+        }
         @media print {
-          body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          html, body {
+            background: #060D1A !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            color-adjust: exact !important;
+          }
           .no-print { display: none !important; }
-          @page { margin: 0; size: A4; }
+          @page {
+            margin: 0;
+            size: A4;
+            background: #060D1A;
+          }
+          #report-root {
+            background: #060D1A !important;
+          }
         }
       `}</style>
 
-      {/* Bouton imprimer - visible seulement à l'écran */}
+      {/* Bouton imprimer */}
       <div className="no-print" style={{ position: 'fixed', top: 16, right: 16, zIndex: 999, display: 'flex', gap: 8 }}>
         <button onClick={() => window.print()}
-          style={{ background: '#1A6BFF', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 20px', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
-          🖨️ Imprimer / Sauvegarder PDF
+          style={{ background: '#1A6BFF', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 20px', fontSize: 14, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 20px rgba(26,107,255,0.4)' }}>
+          ⬇️ Sauvegarder en PDF
         </button>
         <button onClick={() => window.close()}
           style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 16px', fontSize: 14, cursor: 'pointer' }}>
@@ -122,121 +145,116 @@ export default function ShareReport() {
       </div>
 
       {/* RAPPORT */}
-      <div style={{ maxWidth: 900, margin: '0 auto', padding: '48px 48px 40px' }}>
+      <div id="report-root" style={{ background: '#060D1A', minHeight: '100vh' }}>
+        <div style={{ maxWidth: 900, margin: '0 auto', padding: pad }}>
 
-        {/* ── Header ── */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 36, paddingBottom: 28, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <img src="/logo.png" alt="MITrad" style={{ height: 52 }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-            <div>
-              <div style={{ fontSize: 26, fontWeight: 900, color: '#1A6BFF', letterSpacing: '-0.5px' }}>MITrad Journal</div>
-              <div style={{ fontSize: 11, color: '#556677', marginTop: 2, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Rapport de Performance</div>
-            </div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            {avatar && <img src={avatar} alt="" style={{ width: 52, height: 52, borderRadius: '50%', border: `2px solid ${level.color}` }} />}
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontWeight: 800, fontSize: 20, color: '#fff', marginBottom: 6 }}>{trader}</div>
-              <div style={{ display: 'inline-block', fontSize: 12, fontWeight: 700, color: level.color, background: level.bg, border: `1px solid ${level.border}`, borderRadius: 20, padding: '4px 12px', marginBottom: 8 }}>
-                {level.emoji} {level.label}
+          {/* ── Header ── */}
+          <div style={{ display: 'flex', flexDirection: headerDir, alignItems: headerAlign, justifyContent: 'space-between', gap: isMobile ? 20 : 0, marginBottom: 36, paddingBottom: 28, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <img src="/logo.png" alt="MITrad" style={{ height: isMobile ? 40 : 52 }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+              <div>
+                <div style={{ fontSize: isMobile ? 20 : 26, fontWeight: 900, color: '#1A6BFF', letterSpacing: '-0.5px' }}>MITrad Journal</div>
+                <div style={{ fontSize: 11, color: '#556677', marginTop: 2, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Rapport de Performance</div>
               </div>
-              <div style={{ fontSize: 12, color: '#8899AA' }}>{fmtDate(dateFrom)} → {fmtDate(dateTo)}</div>
-              {accountNames.length > 0 && <div style={{ fontSize: 11, color: '#445566', marginTop: 3 }}>{accountNames.join(' · ')}</div>}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              {avatar && <img src={avatar} alt="" style={{ width: isMobile ? 42 : 52, height: isMobile ? 42 : 52, borderRadius: '50%', border: `2px solid ${level.color}` }} />}
+              <div style={{ textAlign: isMobile ? 'left' : 'right' }}>
+                <div style={{ fontWeight: 800, fontSize: isMobile ? 17 : 20, color: '#fff', marginBottom: 6 }}>{trader}</div>
+                <div style={{ display: 'inline-block', fontSize: 12, fontWeight: 700, color: level.color, background: level.bg, border: `1px solid ${level.border}`, borderRadius: 20, padding: '4px 12px', marginBottom: 8 }}>
+                  {level.emoji} {level.label}
+                </div>
+                <div style={{ fontSize: 12, color: '#8899AA' }}>{fmtDate(dateFrom)} → {fmtDate(dateTo)}</div>
+                {accountNames.length > 0 && <div style={{ fontSize: 11, color: '#445566', marginTop: 3 }}>{accountNames.join(' · ')}</div>}
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* ── KPIs ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, marginBottom: 28 }}>
-          {kpis.map((k: any) => (
-            <div key={k.label} style={{ background: `${k.color}12`, border: `1px solid ${k.color}30`, borderLeft: `4px solid ${k.color}`, borderRadius: 14, padding: '18px 20px' }}>
-              <div style={{ fontSize: 10, color: '#8899AA', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 10 }}>{k.label}</div>
-              <div style={{ fontSize: k.value.length > 8 ? 20 : 28, fontWeight: 900, color: k.color }}>{k.value}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* ── Badges ── */}
-        {badges.length > 0 && (
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 28, justifyContent: 'center' }}>
-            {badges.map((id: string) => BADGE_MAP[id] && (
-              <div key={id} style={{ fontSize: 12, fontWeight: 600, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 20, padding: '6px 14px', color: '#C0CCD8' }}>
-                {BADGE_MAP[id].emoji} {BADGE_MAP[id].name}
+          {/* ── KPIs ── */}
+          <div style={{ display: 'grid', gridTemplateColumns: kpiCols, gap: 14, marginBottom: 28 }}>
+            {kpis.map((k: any) => (
+              <div key={k.label} style={{ background: `${k.color}12`, border: `1px solid ${k.color}30`, borderLeft: `4px solid ${k.color}`, borderRadius: 14, padding: isMobile ? '14px 16px' : '18px 20px' }}>
+                <div style={{ fontSize: 10, color: '#8899AA', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 8 }}>{k.label}</div>
+                <div style={{ fontSize: k.value.length > 9 ? 16 : k.value.length > 6 ? 20 : 26, fontWeight: 900, color: k.color, lineHeight: 1.2 }}>{k.value}</div>
               </div>
             ))}
           </div>
-        )}
 
-        {/* ── Equity Curve SVG ── */}
-        {equity.length > 1 && (
-          <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, padding: '20px 24px 16px', marginBottom: 20 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#8899AA', marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.12em' }}>📈 Equity Curve</div>
-            <svg width="100%" viewBox={`0 0 ${W} ${H + 20}`} style={{ overflow: 'visible' }}>
-              {/* Grid */}
-              {[0, 0.25, 0.5, 0.75, 1].map(v => (
-                <line key={v} x1={0} y1={H * v} x2={W} y2={H * v} stroke="rgba(255,255,255,0.04)" strokeWidth={1} />
-              ))}
-              {/* Zero line */}
-              <line x1={0} y1={zeroY} x2={W} y2={zeroY} stroke="rgba(255,255,255,0.15)" strokeWidth={1} strokeDasharray="4 4" />
-              {/* Fill */}
-              <polygon points={fillPts} fill={lineColor} fillOpacity={0.08} />
-              {/* Line */}
-              <polyline points={pts} fill="none" stroke={lineColor} strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" />
-              {/* Labels X */}
-              {equity.filter((_: any, i: number) => i % Math.ceil(equity.length / 8) === 0).map((e: any, i: number, arr: any[]) => {
-                const origIdx = equity.indexOf(e);
-                const x = (origIdx / Math.max(equity.length - 1, 1)) * W;
-                return <text key={i} x={x} y={H + 16} textAnchor="middle" fontSize={9} fill="#556677">{e.date}</text>;
-              })}
-            </svg>
-          </div>
-        )}
-
-        {/* ── Par Jour + Par Paire ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 32 }}>
-          {/* Par Jour */}
-          <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, padding: '20px 20px 16px' }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#8899AA', marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.12em' }}>📅 Par Jour</div>
-            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 100 }}>
-              {dayPerf.map((d: any) => (
-                <BarV key={d.day} value={d.r} max={maxDay} label={d.day} />
-              ))}
-            </div>
-          </div>
-          {/* Par Paire */}
-          <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, padding: '20px 20px 16px' }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#8899AA', marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.12em' }}>💱 Par Paire</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {pairPerf.map((p: any) => (
-                <div key={p.pair}>
-                  <div style={{ fontSize: 10, color: '#8899AA', marginBottom: 3 }}>{p.pair}</div>
-                  <BarH value={p.r} max={maxPair} color={p.r >= 0 ? '#00D4AA' : '#FF3B5C'} />
+          {/* ── Badges ── */}
+          {badges.length > 0 && (
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 28, justifyContent: 'center' }}>
+              {badges.map((id: string) => BADGE_MAP[id] && (
+                <div key={id} style={{ fontSize: 12, fontWeight: 600, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 20, padding: '6px 14px', color: '#C0CCD8' }}>
+                  {BADGE_MAP[id].emoji} {BADGE_MAP[id].name}
                 </div>
               ))}
             </div>
-          </div>
-        </div>
+          )}
 
-        {/* ── Footer ── */}
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 20 }}>
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(26,107,255,0.10)', border: '1px solid rgba(26,107,255,0.25)', borderRadius: 24, padding: '10px 24px' }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="12" fill="#1A6BFF"/>
-                <path d="M6 12.5L10 16.5L18 8" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+          {/* ── Equity Curve SVG ── */}
+          {equity.length > 1 && (
+            <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, padding: isMobile ? '16px' : '20px 24px 16px', marginBottom: 20 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#8899AA', marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.12em' }}>📈 Equity Curve</div>
+              <svg width="100%" viewBox={`0 0 ${W} ${H + 20}`} style={{ overflow: 'visible' }}>
+                {[0, 0.25, 0.5, 0.75, 1].map(v => (
+                  <line key={v} x1={0} y1={H * v} x2={W} y2={H * v} stroke="rgba(255,255,255,0.04)" strokeWidth={1} />
+                ))}
+                <line x1={0} y1={zeroY} x2={W} y2={zeroY} stroke="rgba(255,255,255,0.15)" strokeWidth={1} strokeDasharray="4 4" />
+                <polygon points={fillPts} fill={lineColor} fillOpacity={0.08} />
+                <polyline points={pts} fill="none" stroke={lineColor} strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" />
+                {equity.filter((_: any, i: number) => i % Math.ceil(equity.length / 8) === 0).map((e: any, i: number) => {
+                  const origIdx = equity.indexOf(e);
+                  const x = (origIdx / Math.max(equity.length - 1, 1)) * W;
+                  return <text key={i} x={x} y={H + 16} textAnchor="middle" fontSize={9} fill="#556677">{e.date}</text>;
+                })}
               </svg>
-              <span style={{ fontSize: 14, fontWeight: 700, color: '#C0D8FF' }}>Vérifié par Hari Invest</span>
             </div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11, color: '#334455' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#1A6BFF' }} />
-              <span>projournalmitrad.vercel.app</span>
-            </div>
-            <span>Généré le {new Date().toLocaleDateString('fr', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
-          </div>
-        </div>
+          )}
 
+          {/* ── Par Jour + Par Paire ── */}
+          <div style={{ display: 'grid', gridTemplateColumns: chartsGrid, gap: 16, marginBottom: 32 }}>
+            <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, padding: '20px 20px 16px' }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#8899AA', marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.12em' }}>📅 Par Jour</div>
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 100 }}>
+                {dayPerf.map((d: any) => (
+                  <BarV key={d.day} value={d.r} max={maxDay} label={d.day} />
+                ))}
+              </div>
+            </div>
+            <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, padding: '20px 20px 16px' }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#8899AA', marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.12em' }}>💱 Par Paire</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {pairPerf.map((p: any) => (
+                  <div key={p.pair}>
+                    <div style={{ fontSize: 10, color: '#8899AA', marginBottom: 3 }}>{p.pair}</div>
+                    <BarH value={p.r} max={maxPair} color={p.r >= 0 ? '#00D4AA' : '#FF3B5C'} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* ── Footer ── */}
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 20 }}>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(26,107,255,0.10)', border: '1px solid rgba(26,107,255,0.25)', borderRadius: 24, padding: '10px 24px' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="12" fill="#1A6BFF"/>
+                  <path d="M6 12.5L10 16.5L18 8" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span style={{ fontSize: 14, fontWeight: 700, color: '#C0D8FF' }}>Vérifié par Hari Invest</span>
+              </div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'center' : 'center', justifyContent: 'space-between', gap: isMobile ? 8 : 0, fontSize: 11, color: '#334455' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#1A6BFF', flexShrink: 0 }} />
+                <span>projournalmitrad.vercel.app</span>
+              </div>
+              <span>Généré le {new Date().toLocaleDateString('fr', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+            </div>
+          </div>
+
+        </div>
       </div>
     </>
   );
