@@ -52,10 +52,20 @@ export default function ShareModal({ onClose, trades, user, capital, accounts }:
     return selectedAccIds.includes(tid);
   }), [trades, dateFrom, dateTo, selectedAccIds]);
 
-  const wins        = filtered.filter(t => t.status === 'WIN');
-  const losses      = filtered.filter(t => t.status === 'LOSS');
-  const totalR      = filtered.reduce((s, t) => s + (t.resultR ?? 0), 0);
-  const totalDollar = filtered.reduce((s, t) => s + (t.resultDollar ?? 0), 0);
+  // Recalculer resultR si null (trades importés)
+  const filledTrades = useMemo(() => filtered.map(t => {
+    if (t.resultR !== 0 && t.resultR != null) return t;
+    const cap = capitalSelected || 10000;
+    const riskDollar = cap * 0.01;
+    if (riskDollar === 0) return t;
+    const computedR = Math.round((t.resultDollar / riskDollar) * 100) / 100;
+    return { ...t, resultR: computedR };
+  }), [filtered, capitalSelected]);
+
+  const wins        = filledTrades.filter(t => t.status === 'WIN');
+  const losses      = filledTrades.filter(t => t.status === 'LOSS');
+  const totalR      = filledTrades.reduce((s, t) => s + (t.resultR ?? 0), 0);
+  const totalDollar = filledTrades.reduce((s, t) => s + (t.resultDollar ?? 0), 0);
   const winRate     = filtered.length ? (wins.length / filtered.length * 100) : 0;
   const grossProfit = wins.reduce((s, t) => s + t.resultR, 0);
   const grossLoss   = Math.abs(losses.reduce((s, t) => s + t.resultR, 0));
@@ -65,7 +75,7 @@ export default function ShareModal({ onClose, trades, user, capital, accounts }:
   const badges      = calculateBadges(filtered);
 
   const sortedFiltered = useMemo(() =>
-    [...filtered].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
+    [...filledTrades].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
   [filtered]);
 
   const equity = useMemo(() => {
