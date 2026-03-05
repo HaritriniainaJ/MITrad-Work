@@ -219,7 +219,7 @@ export default function ShareReport() {
                 <div style={{ fontSize: 11, color: '#556677', marginTop: 2, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Rapport de Performance</div>
               </div>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: isMobile ? 'flex-start' : 'flex-end', gap: 6 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
               {/* Ligne : avatar + nom + badge */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 {avatar && <img src={avatar} alt="" style={{ width: isMobile ? 36 : 44, height: isMobile ? 36 : 44, borderRadius: '50%', border: `2px solid ${level.color}`, flexShrink: 0 }} />}
@@ -228,9 +228,9 @@ export default function ShareReport() {
                   {level.emoji} {level.label}
                 </div>
               </div>
-              {/* Dates et compte en dessous */}
-              <div style={{ fontSize: 12, color: '#8899AA' }}>{fmtDate(dateFrom)} → {fmtDate(dateTo)}</div>
-              {accountNames.length > 0 && <div style={{ fontSize: 11, color: '#445566' }}>{accountNames.join(' · ')}</div>}
+              {/* Dates et compte alignés à droite */}
+              <div style={{ fontSize: 12, color: '#8899AA', textAlign: 'right' }}>{fmtDate(dateFrom)} → {fmtDate(dateTo)}</div>
+              {accountNames.length > 0 && <div style={{ fontSize: 11, color: '#445566', textAlign: 'right' }}>{accountNames.join(' · ')}</div>}
             </div>
           </div>
 
