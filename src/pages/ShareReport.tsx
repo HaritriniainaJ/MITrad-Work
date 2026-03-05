@@ -129,51 +129,66 @@ export default function ShareReport() {
           #report-root {
             background: #060D1A !important;
           }
-          /* Tout tenir sur une page */
+          /* Tout tenir sur une page - forcer le zoom */
           #report-root > div {
-            padding: 18px 28px 16px !important;
+            padding: 14px 20px 12px !important;
+            max-width: 100% !important;
+            transform-origin: top left;
           }
           /* Header plus compact */
           #report-root > div > div:first-child {
-            margin-bottom: 14px !important;
-            padding-bottom: 14px !important;
+            margin-bottom: 10px !important;
+            padding-bottom: 10px !important;
           }
           /* KPIs plus compacts */
           #kpis-grid {
-            gap: 8px !important;
-            margin-bottom: 12px !important;
+            gap: 6px !important;
+            margin-bottom: 10px !important;
           }
           #kpis-grid > div {
-            padding: 10px 12px !important;
-            border-radius: 10px !important;
+            padding: 8px 10px !important;
+            border-radius: 8px !important;
+          }
+          #kpis-grid > div > div:first-child {
+            margin-bottom: 4px !important;
+            font-size: 9px !important;
+          }
+          #kpis-grid > div > div:last-child {
+            font-size: 18px !important;
           }
           /* Badges */
           #badges-row {
-            margin-bottom: 12px !important;
-            gap: 6px !important;
+            margin-bottom: 8px !important;
+            gap: 5px !important;
+          }
+          #badges-row > div {
+            padding: 4px 10px !important;
+            font-size: 11px !important;
           }
           /* Equity curve */
           #equity-box {
-            margin-bottom: 10px !important;
-            padding: 12px 16px 10px !important;
+            margin-bottom: 8px !important;
+            padding: 10px 12px 8px !important;
           }
-          /* Charts grid */
+          /* Charts grid - forcer côte à côte même sur mobile */
           #charts-grid {
-            gap: 10px !important;
-            margin-bottom: 16px !important;
+            gap: 8px !important;
+            margin-bottom: 10px !important;
+            grid-template-columns: 1fr 1fr !important;
           }
           #charts-grid > div {
-            padding: 12px 14px 10px !important;
+            padding: 10px 12px 8px !important;
           }
           /* Footer */
           #footer-box {
-            padding-top: 12px !important;
+            padding-top: 10px !important;
           }
           #footer-box > div:first-child {
-            margin-bottom: 8px !important;
+            margin-bottom: 6px !important;
           }
           #footer-box > div:first-child > div {
-            padding: 7px 16px !important;
+            padding: 6px 14px !important;
+            font-size: 12px !important;
           }
         }
       `}</style>
