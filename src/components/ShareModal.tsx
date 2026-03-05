@@ -126,6 +126,7 @@ export default function ShareModal({ onClose, trades, user, capital, accounts }:
       pairPerf,
       isPos,
       mode,
+      capital: capitalSelected,
     };
 
     const key = 'mitrad_report_' + Date.now();

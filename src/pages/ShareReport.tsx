@@ -77,17 +77,17 @@ export default function ShareReport() {
     </div>
   );
 
-  const { trader, avatar, dateFrom, dateTo, accountNames, level, kpis, badges, equity, dayPerf, pairPerf, isPos, mode } = data;
+  const { trader, avatar, dateFrom, dateTo, accountNames, level, kpis, badges, equity, dayPerf, pairPerf, isPos, mode, capital } = data;
 
   const fmtDate = (d: string) => new Date(d).toLocaleDateString('fr', { day: 'numeric', month: 'long', year: 'numeric' });
 
-  // Choisir la valeur selon le mode - toujours utiliser dollar si pas R
-  const useR = mode === 'R';
-  const val = (item: any) => useR ? (item.r ?? 0) : (item.d ?? item.r ?? 0);
+  // Valeur selon le mode
+  const val = (item: any) => mode === 'R' ? (item.r ?? 0) : (item.d ?? item.r ?? 0);
   const fmtVal = (v: number) => {
+    if (mode === 'R') return `${v >= 0 ? '+' : ''}${v.toFixed(2)}R`;
     if (mode === '$') return `${v >= 0 ? '+' : ''}$${Math.abs(v) >= 1000 ? (v/1000).toFixed(1)+'k' : v.toFixed(0)}`;
-    if (mode === '%') return `${v >= 0 ? '+' : ''}$${Math.abs(v) >= 1000 ? (v/1000).toFixed(1)+'k' : v.toFixed(0)}`;
-    return `${v >= 0 ? '+' : ''}${v.toFixed(2)}R`;
+    if (mode === '%' && capital > 0) return `${v >= 0 ? '+' : ''}${((v / capital) * 100).toFixed(2)}%`;
+    return `${v >= 0 ? '+' : ''}$${v.toFixed(0)}`;
   };
 
   const maxDay  = Math.max(...dayPerf.map((d: any) => Math.abs(val(d))), 0.01);
