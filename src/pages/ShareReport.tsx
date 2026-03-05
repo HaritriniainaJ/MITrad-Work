@@ -128,10 +128,11 @@ export default function ShareReport() {
           }
           #report-root {
             background: #060D1A !important;
+            min-height: 0 !important;
           }
           /* Tout tenir sur une page - forcer le zoom */
           #report-root > div {
-            padding: 14px 20px 12px !important;
+            padding: 10px 16px 8px !important;
             max-width: 100% !important;
             transform-origin: top left;
           }
