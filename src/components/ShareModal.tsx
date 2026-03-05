@@ -1,6 +1,7 @@
 ﻿import { useState, useMemo, useRef } from 'react';
 import { X, Calendar, Check, Download, ChevronDown, Loader2 } from 'lucide-react';
 import { Trade, TradingAccount } from '@/types/trading';
+import { useDisplayMode } from '@/context/DisplayModeContext';
 import { calculateBadges } from '@/lib/badgeEngine';
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis,
@@ -46,6 +47,7 @@ export default function ShareModal({ onClose, trades, user, capital, accounts }:
   const [exporting, setExporting]             = useState(false);
   const [showReport, setShowReport]           = useState(false);
   const reportRef                             = useRef<HTMLDivElement>(null);
+  const { formatResult, mode } = useDisplayMode();
 
   const activeAccs      = selectedAccIds.length === 0 ? accounts : accounts.filter(a => selectedAccIds.includes(String(a.id)));
   const capitalSelected = activeAccs.reduce((s, a) => s + Number(a.capital || 0), 0) || capital;
@@ -111,13 +113,14 @@ export default function ShareModal({ onClose, trades, user, capital, accounts }:
   const fmtDate = (d: string) => new Date(d).toLocaleDateString('fr', { day: 'numeric', month: 'long', year: 'numeric' });
   const toggleAccount = (id: string) => setSelectedAccIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
 
+  const fmtVal = (r: number, d: number) => formatResult(r, d, capitalSelected);
   const kpis = [
-    { label: 'Win Rate',      value: `${winRate.toFixed(1)}%`,                                      color: winRate >= 50 ? '#00D4AA' : '#FF3B5C', bg: winRate >= 50 ? 'rgba(0,212,170,0.08)' : 'rgba(255,59,92,0.08)' },
-    { label: 'Profit Factor', value: pf.toFixed(2),                                                 color: pf >= 1.5 ? '#00D4AA' : pf >= 1 ? '#F59E0B' : '#FF3B5C', bg: pf >= 1.5 ? 'rgba(0,212,170,0.08)' : pf >= 1 ? 'rgba(245,158,11,0.08)' : 'rgba(255,59,92,0.08)' },
-    { label: 'R Total',       value: `${totalR >= 0 ? '+' : ''}${totalR.toFixed(2)}R`,              color: isPos ? '#00D4AA' : '#FF3B5C', bg: isPos ? 'rgba(0,212,170,0.08)' : 'rgba(255,59,92,0.08)' },
-    { label: 'R Moyen',       value: `${avgR >= 0 ? '+' : ''}${avgR.toFixed(2)}R`,                  color: avgR >= 0 ? '#00D4AA' : '#FF3B5C', bg: avgR >= 0 ? 'rgba(0,212,170,0.08)' : 'rgba(255,59,92,0.08)' },
-    { label: 'Croissance',    value: `${croissance >= 0 ? '+' : ''}${croissance.toFixed(2)}%`,      color: croissance >= 0 ? '#00D4AA' : '#FF3B5C', bg: croissance >= 0 ? 'rgba(0,212,170,0.08)' : 'rgba(255,59,92,0.08)' },
-    { label: 'Trades',        value: `${wins.length}W / ${losses.length}L`,                         color: '#C0CCD8', bg: 'rgba(255,255,255,0.04)' },
+    { label: 'Win Rate',      value: `${winRate.toFixed(1)}%`,              color: winRate >= 50 ? '#00D4AA' : '#FF3B5C', bg: winRate >= 50 ? 'rgba(0,212,170,0.08)' : 'rgba(255,59,92,0.08)' },
+    { label: 'Profit Factor', value: pf.toFixed(2),                         color: pf >= 1.5 ? '#00D4AA' : pf >= 1 ? '#F59E0B' : '#FF3B5C', bg: pf >= 1.5 ? 'rgba(0,212,170,0.08)' : pf >= 1 ? 'rgba(245,158,11,0.08)' : 'rgba(255,59,92,0.08)' },
+    { label: mode === 'R' ? 'R Total' : mode === '$' ? 'P&L $' : 'P&L %', value: fmtVal(totalR, totalDollar), color: isPos ? '#00D4AA' : '#FF3B5C', bg: isPos ? 'rgba(0,212,170,0.08)' : 'rgba(255,59,92,0.08)' },
+    { label: mode === 'R' ? 'R Moyen' : 'Moyen',  value: fmtVal(avgR, totalDollar / (filledTrades.length || 1)), color: avgR >= 0 ? '#00D4AA' : '#FF3B5C', bg: avgR >= 0 ? 'rgba(0,212,170,0.08)' : 'rgba(255,59,92,0.08)' },
+    { label: 'Croissance',    value: `${croissance >= 0 ? '+' : ''}${croissance.toFixed(2)}%`,  color: croissance >= 0 ? '#00D4AA' : '#FF3B5C', bg: croissance >= 0 ? 'rgba(0,212,170,0.08)' : 'rgba(255,59,92,0.08)' },
+    { label: 'Trades',        value: `${wins.length}W / ${losses.length}L`, color: '#C0CCD8', bg: 'rgba(255,255,255,0.04)' },
   ];
 
   const handleExport = async () => {
