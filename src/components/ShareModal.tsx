@@ -289,12 +289,12 @@ export default function ShareModal({ onClose, trades, user, capital, accounts }:
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               {user.avatar && <img src={user.avatar} alt="" style={{ width: 48, height: 48, borderRadius: '50%', border: `2px solid ${level.color}` }} />}
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontWeight: 800, fontSize: 18, color: '#fff' }}>{user.name}</div>
-                <span style={{ fontSize: 11, fontWeight: 700, color: level.color, background: level.bg, border: `1px solid ${level.border}`, borderRadius: 20, padding: '2px 10px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginTop: 0, lineHeight: 1 }}>
+                <div style={{ fontWeight: 800, fontSize: 18, color: '#fff', lineHeight: '1.2', marginBottom: 4 }}>{user.name}</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: level.color, background: level.bg, border: `1px solid ${level.border}`, borderRadius: 20, padding: '3px 10px', display: 'table', marginLeft: 'auto', lineHeight: '1.4' }}>
                   {level.emoji} {level.label}
-                </span>
-                <div style={{ fontSize: 12, color: '#8899AA', marginTop: 6 }}>{fmtDate(dateFrom)} → {fmtDate(dateTo)}</div>
-                {activeAccs.length > 0 && <div style={{ fontSize: 11, color: '#445566', marginTop: 2 }}>{activeAccs.map(a => a.name).join(' · ')}</div>}
+                </div>
+                <div style={{ fontSize: 12, color: '#8899AA', marginTop: 6, lineHeight: '1.4' }}>{fmtDate(dateFrom)} → {fmtDate(dateTo)}</div>
+                {activeAccs.length > 0 && <div style={{ fontSize: 11, color: '#445566', marginTop: 2, lineHeight: '1.4' }}>{activeAccs.map(a => a.name).join(' · ')}</div>}
               </div>
             </div>
           </div>
@@ -311,11 +311,11 @@ export default function ShareModal({ onClose, trades, user, capital, accounts }:
 
           {/* ── Badges performance ── */}
           {badges.length > 0 && (
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24, justifyContent: 'center', alignItems: 'center', lineHeight: 1 }}>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24, justifyContent: 'center' }}>
               {badges.map(b => BADGE_MAP[b.id] && (
-                <span key={b.id} style={{ fontSize: 11, fontWeight: 600, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 20, padding: '4px 12px', color: '#C0CCD8' }}>
+                <div key={b.id} style={{ fontSize: 11, fontWeight: 600, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 20, padding: '4px 12px', color: '#C0CCD8', lineHeight: '1.4', display: 'table' }}>
                   {BADGE_MAP[b.id].emoji} {BADGE_MAP[b.id].name}
-                </span>
+                </div>
               ))}
             </div>
           )}
@@ -383,7 +383,7 @@ export default function ShareModal({ onClose, trades, user, capital, accounts }:
                   <circle cx="12" cy="12" r="12" fill="#1A6BFF"/>
                   <path d="M6 12.5L10 16.5L18 8" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-                <span style={{ fontSize: 13, fontWeight: 700, color: '#C0D8FF', letterSpacing: '0.02em', lineHeight: 1 }}>Vérifié par Hari Invest</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: '#C0D8FF', letterSpacing: '0.02em', lineHeight: '1.4' }}>Vérifié par Hari Invest</span>
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11, color: '#334455', lineHeight: 1 }}>
