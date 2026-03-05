@@ -131,16 +131,10 @@ export default function ShareModal({ onClose, trades, user, capital, accounts }:
         scale: 2, backgroundColor: '#060D1A', useCORS: true, logging: false, allowTaint: true,
       });
       const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-      const pdfW = pdf.internal.pageSize.getWidth();
+      const pdfW = 210; // A4 width en mm
       const pdfH = (canvas.height * pdfW) / canvas.width;
-      const pageH = pdf.internal.pageSize.getHeight();
-      let y = 0;
-      while (y < pdfH) {
-        if (y > 0) pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, -y, pdfW, pdfH);
-        y += pageH;
-      }
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [pdfW, pdfH] });
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfW, pdfH);
       pdf.save(`MITrad_${user.name}_${dateFrom}_${dateTo}.pdf`);
     } catch (e) {
       console.error('PDF error:', e);
@@ -296,7 +290,7 @@ export default function ShareModal({ onClose, trades, user, capital, accounts }:
               {user.avatar && <img src={user.avatar} alt="" style={{ width: 48, height: 48, borderRadius: '50%', border: `2px solid ${level.color}` }} />}
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontWeight: 800, fontSize: 18, color: '#fff' }}>{user.name}</div>
-                <span style={{ fontSize: 11, fontWeight: 700, color: level.color, background: level.bg, border: `1px solid ${level.border}`, borderRadius: 20, padding: '2px 10px', display: 'inline-block', marginTop: 4 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: level.color, background: level.bg, border: `1px solid ${level.border}`, borderRadius: 20, padding: '2px 10px', display: 'inline-block', marginTop: 4, textAlign: 'center' }}>
                   {level.emoji} {level.label}
                 </span>
                 <div style={{ fontSize: 12, color: '#8899AA', marginTop: 6 }}>{fmtDate(dateFrom)} → {fmtDate(dateTo)}</div>
@@ -317,7 +311,7 @@ export default function ShareModal({ onClose, trades, user, capital, accounts }:
 
           {/* ── Badges performance ── */}
           {badges.length > 0 && (
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24 }}>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24, justifyContent: 'center' }}>
               {badges.map(b => BADGE_MAP[b.id] && (
                 <span key={b.id} style={{ fontSize: 11, fontWeight: 600, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 20, padding: '4px 12px', color: '#C0CCD8' }}>
                   {BADGE_MAP[b.id].emoji} {BADGE_MAP[b.id].name}
