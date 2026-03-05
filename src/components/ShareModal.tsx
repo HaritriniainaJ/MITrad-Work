@@ -1,7 +1,6 @@
-﻿import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { X, Calendar, Check, Download, ChevronDown, Loader2 } from 'lucide-react';
 import { Trade, TradingAccount } from '@/types/trading';
-import { useDisplayMode } from '@/context/DisplayModeContext';
 import { calculateBadges } from '@/lib/badgeEngine';
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis,
@@ -47,7 +46,6 @@ export default function ShareModal({ onClose, trades, user, capital, accounts }:
   const [exporting, setExporting]             = useState(false);
   const [showReport, setShowReport]           = useState(false);
   const reportRef                             = useRef<HTMLDivElement>(null);
-  const { formatResult, mode } = useDisplayMode();
 
   const activeAccs      = selectedAccIds.length === 0 ? accounts : accounts.filter(a => selectedAccIds.includes(String(a.id)));
   const capitalSelected = activeAccs.reduce((s, a) => s + Number(a.capital || 0), 0) || capital;
@@ -61,15 +59,14 @@ export default function ShareModal({ onClose, trades, user, capital, accounts }:
     return selectedAccIds.includes(tid);
   }), [trades, dateFrom, dateTo, selectedAccIds]);
 
-  // Même logique que le dashboard
+  // Recalculer resultR si null (trades importés)
   const filledTrades = useMemo(() => filtered.map(t => {
     if (t.resultR !== 0 && t.resultR != null) return t;
-    const acc = accounts.find(a => String(a.id) === String((t as any).accountId || (t as any).trading_account_id));
-    const cap = Number(acc?.capital) || capitalSelected || 10000;
+    const cap = capitalSelected || 10000;
     const riskDollar = cap * 0.01;
     if (riskDollar === 0) return t;
     return { ...t, resultR: Math.round((t.resultDollar / riskDollar) * 100) / 100 };
-  }), [filtered, accounts, capitalSelected]);
+  }), [filtered, capitalSelected]);
 
   const wins        = filledTrades.filter(t => t.status === 'WIN');
   const losses      = filledTrades.filter(t => t.status === 'LOSS');
@@ -113,14 +110,13 @@ export default function ShareModal({ onClose, trades, user, capital, accounts }:
   const fmtDate = (d: string) => new Date(d).toLocaleDateString('fr', { day: 'numeric', month: 'long', year: 'numeric' });
   const toggleAccount = (id: string) => setSelectedAccIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
 
-  const fmtVal = (r: number, d: number) => formatResult(r, d, capitalSelected);
   const kpis = [
-    { label: 'Win Rate',      value: `${winRate.toFixed(1)}%`,              color: winRate >= 50 ? '#00D4AA' : '#FF3B5C', bg: winRate >= 50 ? 'rgba(0,212,170,0.08)' : 'rgba(255,59,92,0.08)' },
-    { label: 'Profit Factor', value: pf.toFixed(2),                         color: pf >= 1.5 ? '#00D4AA' : pf >= 1 ? '#F59E0B' : '#FF3B5C', bg: pf >= 1.5 ? 'rgba(0,212,170,0.08)' : pf >= 1 ? 'rgba(245,158,11,0.08)' : 'rgba(255,59,92,0.08)' },
-    { label: mode === 'R' ? 'R Total' : mode === '$' ? 'P&L $' : 'P&L %', value: fmtVal(totalR, totalDollar), color: isPos ? '#00D4AA' : '#FF3B5C', bg: isPos ? 'rgba(0,212,170,0.08)' : 'rgba(255,59,92,0.08)' },
-    { label: mode === 'R' ? 'R Moyen' : 'Moyen',  value: fmtVal(avgR, totalDollar / (filledTrades.length || 1)), color: avgR >= 0 ? '#00D4AA' : '#FF3B5C', bg: avgR >= 0 ? 'rgba(0,212,170,0.08)' : 'rgba(255,59,92,0.08)' },
-    { label: 'Croissance',    value: `${croissance >= 0 ? '+' : ''}${croissance.toFixed(2)}%`,  color: croissance >= 0 ? '#00D4AA' : '#FF3B5C', bg: croissance >= 0 ? 'rgba(0,212,170,0.08)' : 'rgba(255,59,92,0.08)' },
-    { label: 'Trades',        value: `${wins.length}W / ${losses.length}L`, color: '#C0CCD8', bg: 'rgba(255,255,255,0.04)' },
+    { label: 'Win Rate',      value: `${winRate.toFixed(1)}%`,                                      color: winRate >= 50 ? '#00D4AA' : '#FF3B5C', bg: winRate >= 50 ? 'rgba(0,212,170,0.08)' : 'rgba(255,59,92,0.08)' },
+    { label: 'Profit Factor', value: pf.toFixed(2),                                                 color: pf >= 1.5 ? '#00D4AA' : pf >= 1 ? '#F59E0B' : '#FF3B5C', bg: pf >= 1.5 ? 'rgba(0,212,170,0.08)' : pf >= 1 ? 'rgba(245,158,11,0.08)' : 'rgba(255,59,92,0.08)' },
+    { label: 'R Total',       value: `${totalR >= 0 ? '+' : ''}${totalR.toFixed(2)}R`,              color: isPos ? '#00D4AA' : '#FF3B5C', bg: isPos ? 'rgba(0,212,170,0.08)' : 'rgba(255,59,92,0.08)' },
+    { label: 'R Moyen',       value: `${avgR >= 0 ? '+' : ''}${avgR.toFixed(2)}R`,                  color: avgR >= 0 ? '#00D4AA' : '#FF3B5C', bg: avgR >= 0 ? 'rgba(0,212,170,0.08)' : 'rgba(255,59,92,0.08)' },
+    { label: 'Croissance',    value: `${croissance >= 0 ? '+' : ''}${croissance.toFixed(2)}%`,      color: croissance >= 0 ? '#00D4AA' : '#FF3B5C', bg: croissance >= 0 ? 'rgba(0,212,170,0.08)' : 'rgba(255,59,92,0.08)' },
+    { label: 'Trades',        value: `${wins.length}W / ${losses.length}L`,                         color: '#C0CCD8', bg: 'rgba(255,255,255,0.04)' },
   ];
 
   const handleExport = async () => {
@@ -288,7 +284,7 @@ export default function ShareModal({ onClose, trades, user, capital, accounts }:
         <div ref={reportRef} style={{ background: '#060D1A', color: '#fff', padding: '44px 48px', fontFamily: "'Inter', -apple-system, sans-serif", width: 900 }}>
 
           {/* ── Header ── */}
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 32, paddingBottom: 24, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32, paddingBottom: 24, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
               <img src="/logo.png" alt="MITrad" style={{ height: 48, objectFit: 'contain' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
               <div>
@@ -296,27 +292,25 @@ export default function ShareModal({ onClose, trades, user, capital, accounts }:
                 <div style={{ fontSize: 12, color: '#556677', marginTop: 3, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Rapport de Performance</div>
               </div>
             </div>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'flex-end', marginBottom: 8 }}>
-                {user.avatar && <img src={user.avatar} alt="" style={{ width: 40, height: 40, borderRadius: '50%', border: `2px solid ${level.color}` }} />}
-                <div>
-                  <div style={{ fontWeight: 800, fontSize: 18, color: '#fff' }}>{user.name}</div>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: level.color, background: level.bg, border: `1px solid ${level.border}`, borderRadius: 20, padding: '2px 10px', display: 'inline-block', marginTop: 4 }}>
-                    {level.emoji} {level.label}
-                  </span>
-                </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              {user.avatar && <img src={user.avatar} alt="" style={{ width: 48, height: 48, borderRadius: '50%', border: `2px solid ${level.color}` }} />}
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontWeight: 800, fontSize: 18, color: '#fff' }}>{user.name}</div>
+                <span style={{ fontSize: 11, fontWeight: 700, color: level.color, background: level.bg, border: `1px solid ${level.border}`, borderRadius: 20, padding: '2px 10px', display: 'inline-block', marginTop: 4 }}>
+                  {level.emoji} {level.label}
+                </span>
+                <div style={{ fontSize: 12, color: '#8899AA', marginTop: 6 }}>{fmtDate(dateFrom)} → {fmtDate(dateTo)}</div>
+                {activeAccs.length > 0 && <div style={{ fontSize: 11, color: '#445566', marginTop: 2 }}>{activeAccs.map(a => a.name).join(' · ')}</div>}
               </div>
-              <div style={{ fontSize: 12, color: '#8899AA' }}>{fmtDate(dateFrom)} → {fmtDate(dateTo)}</div>
-              {activeAccs.length > 0 && <div style={{ fontSize: 11, color: '#445566', marginTop: 3 }}>{activeAccs.map(a => a.name).join(' · ')}</div>}
             </div>
           </div>
 
           {/* ── KPIs ── */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, marginBottom: 28 }}>
             {kpis.map(k => (
-              <div key={k.label} style={{ background: k.bg, border: `1px solid ${k.color}22`, borderRadius: 16, padding: '18px 22px', borderLeft: `3px solid ${k.color}` }}>
-                <div style={{ fontSize: 10, color: '#8899AA', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 10 }}>{k.label}</div>
-                <div style={{ fontSize: 28, fontWeight: 900, color: k.color, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.5px' }}>{k.value}</div>
+              <div key={k.label} style={{ background: k.bg, border: `1px solid ${k.color}22`, borderRadius: 16, padding: '16px 16px', borderLeft: `3px solid ${k.color}`, overflow: 'hidden' }}>
+                <div style={{ fontSize: 10, color: '#8899AA', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 8, whiteSpace: 'nowrap' }}>{k.label}</div>
+                <div style={{ fontSize: k.value.length > 8 ? 20 : 26, fontWeight: 900, color: k.color, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.5px', wordBreak: 'break-all' }}>{k.value}</div>
               </div>
             ))}
           </div>
@@ -388,12 +382,23 @@ export default function ShareModal({ onClose, trades, user, capital, accounts }:
           </div>
 
           {/* ── Footer ── */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 20, borderTop: '1px solid rgba(255,255,255,0.06)', fontSize: 11, color: '#334455' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#1A6BFF' }} />
-              <span>projournalmitrad.vercel.app</span>
+          <div style={{ paddingTop: 20, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(26,107,255,0.10)', border: '1px solid rgba(26,107,255,0.25)', borderRadius: 24, padding: '8px 20px' }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="12" fill="#1A6BFF"/>
+                  <path d="M6 12.5L10 16.5L18 8" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span style={{ fontSize: 13, fontWeight: 700, color: '#C0D8FF', letterSpacing: '0.02em' }}>Vérifié par Hari Invest</span>
+              </div>
             </div>
-            <span>Généré le {new Date().toLocaleDateString('fr', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11, color: '#334455' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#1A6BFF' }} />
+                <span>projournalmitrad.vercel.app</span>
+              </div>
+              <span>Généré le {new Date().toLocaleDateString('fr', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+            </div>
           </div>
         </div>
       </div>
