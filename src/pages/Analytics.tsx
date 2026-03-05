@@ -321,7 +321,7 @@ const fmtDD = () => {
       )}
 
       {/* â”€â”€ MODALE DÉTAIL MEILLEUR TRADE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-      {showShare && <ShareModal onClose={() => setShowShare(false)} trades={trades} user={user!} capital={capital} />}{showBestTrade && bestTrade && (
+      {showShare && <ShareModal onClose={() => setShowShare(false)} trades={trades} user={user!} capital={capital} accounts={accounts} />}{showBestTrade && bestTrade && (
         <div className="modal-overlay" onClick={() => setShowBestTrade(false)}>
           <div className="modal-content glass p-6 max-w-lg w-full max-h-[85vh] overflow-y-auto scrollbar-thin" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-5">
