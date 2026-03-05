@@ -314,7 +314,7 @@ const fmtDD = () => {
               {formatResult(bestTrade.resultR, bestTrade.resultDollar, capital)}
             </span>
             <span className="text-muted-foreground text-xs">
-              {bestTrade.setup} Â· {new Date(bestTrade.date).toLocaleDateString('fr')}
+              {bestTrade.setup} · {new Date(bestTrade.date).toLocaleDateString('fr')}
             </span>
           </div>
         </GlassCard>
@@ -326,7 +326,7 @@ const fmtDD = () => {
           <div className="modal-content glass p-6 max-w-lg w-full max-h-[85vh] overflow-y-auto scrollbar-thin" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-5">
               <h3 className="font-bold text-foreground text-lg gradient-text">
-                â­ {bestTrade.pair} "” {bestTrade.direction}
+                ⭐ {bestTrade.pair} "” {bestTrade.direction}
               </h3>
               <button onClick={() => setShowBestTrade(false)} className="text-muted-foreground hover:text-foreground">
                 <X size={20} />
