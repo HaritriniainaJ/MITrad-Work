@@ -211,26 +211,27 @@ export default function ShareReport() {
         <div style={{ maxWidth: 900, margin: '0 auto', padding: pad }}>
 
           {/* ── Header ── */}
-          <div style={{ display: 'flex', flexDirection: headerDir, alignItems: headerAlign, justifyContent: 'space-between', gap: isMobile ? 20 : 0, marginBottom: 36, paddingBottom: 28, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-              <img src="/logo.png" alt="MITrad" style={{ height: isMobile ? 40 : 52 }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+          <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 36, paddingBottom: 28, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+            {/* Logo + titre */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexShrink: 0 }}>
+              <img src="/logo.png" alt="MITrad" style={{ height: isMobile ? 36 : 52 }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
               <div>
-                <div style={{ fontSize: isMobile ? 20 : 26, fontWeight: 900, color: '#1A6BFF', letterSpacing: '-0.5px' }}>MITrad Journal</div>
+                <div style={{ fontSize: isMobile ? 18 : 26, fontWeight: 900, color: '#1A6BFF', letterSpacing: '-0.5px' }}>MITrad Journal</div>
                 <div style={{ fontSize: 11, color: '#556677', marginTop: 2, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Rapport de Performance</div>
               </div>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
-              {/* Ligne : avatar + nom + badge */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                {avatar && <img src={avatar} alt="" style={{ width: isMobile ? 36 : 44, height: isMobile ? 36 : 44, borderRadius: '50%', border: `2px solid ${level.color}`, flexShrink: 0 }} />}
-                <div style={{ fontWeight: 800, fontSize: isMobile ? 17 : 20, color: '#fff', lineHeight: 1.2 }}>{trader}</div>
-                <div style={{ fontSize: 12, fontWeight: 700, color: level.color, background: level.bg, border: `1px solid ${level.border}`, borderRadius: 20, padding: '3px 12px', whiteSpace: 'nowrap' }}>
+            {/* Avatar + nom + badge + dates — aligné à droite */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                {avatar && <img src={avatar} alt="" style={{ width: isMobile ? 32 : 44, height: isMobile ? 32 : 44, borderRadius: '50%', border: `2px solid ${level.color}`, flexShrink: 0 }} />}
+                <div style={{ fontWeight: 800, fontSize: isMobile ? 15 : 20, color: '#fff', lineHeight: 1.2 }}>{trader}</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: level.color, background: level.bg, border: `1px solid ${level.border}`, borderRadius: 20, padding: '3px 10px', whiteSpace: 'nowrap' }}>
                   {level.emoji} {level.label}
                 </div>
               </div>
-              {/* Dates et compte alignés à droite */}
               <div style={{ fontSize: 12, color: '#8899AA', textAlign: 'right' }}>{fmtDate(dateFrom)} → {fmtDate(dateTo)}</div>
               {accountNames.length > 0 && <div style={{ fontSize: 11, color: '#445566', textAlign: 'right' }}>{accountNames.join(' · ')}</div>}
+            </div>
             </div>
           </div>
 
