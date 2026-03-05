@@ -81,9 +81,14 @@ export default function ShareReport() {
 
   const fmtDate = (d: string) => new Date(d).toLocaleDateString('fr', { day: 'numeric', month: 'long', year: 'numeric' });
 
-  // Choisir la valeur selon le mode
-  const val = (item: any) => mode === '$' ? (item.d ?? item.r) : item.r;
-  const fmtVal = (v: number) => mode === '$' ? `${v >= 0 ? '+' : ''}$${v.toFixed(0)}` : `${v >= 0 ? '+' : ''}${v.toFixed(2)}R`;
+  // Choisir la valeur selon le mode - toujours utiliser dollar si pas R
+  const useR = mode === 'R';
+  const val = (item: any) => useR ? (item.r ?? 0) : (item.d ?? item.r ?? 0);
+  const fmtVal = (v: number) => {
+    if (mode === '$') return `${v >= 0 ? '+' : ''}$${Math.abs(v) >= 1000 ? (v/1000).toFixed(1)+'k' : v.toFixed(0)}`;
+    if (mode === '%') return `${v >= 0 ? '+' : ''}$${Math.abs(v) >= 1000 ? (v/1000).toFixed(1)+'k' : v.toFixed(0)}`;
+    return `${v >= 0 ? '+' : ''}${v.toFixed(2)}R`;
+  };
 
   const maxDay  = Math.max(...dayPerf.map((d: any) => Math.abs(val(d))), 0.01);
   const maxPair = Math.max(...pairPerf.map((p: any) => Math.abs(val(p))), 0.01);
