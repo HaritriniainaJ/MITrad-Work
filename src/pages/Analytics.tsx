@@ -5,11 +5,12 @@ import { useFilteredTrades } from '@/hooks/useFilteredTrades';
 import { getMaxWinStreak, getMaxLossStreak, getMaxDrawdown } from '@/lib/badgeEngine';
 import { Trade } from '@/types/trading';
 import GlassCard from '@/components/GlassCard';
+import ShareModal from '@/components/ShareModal';
 import {
   LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceDot, ReferenceLine, Legend,
 } from 'recharts';
-import { X } from 'lucide-react';
+import { X, Share2 } from 'lucide-react';
 
 const CHART_COLORS = ['#1A6BFF', '#6C3AFF', '#00D4AA', '#FF4757', '#FFB800', '#FF6B9D', '#00BCD4', '#8BC34A'];
 const tooltipStyle = {
@@ -24,6 +25,7 @@ export default function Analytics() {
   const { user, accounts, activeAccounts } = useAuth();
   // État pour la modale du meilleur trade (cliquable)
   const [showBestTrade, setShowBestTrade] = useState(false);
+  const [showShare, setShowShare] = useState(false);
   const [chartView, setChartView] = useState<'area' | 'bar' | 'distribution'>('area');
   const { mode, formatResult } = useDisplayMode();
 const capital = useMemo(() => {
@@ -188,7 +190,7 @@ const fmtDD = () => {
             <p className="text-muted-foreground text-sm mt-1">{new Date().toLocaleDateString('fr', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
             <p className="text-muted-foreground text-sm mt-2 italic">"Planifie ton trade. Trade ton plan."</p>
           </div>
-          <DisplayModeToggle />
+          <div className="flex items-center gap-3"><DisplayModeToggle /><button onClick={() => setShowShare(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold gradient-primary text-white hover:opacity-90 transition-all"><Share2 size={15} /> Partager</button></div>
         </div>
       </GlassCard>
       {/* â”€â”€ KPI ROW 1 (compact) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
@@ -319,7 +321,7 @@ const fmtDD = () => {
       )}
 
       {/* â”€â”€ MODALE DÉTAIL MEILLEUR TRADE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-      {showBestTrade && bestTrade && (
+      {showShare && <ShareModal onClose={() => setShowShare(false)} trades={trades} user={user!} capital={capital} />}{showBestTrade && bestTrade && (
         <div className="modal-overlay" onClick={() => setShowBestTrade(false)}>
           <div className="modal-content glass p-6 max-w-lg w-full max-h-[85vh] overflow-y-auto scrollbar-thin" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-5">
