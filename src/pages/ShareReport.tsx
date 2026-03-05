@@ -204,14 +204,14 @@ export default function ShareReport() {
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-              {avatar && <img src={avatar} alt="" style={{ width: isMobile ? 42 : 52, height: isMobile ? 42 : 52, borderRadius: '50%', border: `2px solid ${level.color}` }} />}
-              <div style={{ textAlign: isMobile ? 'left' : 'right' }}>
-                <div style={{ fontWeight: 800, fontSize: isMobile ? 17 : 20, color: '#fff', marginBottom: 6 }}>{trader}</div>
-                <div style={{ display: 'inline-block', fontSize: 12, fontWeight: 700, color: level.color, background: level.bg, border: `1px solid ${level.border}`, borderRadius: 20, padding: '4px 12px', marginBottom: 8 }}>
+              {avatar && <img src={avatar} alt="" style={{ width: isMobile ? 42 : 52, height: isMobile ? 42 : 52, borderRadius: '50%', border: `2px solid ${level.color}`, flexShrink: 0 }} />}
+              <div style={{ textAlign: isMobile ? 'left' : 'right', display: 'flex', flexDirection: 'column', gap: 4, justifyContent: 'center' }}>
+                <div style={{ fontWeight: 800, fontSize: isMobile ? 17 : 20, color: '#fff', lineHeight: 1.2 }}>{trader}</div>
+                <div style={{ display: 'inline-block', fontSize: 12, fontWeight: 700, color: level.color, background: level.bg, border: `1px solid ${level.border}`, borderRadius: 20, padding: '3px 12px', alignSelf: isMobile ? 'flex-start' : 'flex-end' }}>
                   {level.emoji} {level.label}
                 </div>
-                <div style={{ fontSize: 12, color: '#8899AA' }}>{fmtDate(dateFrom)} → {fmtDate(dateTo)}</div>
-                {accountNames.length > 0 && <div style={{ fontSize: 11, color: '#445566', marginTop: 3 }}>{accountNames.join(' · ')}</div>}
+                <div style={{ fontSize: 12, color: '#8899AA', lineHeight: 1.4 }}>{fmtDate(dateFrom)} → {fmtDate(dateTo)}</div>
+                {accountNames.length > 0 && <div style={{ fontSize: 11, color: '#445566' }}>{accountNames.join(' · ')}</div>}
               </div>
             </div>
           </div>
