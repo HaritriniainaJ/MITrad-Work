@@ -9,7 +9,7 @@ const BADGE_MAP: Record<string, { emoji: string; name: string }> = {
   icecold: { emoji: '❄️', name: 'Ice Cold' }, champion: { emoji: '🏆', name: 'Champion' },
 };
 
-function BarH({ value, max, color }: { value: number; max: number; color: string }) {
+function BarH({ value, max, color, fmt }: { value: number; max: number; color: string; fmt: (v: number) => string }) {
   const pct = max === 0 ? 0 : Math.abs(value) / max * 100;
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, height: 22 }}>
@@ -17,18 +17,18 @@ function BarH({ value, max, color }: { value: number; max: number; color: string
         <div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: 4 }} />
       </div>
       <span style={{ fontSize: 11, color, minWidth: 48, textAlign: 'right', fontWeight: 700 }}>
-        {value >= 0 ? '+' : ''}{value.toFixed(2)}R
+        {fmt(value)}
       </span>
     </div>
   );
 }
 
-function BarV({ value, max, label }: { value: number; max: number; label: string }) {
+function BarV({ value, max, label, fmt }: { value: number; max: number; label: string; fmt: (v: number) => string }) {
   const color = value >= 0 ? '#00D4AA' : '#FF3B5C';
   const pct = max === 0 ? 0 : Math.abs(value) / max * 100;
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flex: 1 }}>
-      <span style={{ fontSize: 10, color, fontWeight: 700 }}>{value >= 0 ? '+' : ''}{value.toFixed(1)}</span>
+      <span style={{ fontSize: 9, color, fontWeight: 700 }}>{fmt(value)}</span>
       <div style={{ width: '100%', height: 80, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
         <div style={{ width: '60%', height: `${pct}%`, minHeight: 4, background: color, borderRadius: '3px 3px 0 0' }} />
       </div>
@@ -77,21 +77,25 @@ export default function ShareReport() {
     </div>
   );
 
-  const { trader, avatar, dateFrom, dateTo, accountNames, level, kpis, badges, equity, dayPerf, pairPerf, isPos } = data;
+  const { trader, avatar, dateFrom, dateTo, accountNames, level, kpis, badges, equity, dayPerf, pairPerf, isPos, mode } = data;
 
   const fmtDate = (d: string) => new Date(d).toLocaleDateString('fr', { day: 'numeric', month: 'long', year: 'numeric' });
 
-  const maxDay  = Math.max(...dayPerf.map((d: any) => Math.abs(d.r)), 0.01);
-  const maxPair = Math.max(...pairPerf.map((p: any) => Math.abs(p.r)), 0.01);
+  // Choisir la valeur selon le mode
+  const val = (item: any) => mode === '$' ? (item.d ?? item.r) : item.r;
+  const fmtVal = (v: number) => mode === '$' ? `${v >= 0 ? '+' : ''}$${v.toFixed(0)}` : `${v >= 0 ? '+' : ''}${v.toFixed(2)}R`;
 
-  const eqValues = equity.map((e: any) => e.r);
+  const maxDay  = Math.max(...dayPerf.map((d: any) => Math.abs(val(d))), 0.01);
+  const maxPair = Math.max(...pairPerf.map((p: any) => Math.abs(val(p))), 0.01);
+
+  const eqValues = equity.map((e: any) => val(e));
   const eqMin    = Math.min(...eqValues, 0);
   const eqMax    = Math.max(...eqValues, 0.01);
   const eqRange  = eqMax - eqMin || 1;
   const W = 760, H = 160;
   const pts = equity.map((e: any, i: number) => {
     const x = (i / Math.max(equity.length - 1, 1)) * W;
-    const y = H - ((e.r - eqMin) / eqRange) * H;
+    const y = H - ((val(e) - eqMin) / eqRange) * H;
     return `${x},${y}`;
   }).join(' ');
   const lineColor = isPos ? '#00D4AA' : '#FF3B5C';
@@ -281,7 +285,7 @@ export default function ShareReport() {
               <div style={{ fontSize: 11, fontWeight: 700, color: '#8899AA', marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.12em' }}>📅 Par Jour</div>
               <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 100 }}>
                 {dayPerf.map((d: any) => (
-                  <BarV key={d.day} value={d.r} max={maxDay} label={d.day} />
+                  <BarV key={d.day} value={val(d)} max={maxDay} label={d.day} fmt={fmtVal} />
                 ))}
               </div>
             </div>
@@ -291,7 +295,7 @@ export default function ShareReport() {
                 {pairPerf.map((p: any) => (
                   <div key={p.pair}>
                     <div style={{ fontSize: 10, color: '#8899AA', marginBottom: 3 }}>{p.pair}</div>
-                    <BarH value={p.r} max={maxPair} color={p.r >= 0 ? '#00D4AA' : '#FF3B5C'} />
+                    <BarH value={val(p)} max={maxPair} color={val(p) >= 0 ? '#00D4AA' : '#FF3B5C'} fmt={fmtVal} />
                   </div>
                 ))}
               </div>

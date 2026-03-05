@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+﻿import { useState, useMemo } from 'react';
 import { X, Calendar, Check, ExternalLink, ChevronDown } from 'lucide-react';
 import { Trade, TradingAccount } from '@/types/trading';
 import { calculateBadges } from '@/lib/badgeEngine';
@@ -92,21 +92,25 @@ export default function ShareModal({ onClose, trades, user, capital, accounts }:
 
     const sorted = [...filledTrades].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     let cumR = 0;
+    let cumD = 0;
     const equity = sorted.map(t => ({
       date: new Date(t.date).toLocaleDateString('fr', { month: 'short', day: 'numeric' }),
       r: Math.round((cumR += t.resultR ?? 0) * 100) / 100,
+      d: Math.round((cumD += t.resultDollar ?? 0) * 100) / 100,
     }));
 
     const dayMap: Record<string, number> = { Lun: 0, Mar: 0, Mer: 0, Jeu: 0, Ven: 0 };
+    const dayMapD: Record<string, number> = { Lun: 0, Mar: 0, Mer: 0, Jeu: 0, Ven: 0 };
     filledTrades.forEach(t => {
       const name = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'][new Date(t.date).getDay()];
-      if (name in dayMap) dayMap[name] += t.resultR ?? 0;
+      if (name in dayMap) { dayMap[name] += t.resultR ?? 0; dayMapD[name] += t.resultDollar ?? 0; }
     });
-    const dayPerf = Object.entries(dayMap).map(([day, r]) => ({ day, r: Math.round(r * 100) / 100 }));
+    const dayPerf = Object.entries(dayMap).map(([day, r]) => ({ day, r: Math.round(r * 100) / 100, d: Math.round((dayMapD[day] ?? 0) * 100) / 100 }));
 
     const pairMap: Record<string, number> = {};
-    filledTrades.forEach(t => { pairMap[t.pair] = (pairMap[t.pair] || 0) + (t.resultR ?? 0); });
-    const pairPerf = Object.entries(pairMap).map(([pair, r]) => ({ pair, r: Math.round(r * 100) / 100 })).sort((a, b) => b.r - a.r).slice(0, 6);
+    const pairMapD: Record<string, number> = {};
+    filledTrades.forEach(t => { pairMap[t.pair] = (pairMap[t.pair] || 0) + (t.resultR ?? 0); pairMapD[t.pair] = (pairMapD[t.pair] || 0) + (t.resultDollar ?? 0); });
+    const pairPerf = Object.entries(pairMap).map(([pair, r]) => ({ pair, r: Math.round(r * 100) / 100, d: Math.round((pairMapD[pair] ?? 0) * 100) / 100 })).sort((a, b) => b.r - a.r).slice(0, 6);
 
     const payload = {
       trader: user.name,
