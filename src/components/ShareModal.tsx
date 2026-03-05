@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react';
+﻿import { useState, useMemo, useRef } from 'react';
 import { X, Calendar, Check, Download, ChevronDown, Loader2 } from 'lucide-react';
 import { Trade, TradingAccount } from '@/types/trading';
 import { calculateBadges } from '@/lib/badgeEngine';
@@ -281,7 +281,7 @@ export default function ShareModal({ onClose, trades, user, capital, accounts }:
 
       {/* ── RAPPORT PDF (rendu hors écran sauf pendant capture) ── */}
       <div style={{ position: 'fixed', left: showReport ? '0' : '-9999px', top: 0, zIndex: showReport ? 9999 : -1, width: 900, background: '#060D1A', overflowY: 'auto', maxHeight: '100vh' }}>
-        <div ref={reportRef} style={{ background: '#060D1A', color: '#fff', padding: '44px 48px', fontFamily: "'Inter', -apple-system, sans-serif", width: 900 }}>
+        <div ref={reportRef} style={{ background: '#060D1A', color: '#fff', padding: '32px 36px', fontFamily: "'Inter', -apple-system, sans-serif", width: 900 }}>
 
           {/* ── Header ── */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32, paddingBottom: 24, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
@@ -310,7 +310,7 @@ export default function ShareModal({ onClose, trades, user, capital, accounts }:
             {kpis.map(k => (
               <div key={k.label} style={{ background: k.bg, border: `1px solid ${k.color}22`, borderRadius: 16, padding: '16px 16px', borderLeft: `3px solid ${k.color}`, overflow: 'hidden' }}>
                 <div style={{ fontSize: 10, color: '#8899AA', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 8, whiteSpace: 'nowrap' }}>{k.label}</div>
-                <div style={{ fontSize: k.value.length > 8 ? 20 : 26, fontWeight: 900, color: k.color, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.5px', wordBreak: 'break-all' }}>{k.value}</div>
+                <div style={{ fontSize: k.value.length > 9 ? 16 : k.value.length > 6 ? 20 : 24, fontWeight: 900, color: k.color, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.5px', wordBreak: 'break-all' }}>{k.value}</div>
               </div>
             ))}
           </div>
