@@ -129,6 +129,52 @@ export default function ShareReport() {
           #report-root {
             background: #060D1A !important;
           }
+          /* Tout tenir sur une page */
+          #report-root > div {
+            padding: 18px 28px 16px !important;
+          }
+          /* Header plus compact */
+          #report-root > div > div:first-child {
+            margin-bottom: 14px !important;
+            padding-bottom: 14px !important;
+          }
+          /* KPIs plus compacts */
+          #kpis-grid {
+            gap: 8px !important;
+            margin-bottom: 12px !important;
+          }
+          #kpis-grid > div {
+            padding: 10px 12px !important;
+            border-radius: 10px !important;
+          }
+          /* Badges */
+          #badges-row {
+            margin-bottom: 12px !important;
+            gap: 6px !important;
+          }
+          /* Equity curve */
+          #equity-box {
+            margin-bottom: 10px !important;
+            padding: 12px 16px 10px !important;
+          }
+          /* Charts grid */
+          #charts-grid {
+            gap: 10px !important;
+            margin-bottom: 16px !important;
+          }
+          #charts-grid > div {
+            padding: 12px 14px 10px !important;
+          }
+          /* Footer */
+          #footer-box {
+            padding-top: 12px !important;
+          }
+          #footer-box > div:first-child {
+            margin-bottom: 8px !important;
+          }
+          #footer-box > div:first-child > div {
+            padding: 7px 16px !important;
+          }
         }
       `}</style>
 
@@ -171,7 +217,7 @@ export default function ShareReport() {
           </div>
 
           {/* ── KPIs ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: kpiCols, gap: 14, marginBottom: 28 }}>
+          <div id="kpis-grid" style={{ display: 'grid', gridTemplateColumns: kpiCols, gap: 14, marginBottom: 28 }}>
             {kpis.map((k: any) => (
               <div key={k.label} style={{ background: `${k.color}12`, border: `1px solid ${k.color}30`, borderLeft: `4px solid ${k.color}`, borderRadius: 14, padding: isMobile ? '14px 16px' : '18px 20px' }}>
                 <div style={{ fontSize: 10, color: '#8899AA', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 8 }}>{k.label}</div>
@@ -182,7 +228,7 @@ export default function ShareReport() {
 
           {/* ── Badges ── */}
           {badges.length > 0 && (
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 28, justifyContent: 'center' }}>
+            <div id="badges-row" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 28, justifyContent: 'center' }}>
               {badges.map((id: string) => BADGE_MAP[id] && (
                 <div key={id} style={{ fontSize: 12, fontWeight: 600, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 20, padding: '6px 14px', color: '#C0CCD8' }}>
                   {BADGE_MAP[id].emoji} {BADGE_MAP[id].name}
@@ -193,7 +239,7 @@ export default function ShareReport() {
 
           {/* ── Equity Curve SVG ── */}
           {equity.length > 1 && (
-            <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, padding: isMobile ? '16px' : '20px 24px 16px', marginBottom: 20 }}>
+            <div id="equity-box" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, padding: isMobile ? '16px' : '20px 24px 16px', marginBottom: 20 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: '#8899AA', marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.12em' }}>📈 Equity Curve</div>
               <svg width="100%" viewBox={`0 0 ${W} ${H + 20}`} style={{ overflow: 'visible' }}>
                 {[0, 0.25, 0.5, 0.75, 1].map(v => (
@@ -212,7 +258,7 @@ export default function ShareReport() {
           )}
 
           {/* ── Par Jour + Par Paire ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: chartsGrid, gap: 16, marginBottom: 32 }}>
+          <div id="charts-grid" style={{ display: 'grid', gridTemplateColumns: chartsGrid, gap: 16, marginBottom: 32 }}>
             <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, padding: '20px 20px 16px' }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: '#8899AA', marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.12em' }}>📅 Par Jour</div>
               <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 100 }}>
@@ -235,7 +281,7 @@ export default function ShareReport() {
           </div>
 
           {/* ── Footer ── */}
-          <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 20 }}>
+          <div id="footer-box" style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 20 }}>
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(26,107,255,0.10)', border: '1px solid rgba(26,107,255,0.25)', borderRadius: 24, padding: '10px 24px' }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
