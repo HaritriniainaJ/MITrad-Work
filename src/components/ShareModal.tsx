@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react';
+﻿import { useState, useMemo, useRef } from 'react';
 import { X, Calendar, Check, Download, ChevronDown, Loader2 } from 'lucide-react';
 import { Trade, TradingAccount } from '@/types/trading';
 import { calculateBadges } from '@/lib/badgeEngine';
@@ -59,14 +59,15 @@ export default function ShareModal({ onClose, trades, user, capital, accounts }:
     return selectedAccIds.includes(tid);
   }), [trades, dateFrom, dateTo, selectedAccIds]);
 
-  // Recalculer resultR si null (trades importés)
+  // Même logique que le dashboard
   const filledTrades = useMemo(() => filtered.map(t => {
     if (t.resultR !== 0 && t.resultR != null) return t;
-    const cap = capitalSelected || 10000;
+    const acc = accounts.find(a => String(a.id) === String((t as any).accountId || (t as any).trading_account_id));
+    const cap = Number(acc?.capital) || capitalSelected || 10000;
     const riskDollar = cap * 0.01;
     if (riskDollar === 0) return t;
     return { ...t, resultR: Math.round((t.resultDollar / riskDollar) * 100) / 100 };
-  }), [filtered, capitalSelected]);
+  }), [filtered, accounts, capitalSelected]);
 
   const wins        = filledTrades.filter(t => t.status === 'WIN');
   const losses      = filledTrades.filter(t => t.status === 'LOSS');
