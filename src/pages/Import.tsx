@@ -138,7 +138,20 @@ const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
       if (isExcel) {
         const workbook = XLSX.read(reader.result, { type: 'array' });
         const sheetName = workbook.SheetNames[0];
-        const csvText = XLSX.utils.sheet_to_csv(workbook.Sheets[sheetName]);
+        const sheet = workbook.Sheets[sheetName];
+        // Trouver la ligne d'en-tête (chercher 'Date' dans les cellules)
+        const range = XLSX.utils.decode_range(sheet['!ref'] || 'A1');
+        let headerRow = 0;
+        for (let r = range.s.r; r <= Math.min(range.e.r, 5); r++) {
+          const cell = sheet[XLSX.utils.encode_cell({ r, c: 0 })];
+          if (cell && String(cell.v).toLowerCase().includes('date')) {
+            headerRow = r;
+            break;
+          }
+        }
+        // Reconstruire le CSV depuis la ligne d'en-tête
+        const rows: any[] = XLSX.utils.sheet_to_json(sheet, { header: 1, range: headerRow, raw: false });
+        const csvText = rows.map((row: any[]) => row.join(',')).join('\n');
         console.log('LIGNES CSV:', csvText.split('\n').slice(0, 3));
         console.log('LIGNES 1-30:', csvText.split('\n').slice(0, 30).join('\n'));
         console.log('TOTAL LIGNES:', csvText.split('\n').length);
