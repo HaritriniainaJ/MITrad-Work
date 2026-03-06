@@ -156,7 +156,7 @@ const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
           trades = parseCTraderCSV(csvText, user!.email, accountId || undefined);
         } else if (platform === 'mitrad') {
           trades = parseMITradCSV(csvText, user!.email, accountId || undefined);
-         else {
+        } else {
           trades = parseGenericCSV(csvText, user!.email, accountId || undefined);
         }
         console.log('TRADES PARSÉS:', trades.length, trades.map(t => t.id));
