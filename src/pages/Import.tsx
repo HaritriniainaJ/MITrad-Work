@@ -7,7 +7,6 @@ import { parseMT5CSV } from '@/lib/importers/mt5Parser';
 import { parseCTraderCSV } from '@/lib/importers/ctraderParser';
 import { parseTradovateCSV } from '@/lib/importers/tradovateParser';
 import { parseGenericCSV } from '@/lib/importers/genericParser';
-import { parseAnalyticsCSV } from '@/lib/importers/analyticsParser';
 import { parseMITradCSV } from '@/lib/importers/mitradParser';
 import { Trade } from '@/types/trading';
 import { StorageManager } from '@/lib/storage';
@@ -17,7 +16,7 @@ import { Upload, CheckCircle, AlertCircle, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import { parseTradovatePairedFills } from '@/lib/importers/tradovateFilledParser';
 import * as XLSX from 'xlsx';
-type Platform = 'mt5' | 'tradovate' | 'mt4' | 'generic' | 'analytics' | 'mitrad';
+type Platform = 'mt5' | 'tradovate' | 'mt4' | 'generic' | 'mitrad';
 
 const PLATFORMS: {
   id: Platform;
@@ -60,13 +59,6 @@ const PLATFORMS: {
     desc: 'Export XLSX/CSV depuis MITrad (Historique des trades)',
     format: 'XLSX ou CSV MITrad',
     color: 'border-indigo-500/40 bg-indigo-500/5',
-  },
-  {
-    id: 'analytics',
-    label: 'MITrad Export',
-    desc: 'CSV exporté depuis MITrad Journal (historique)',
-    format: 'CSV Analytics',
-    color: 'border-purple-500/40 bg-purple-500/5',
   },
   {
     id: 'generic',
@@ -164,9 +156,7 @@ const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
           trades = parseCTraderCSV(csvText, user!.email, accountId || undefined);
         } else if (platform === 'mitrad') {
           trades = parseMITradCSV(csvText, user!.email, accountId || undefined);
-        } else if (platform === 'analytics') {
-          trades = parseAnalyticsCSV(csvText, user!.email, accountId || undefined);
-        } else {
+         else {
           trades = parseGenericCSV(csvText, user!.email, accountId || undefined);
         }
         console.log('TRADES PARSÉS:', trades.length, trades.map(t => t.id));

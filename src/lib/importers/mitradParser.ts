@@ -104,8 +104,13 @@ export function parseMITradCSV(csvText: string, userId: string, accountId?: stri
       const noteEntry   = iNoteE >= 0   ? cols[iNoteE] || undefined : undefined;
       const noteExit    = iNoteS >= 0   ? cols[iNoteS] || undefined : undefined;
 
-      const statusRaw = iStatut >= 0 ? cols[iStatut].toUpperCase() : '';
-      const status = statusRaw === 'WIN' || statusRaw === 'LOSS' || statusRaw === 'BE' ? 'closed' : 'closed';
+      const statusRaw = iStatut >= 0 ? cols[iStatut].toUpperCase().trim() : '';
+      const status: 'WIN' | 'LOSS' | 'BE' | 'RUNNING' =
+        statusRaw === 'WIN' ? 'WIN' :
+        statusRaw === 'LOSS' ? 'LOSS' :
+        statusRaw === 'BE' ? 'BE' :
+        resultDollar > 0 ? 'WIN' :
+        resultDollar < 0 ? 'LOSS' : 'BE';
 
       const trade: Trade = {
         id: `mitrad_${i}_${Date.now()}_${Math.random().toString(36).slice(2,6)}`,
@@ -125,7 +130,7 @@ export function parseMITradCSV(csvText: string, userId: string, accountId?: stri
         emotion,
         noteEntry,
         noteExit,
-        status: 'closed',
+        status,
         createdAt: new Date().toISOString(),
       };
 
