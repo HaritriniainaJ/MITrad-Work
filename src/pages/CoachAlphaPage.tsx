@@ -360,8 +360,13 @@ function WeeklyReportModal({ trades, score, onClose }: WeeklyReportModalProps) {
 // PAGE PRINCIPALE
 // ─────────────────────────────────────────────────────────────────────────────
 export default function CoachAlphaPage() {
-  const { user } = useAuth();
+  const { user, accounts, activeAccounts } = useAuth();
   const trades  = useFilteredTrades();
+  const { mode } = useDisplayMode();
+  const capital = useMemo(() => {
+    const targets = activeAccounts.length > 0 ? activeAccounts : accounts;
+    return targets.reduce((sum, acc) => sum + Number(acc.capital || 0), 0) || 10000;
+  }, [activeAccounts, accounts]);
   const advice  = useMemo(() => generateCoachAdvice(trades, mode, capital), [trades, mode, capital]);
   const score   = useMemo(() => getDisciplineScore(trades), [trades]);
 
