@@ -5,6 +5,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { useMemo, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { useDisplayMode } from '@/context/DisplayModeContext';
 import { useFilteredTrades } from '@/hooks/useFilteredTrades';
 import { generateCoachAdvice, getDisciplineScore } from '@/lib/coachAlpha';
 import GlassCard from '@/components/GlassCard';
