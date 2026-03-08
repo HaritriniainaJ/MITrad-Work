@@ -6,6 +6,21 @@
 import { useMemo, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useDisplayMode, DisplayModeToggle } from '@/context/DisplayModeContext';
+
+// ── Helpers mode ─────────────────────────────────────────────────────────
+function getPnl(t: any, mode: string, capital: number): number {
+  if (mode === 'R') return t.resultR ?? 0;
+  const d = t.resultDollar ?? 0;
+  if (mode === '%' && capital > 0) return (d / capital) * 100;
+  return d;
+}
+function fmtPnl(v: number, mode: string): string {
+  const sign = v >= 0 ? '+' : '';
+  if (mode === 'R') return sign + v.toFixed(2) + 'R';
+  if (mode === '%') return sign + v.toFixed(2) + '%';
+  if (Math.abs(v) >= 1000) return sign + '$' + (v / 1000).toFixed(1) + 'k';
+  return sign + '$' + v.toFixed(0);
+}
 import { useFilteredTrades } from '@/hooks/useFilteredTrades';
 import { generateCoachAdvice, getDisciplineScore } from '@/lib/coachAlpha';
 import GlassCard from '@/components/GlassCard';
@@ -16,7 +31,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const ADVICE_CATEGORIES = ['Tout', 'Erreurs critiques', 'Points forts', 'Psychologie', 'Risk', 'Performance'];
+const ADVICE_CATEGORIES = ['Tout', 'Points forts', 'Points faibles'];
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HELPER : obtenir lundi et dimanche de la semaine courante
@@ -45,9 +60,11 @@ interface WeeklyReportModalProps {
   trades: any[];
   score: number;
   onClose: () => void;
+  mode: string;
+  capital: number;
 }
 
-function WeeklyReportModal({ trades, score, onClose }: WeeklyReportModalProps) {
+function WeeklyReportModal({ trades, score, onClose, mode, capital }: WeeklyReportModalProps) {
   const { monday, sunday } = getCurrentWeekBounds();
 
   // Trades de la semaine courante
@@ -64,31 +81,31 @@ function WeeklyReportModal({ trades, score, onClose }: WeeklyReportModalProps) {
     const wins   = weekTrades.filter(t => t.status === 'WIN').length;
     const losses = weekTrades.filter(t => t.status === 'LOSS').length;
     const be     = weekTrades.filter(t => t.status === 'BE').length;
-    const totalR = weekTrades.reduce((acc, t) => acc + (t.resultR || 0), 0);
+    const totalPnl = weekTrades.reduce((acc, t) => acc + getPnl(t, mode, capital), 0);
     const winRate = weekTrades.length > 0 ? (wins / weekTrades.length) * 100 : 0;
     const avgRR  = weekTrades.filter(t => t.status === 'WIN' && t.rr).reduce((acc, t) => acc + t.rr, 0)
                   / (wins || 1);
 
     // Meilleur / Pire trade
-    const bestTrade  = [...weekTrades].sort((a, b) => b.resultR - a.resultR)[0];
-    const worstTrade = [...weekTrades].sort((a, b) => a.resultR - b.resultR)[0];
+    const bestTrade  = [...weekTrades].sort((a, b) => getPnl(b, mode, capital) - getPnl(a, mode, capital))[0];
+    const worstTrade = [...weekTrades].sort((a, b) => getPnl(a, mode, capital) - getPnl(b, mode, capital))[0];
 
     // Paire dominante
     const pairPnl: Record<string, number> = {};
-    weekTrades.forEach(t => { pairPnl[t.pair] = (pairPnl[t.pair] || 0) + t.resultR; });
+    weekTrades.forEach(t => { pairPnl[t.pair] = (pairPnl[t.pair] || 0) + getPnl(t, mode, capital); });
     const bestPair  = Object.entries(pairPnl).sort((a, b) => b[1] - a[1])[0];
     const worstPair = Object.entries(pairPnl).sort((a, b) => a[1] - b[1])[0];
 
     // Setup dominant
     const setupPnl: Record<string, number> = {};
-    weekTrades.forEach(t => { setupPnl[t.setup] = (setupPnl[t.setup] || 0) + t.resultR; });
+    weekTrades.forEach(t => { if (t.setup) setupPnl[t.setup] = (setupPnl[t.setup] || 0) + getPnl(t, mode, capital); });
     const bestSetup = Object.entries(setupPnl).sort((a, b) => b[1] - a[1])[0];
 
     // Trades émotionnels négatifs
     const badEmotions = weekTrades.filter(t => ['FOMO', 'Revenge Trading', 'Stressé'].includes(t.emotion));
 
     return {
-      total: weekTrades.length, wins, losses, be, totalR, winRate, avgRR,
+      total: weekTrades.length, wins, losses, be, totalPnl, winRate, avgRR,
       bestTrade, worstTrade, bestPair, worstPair, bestSetup, badEmotions,
     };
   }, [weekTrades]);
@@ -102,9 +119,9 @@ function WeeklyReportModal({ trades, score, onClose }: WeeklyReportModalProps) {
     if (stats.badEmotions.length >= 2)
       errors.push(`${stats.badEmotions.length} trades pris dans un état émotionnel négatif (FOMO/Revenge).`);
     if (stats.worstPair && stats.worstPair[1] < -1)
-      errors.push(`${stats.worstPair[0]} t'a coûté ${stats.worstPair[1].toFixed(1)}R — évite-la la semaine prochaine.`);
+      errors.push(`${stats.worstPair[0]} t'a coûté ${fmtPnl(stats.worstPair[1], mode)} — évite-la la semaine prochaine.`);
     if (stats.totalR < -3)
-      errors.push(`Drawdown important : ${stats.totalR.toFixed(1)}R cette semaine. Réduction de taille conseillée.`);
+      errors.push(`Drawdown cette semaine : ${fmtPnl(stats.totalPnl, mode)}. Réduction de taille conseillée.`);
     return errors;
   }, [stats, weekTrades]);
 
@@ -113,9 +130,9 @@ function WeeklyReportModal({ trades, score, onClose }: WeeklyReportModalProps) {
     if (!stats || weekTrades.length < 1) return [];
     const s: string[] = [];
     if (stats.winRate >= 60) s.push(`Excellent win rate : ${Math.round(stats.winRate)}% sur ${stats.total} trades.`);
-    if (stats.totalR > 0) s.push(`Semaine positive : +${stats.totalR.toFixed(2)}R au total.`);
+    if (stats.totalPnl > 0) s.push(`Semaine positive : ${fmtPnl(stats.totalPnl, mode)} au total.`);
     if (stats.bestSetup && stats.bestSetup[1] > 1)
-      s.push(`Setup ${stats.bestSetup[0]} très efficace (+${stats.bestSetup[1].toFixed(1)}R).`);
+      s.push(`Setup ${stats.bestSetup[0]} très efficace (${fmtPnl(stats.bestSetup[1], mode)}).`);
     if (stats.badEmotions.length === 0 && weekTrades.length >= 3)
       s.push(`Aucun trade émotionnel — excellente maîtrise psychologique.`);
     return s;
@@ -138,9 +155,9 @@ function WeeklyReportModal({ trades, score, onClose }: WeeklyReportModalProps) {
       goals.push(`Continue à éviter les trades émotionnels — bravo cette semaine !`);
 
     if (stats.worstPair && stats.worstPair[1] < -0.5)
-      goals.push(`Limite tes trades sur ${stats.worstPair[0]} ou améliore ta stratégie dessus.`);
+      if (stats.worstPair && stats.worstPair[1] < 0) goals.push(`Limite tes trades sur ${stats.worstPair[0]} ou améliore ta stratégie dessus.`);
 
-    goals.push(`Objectif R : ${stats.totalR >= 0 ? `dépasse +${(stats.totalR + 1).toFixed(0)}R` : `revenir en positif (>+1R)`}.`);
+    goals.push(`Objectif : ${stats.totalPnl >= 0 ? `dépasse ${fmtPnl(stats.totalPnl * 1.2 + 1, mode)}` : `revenir en positif`}.`);
     return goals.slice(0, 4);
   }, [stats]);
 
@@ -148,13 +165,13 @@ function WeeklyReportModal({ trades, score, onClose }: WeeklyReportModalProps) {
   const verdict = useMemo(() => {
     if (!stats || weekTrades.length === 0)
       return { emoji: '📭', label: 'Aucun trade cette semaine', color: 'text-muted-foreground', bg: 'bg-accent/20' };
-    if (stats.totalR >= 3 && stats.winRate >= 60)
+    if (stats.totalPnl > 0 && stats.winRate >= 60)
       return { emoji: '🏆', label: 'Semaine exceptionnelle', color: 'text-yellow-400', bg: 'bg-yellow-500/10' };
-    if (stats.totalR >= 1 && stats.winRate >= 50)
+    if (stats.totalPnl > 0 && stats.winRate >= 50)
       return { emoji: '✅', label: 'Bonne semaine', color: 'text-success', bg: 'bg-success/10' };
-    if (stats.totalR >= 0)
+    if (stats.totalPnl >= 0)
       return { emoji: '📊', label: 'Semaine neutre', color: 'text-blue-400', bg: 'bg-blue-500/10' };
-    if (stats.totalR >= -2)
+    if (stats.totalPnl >= 0)
       return { emoji: '⚠️', label: 'Semaine difficile', color: 'text-warning', bg: 'bg-warning/10' };
     return { emoji: '🔴', label: 'Semaine critique — analyse requise', color: 'text-destructive', bg: 'bg-destructive/10' };
   }, [stats, weekTrades]);
@@ -215,7 +232,7 @@ function WeeklyReportModal({ trades, score, onClose }: WeeklyReportModalProps) {
                 {[
                   { label: 'Trades', value: stats.total, icon: Target, color: '#1A6BFF' },
                   { label: 'Win Rate', value: `${Math.round(stats.winRate)}%`, icon: TrendingUp, color: '#00D4AA' },
-                  { label: 'Total R', value: `${stats.totalR >= 0 ? '+' : ''}${stats.totalR.toFixed(2)}R`, icon: Award, color: stats.totalR >= 0 ? '#00D4AA' : '#FF3B5C' },
+                  { label: mode === '%' ? 'Total %' : mode === '$' ? 'Total $' : 'Total R', value: fmtPnl(stats.totalPnl, mode), icon: Award, color: stats.totalPnl >= 0 ? '#00D4AA' : '#FF3B5C' },
                   { label: 'Score', value: `${score}/100`, icon: Zap, color: score >= 70 ? '#00D4AA' : score >= 40 ? '#F59E0B' : '#FF3B5C' },
                 ].map(({ label, value, icon: Icon, color }) => (
                   <div key={label} className="rounded-xl p-3 text-center"
@@ -249,7 +266,7 @@ function WeeklyReportModal({ trades, score, onClose }: WeeklyReportModalProps) {
                     <div className="h-8 w-px bg-border/40" />
                     <div className="text-center">
                       <p className="text-sm font-bold text-foreground">{stats.bestPair[0]}</p>
-                      <p className="text-xs text-success">+{stats.bestPair[1].toFixed(1)}R</p>
+                      <p className="text-xs text-success">{fmtPnl(stats.bestPair[1], mode)}</p>
                       <p className="text-[10px] text-muted-foreground">Meilleure paire</p>
                     </div>
                   </>
@@ -332,9 +349,9 @@ function WeeklyReportModal({ trades, score, onClose }: WeeklyReportModalProps) {
                 <p className="text-sm text-muted-foreground leading-relaxed italic">
                   {!stats || weekTrades.length === 0
                     ? "Commence à enregistrer tes trades cette semaine. Chaque trade est une donnée, chaque donnée est une leçon. Je serai là pour analyser et t'aider à progresser."
-                    : stats.totalR >= 2 && stats.winRate >= 55
-                      ? `Excellent travail cette semaine ! ${stats.total} trades, ${Math.round(stats.winRate)}% de win rate et +${stats.totalR.toFixed(1)}R. Garde ce niveau de discipline et continue à appliquer ta stratégie avec rigueur.`
-                      : stats.totalR >= 0
+                    : stats.totalPnl > 0 && stats.winRate >= 55
+                      ? `Excellent travail cette semaine ! ${stats.total} trades, ${Math.round(stats.winRate)}% de win rate et ${fmtPnl(stats.totalPnl, mode)}. Garde ce niveau de discipline et continue à appliquer ta stratégie avec rigueur.`
+                      : stats.totalPnl >= 0
                         ? `Semaine correcte avec ${stats.total} trades. Tu es dans le bon, mais il reste de la marge. Concentre-toi sur la qualité plutôt que la quantité la semaine prochaine.`
                         : `Cette semaine a été difficile, mais c'est normal dans ce métier. Ce qui compte, c'est ta réaction : analyse, corrige, reviens plus fort. Le marché sera là la semaine prochaine.`
                   }
@@ -378,7 +395,7 @@ export default function CoachAlphaPage() {
   const scoreColor = score >= 70 ? 'text-success' : score >= 40 ? 'text-warning' : 'text-destructive';
 
   const filteredAdvice = useMemo(() => {
-    if (filterCategory === 'Erreurs critiques') return [];
+    if (filterCategory === 'Points faibles') return advice.filter(a => a.type === 'weakness');
     if (filterCategory === 'Points forts') return [];
     return advice.filter(a => {
       if (filterCategory !== 'Tout' && a.category !== filterCategory) return false;
@@ -420,16 +437,16 @@ export default function CoachAlphaPage() {
     const winRate = closed.filter(t => t.status === 'WIN').length / closed.length;
     if (winRate > 0.6) s.push(`Win Rate solide : ${Math.round(winRate * 100)}%`);
     const setupPnl: Record<string, number> = {};
-    closed.forEach(t => { setupPnl[t.setup] = (setupPnl[t.setup] || 0) + t.resultR; });
+    closed.forEach(t => { if (t.setup) { setupPnl[t.setup] = (setupPnl[t.setup] || 0) + getPnl(t, mode, capital); } });
     const bestSetup = Object.entries(setupPnl).sort((a, b) => b[1] - a[1])[0];
-    if (bestSetup && bestSetup[1] > 2) s.push(`Meilleur setup : ${bestSetup[0]} (+${bestSetup[1].toFixed(1)}R)`);
+    if (bestSetup && bestSetup[1] > 0) s.push(`Meilleur setup : ${bestSetup[0]} (${fmtPnl(bestSetup[1], mode)})`);
     const pairPnl: Record<string, number> = {};
-    closed.forEach(t => { pairPnl[t.pair] = (pairPnl[t.pair] || 0) + t.resultR; });
+    closed.forEach(t => { pairPnl[t.pair] = (pairPnl[t.pair] || 0) + getPnl(t, mode, capital); });
     const bestPair = Object.entries(pairPnl).sort((a, b) => b[1] - a[1])[0];
-    if (bestPair && bestPair[1] > 1) s.push(`Paire forte : ${bestPair[0]} (+${bestPair[1].toFixed(1)}R)`);
+    if (bestPair && bestPair[1] > 0) s.push(`Paire forte : ${bestPair[0]} (${fmtPnl(bestPair[1], mode)})`);
     if (score >= 70) s.push(`Score discipline excellent : ${score}/100`);
     return s.slice(0, 4);
-  }, [trades, score]);
+  }, [trades, score, mode, capital]);
 
   const sessionHistory = useMemo(() => {
     return trades
@@ -438,7 +455,7 @@ export default function CoachAlphaPage() {
       .map(t => ({
         date: new Date(t.date).toLocaleDateString('fr', { day: 'numeric', month: 'short' }),
         pair: t.pair,
-        result: t.resultR,
+        pnl: getPnl(t, mode, capital),
         status: t.status,
       }));
   }, [trades]);
@@ -461,6 +478,8 @@ export default function CoachAlphaPage() {
           trades={trades}
           score={score}
           onClose={() => setShowWeeklyReport(false)}
+          mode={mode}
+          capital={capital}
         />
       )}
 
@@ -566,7 +585,7 @@ export default function CoachAlphaPage() {
       </GlassCard>
 
       {/* ── ERREURS FRÉQUENTES ──────────────────────────────────────────────── */}
-      {(filterCategory === 'Tout' || filterCategory === 'Erreurs critiques') && frequentErrors.length > 0 && (
+      {(filterCategory === 'Tout' || filterCategory === 'Points faibles') && frequentErrors.length > 0 && (
         <GlassCard className="animate-fade-up">
           <div className="flex items-center gap-2 mb-4">
             <TrendingDown size={16} className="text-destructive" />
@@ -623,7 +642,7 @@ export default function CoachAlphaPage() {
       )}
 
       {/* ── CONSEILS MENTOR-X ───────────────────────────────────────────────── */}
-      {(filterCategory === 'Tout' || !['Erreurs critiques', 'Points forts'].includes(filterCategory)) && (
+      {(filterCategory === 'Tout' || filterCategory === 'Points faibles') && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filteredAdvice.map((a, i) => {
             const iconMap: Record<string, { icon: React.ElementType; color: string }> = {
@@ -683,8 +702,8 @@ export default function CoachAlphaPage() {
                   <span className="text-sm font-medium text-foreground">{s.pair}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className={`metric-value text-sm ${s.result >= 0 ? 'text-success' : 'text-destructive'}`}>
-                    {s.result >= 0 ? '+' : ''}{s.result.toFixed(2)}R
+                  <span className={`metric-value text-sm ${s.pnl >= 0 ? 'text-success' : 'text-destructive'}`}>
+                    {fmtPnl(s.pnl, mode)}
                   </span>
                   <span className={`text-xs font-bold px-2 py-0.5 rounded ${
                     s.status === 'WIN' ? 'badge-win' : s.status === 'LOSS' ? 'badge-loss' : 'badge-be'
