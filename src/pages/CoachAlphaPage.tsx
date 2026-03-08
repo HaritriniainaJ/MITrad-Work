@@ -5,7 +5,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { useMemo, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { useDisplayMode } from '@/context/DisplayModeContext';
+import { useDisplayMode, DisplayModeToggle } from '@/context/DisplayModeContext';
 import { useFilteredTrades } from '@/hooks/useFilteredTrades';
 import { generateCoachAdvice, getDisciplineScore } from '@/lib/coachAlpha';
 import GlassCard from '@/components/GlassCard';
@@ -368,6 +368,7 @@ export default function CoachAlphaPage() {
     const targets = activeAccounts.length > 0 ? activeAccounts : accounts;
     return targets.reduce((sum, acc) => sum + Number(acc.capital || 0), 0) || 10000;
   }, [activeAccounts, accounts]);
+  console.log('DEBUG Mentor-X mode:', mode, 'capital:', capital, 'trades sample:', trades.slice(0,2).map((t:any)=>({pair:t.pair,resultDollar:t.resultDollar})));
   const advice  = useMemo(() => generateCoachAdvice(trades, mode, capital), [trades, mode, capital]);
   const score   = useMemo(() => getDisciplineScore(trades), [trades]);
 
@@ -473,6 +474,7 @@ export default function CoachAlphaPage() {
         </div>
 
         {/* ── BOUTON RAPPORT HEBDOMADAIRE ── */}
+        <DisplayModeToggle />
         <motion.button
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
