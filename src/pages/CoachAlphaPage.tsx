@@ -1,8 +1,8 @@
-﻿// ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
+// ─────────────────────────────────────────────────────────────────────────────
 // PAGE : Mentor-X (ex Coach Alpha)
 // Analyse complète de la performance avec filtres avancés.
 // MODIFIÉ v3 : Rapport Hebdomadaire Automatique ajouté
-// ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
+// ─────────────────────────────────────────────────────────────────────────────
 import { useMemo, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useFilteredTrades } from '@/hooks/useFilteredTrades';
@@ -15,14 +15,14 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const ADVICE_CATEGORIES = ['Tout', 'Points forts', 'Points faibles'];
+const ADVICE_CATEGORIES = ['Tout', 'Erreurs critiques', 'Points forts', 'Psychologie', 'Risk', 'Performance'];
 
-// ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
+// ─────────────────────────────────────────────────────────────────────────────
 // HELPER : obtenir lundi et dimanche de la semaine courante
-// ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
+// ─────────────────────────────────────────────────────────────────────────────
 function getCurrentWeekBounds() {
   const now = new Date();
-  const day = now.getDay(); // 0=Sun, 1=Mon "¦ 6=Sat
+  const day = now.getDay(); // 0=Sun, 1=Mon … 6=Sat
   const diffToMonday = (day === 0 ? -6 : 1 - day);
   const monday = new Date(now);
   monday.setDate(now.getDate() + diffToMonday);
@@ -37,9 +37,9 @@ function formatDate(d: Date) {
   return d.toLocaleDateString('fr', { day: 'numeric', month: 'long' });
 }
 
-// ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
+// ─────────────────────────────────────────────────────────────────────────────
 // COMPOSANT : Modal Rapport Hebdomadaire
-// ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
+// ─────────────────────────────────────────────────────────────────────────────
 interface WeeklyReportModalProps {
   trades: any[];
   score: number;
@@ -57,7 +57,7 @@ function WeeklyReportModal({ trades, score, onClose }: WeeklyReportModalProps) {
     });
   }, [trades]);
 
-  // ”€”€ Statistiques de base ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
+  // ── Statistiques de base ──────────────────────────────────────────────────
   const stats = useMemo(() => {
     if (weekTrades.length === 0) return null;
     const wins   = weekTrades.filter(t => t.status === 'WIN').length;
@@ -92,22 +92,22 @@ function WeeklyReportModal({ trades, score, onClose }: WeeklyReportModalProps) {
     };
   }, [weekTrades]);
 
-  // ”€”€ Erreurs de la semaine ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
+  // ── Erreurs de la semaine ─────────────────────────────────────────────────
   const weekErrors = useMemo(() => {
     if (!stats || weekTrades.length < 1) return [];
     const errors: string[] = [];
     if (stats.winRate < 40 && weekTrades.length >= 3)
-      errors.push(`Win Rate faible cette semaine : ${Math.round(stats.winRate)}% "” revois tes critères d'entrée.`);
+      errors.push(`Win Rate faible cette semaine : ${Math.round(stats.winRate)}% — revois tes critères d'entrée.`);
     if (stats.badEmotions.length >= 2)
       errors.push(`${stats.badEmotions.length} trades pris dans un état émotionnel négatif (FOMO/Revenge).`);
     if (stats.worstPair && stats.worstPair[1] < -1)
-      errors.push(`${stats.worstPair[0]} t'a coûté ${stats.worstPair[1].toFixed(1)}R "” évite-la la semaine prochaine.`);
+      errors.push(`${stats.worstPair[0]} t'a coûté ${stats.worstPair[1].toFixed(1)}R — évite-la la semaine prochaine.`);
     if (stats.totalR < -3)
       errors.push(`Drawdown important : ${stats.totalR.toFixed(1)}R cette semaine. Réduction de taille conseillée.`);
     return errors;
   }, [stats, weekTrades]);
 
-  // ”€”€ Points forts de la semaine ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
+  // ── Points forts de la semaine ────────────────────────────────────────────
   const weekStrengths = useMemo(() => {
     if (!stats || weekTrades.length < 1) return [];
     const s: string[] = [];
@@ -116,11 +116,11 @@ function WeeklyReportModal({ trades, score, onClose }: WeeklyReportModalProps) {
     if (stats.bestSetup && stats.bestSetup[1] > 1)
       s.push(`Setup ${stats.bestSetup[0]} très efficace (+${stats.bestSetup[1].toFixed(1)}R).`);
     if (stats.badEmotions.length === 0 && weekTrades.length >= 3)
-      s.push(`Aucun trade émotionnel "” excellente maîtrise psychologique.`);
+      s.push(`Aucun trade émotionnel — excellente maîtrise psychologique.`);
     return s;
   }, [stats, weekTrades]);
 
-  // ”€”€ Objectifs pour la semaine prochaine ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
+  // ── Objectifs pour la semaine prochaine ──────────────────────────────────
   const nextWeekGoals = useMemo(() => {
     if (!stats) return [
       'Enregistre tes trades pour que Mentor-X puisse générer des objectifs personnalisés.',
@@ -129,12 +129,12 @@ function WeeklyReportModal({ trades, score, onClose }: WeeklyReportModalProps) {
     if (stats.winRate < 50)
       goals.push(`Améliore ton win rate au-dessus de 50% (actuellement ${Math.round(stats.winRate)}%).`);
     else
-      goals.push(`Maintiens ton win rate au-dessus de 50% "” tu es à ${Math.round(stats.winRate)}%.`);
+      goals.push(`Maintiens ton win rate au-dessus de 50% — tu es à ${Math.round(stats.winRate)}%.`);
 
     if (stats.badEmotions.length > 0)
-      goals.push(`Zéro trade FOMO/Revenge la semaine prochaine "” ${stats.badEmotions.length} cette semaine.`);
+      goals.push(`Zéro trade FOMO/Revenge la semaine prochaine — ${stats.badEmotions.length} cette semaine.`);
     else
-      goals.push(`Continue à éviter les trades émotionnels "” bravo cette semaine !`);
+      goals.push(`Continue à éviter les trades émotionnels — bravo cette semaine !`);
 
     if (stats.worstPair && stats.worstPair[1] < -0.5)
       goals.push(`Limite tes trades sur ${stats.worstPair[0]} ou améliore ta stratégie dessus.`);
@@ -143,19 +143,19 @@ function WeeklyReportModal({ trades, score, onClose }: WeeklyReportModalProps) {
     return goals.slice(0, 4);
   }, [stats]);
 
-  // ”€”€ Verdict global ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
+  // ── Verdict global ────────────────────────────────────────────────────────
   const verdict = useMemo(() => {
     if (!stats || weekTrades.length === 0)
-      return { emoji: 'ðŸ“­', label: 'Aucun trade cette semaine', color: 'text-muted-foreground', bg: 'bg-accent/20' };
+      return { emoji: '📭', label: 'Aucun trade cette semaine', color: 'text-muted-foreground', bg: 'bg-accent/20' };
     if (stats.totalR >= 3 && stats.winRate >= 60)
-      return { emoji: 'ðŸ†', label: 'Semaine exceptionnelle', color: 'text-yellow-400', bg: 'bg-yellow-500/10' };
+      return { emoji: '🏆', label: 'Semaine exceptionnelle', color: 'text-yellow-400', bg: 'bg-yellow-500/10' };
     if (stats.totalR >= 1 && stats.winRate >= 50)
       return { emoji: '✅', label: 'Bonne semaine', color: 'text-success', bg: 'bg-success/10' };
     if (stats.totalR >= 0)
-      return { emoji: 'ðŸ“Š', label: 'Semaine neutre', color: 'text-blue-400', bg: 'bg-blue-500/10' };
+      return { emoji: '📊', label: 'Semaine neutre', color: 'text-blue-400', bg: 'bg-blue-500/10' };
     if (stats.totalR >= -2)
-      return { emoji: 'š ï¸', label: 'Semaine difficile', color: 'text-warning', bg: 'bg-warning/10' };
-    return { emoji: 'ðŸ”´', label: 'Semaine critique "” analyse requise', color: 'text-destructive', bg: 'bg-destructive/10' };
+      return { emoji: '⚠️', label: 'Semaine difficile', color: 'text-warning', bg: 'bg-warning/10' };
+    return { emoji: '🔴', label: 'Semaine critique — analyse requise', color: 'text-destructive', bg: 'bg-destructive/10' };
   }, [stats, weekTrades]);
 
   return (
@@ -164,8 +164,7 @@ function WeeklyReportModal({ trades, score, onClose }: WeeklyReportModalProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 py-8"
-        style={{ background: 'rgba(5, 7, 15, 0.92)', backdropFilter: 'blur(12px)' }}
+        className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/70 backdrop-blur-sm p-4 py-8"
         onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
       >
         <motion.div
@@ -175,7 +174,7 @@ function WeeklyReportModal({ trades, score, onClose }: WeeklyReportModalProps) {
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           className="w-full max-w-2xl space-y-4"
         >
-          {/* ”€”€ En-tête rapport ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€ */}
+          {/* ── En-tête rapport ─────────────────────────────────────────── */}
           <div className="rounded-2xl p-5 relative overflow-hidden"
             style={{
               background: 'linear-gradient(135deg, rgba(26,107,255,0.15) 0%, rgba(108,58,255,0.15) 100%)',
@@ -196,7 +195,7 @@ function WeeklyReportModal({ trades, score, onClose }: WeeklyReportModalProps) {
                 <h2 className="text-lg font-bold text-foreground">Rapport Hebdomadaire</h2>
                 <p className="text-xs text-muted-foreground flex items-center gap-1">
                   <Calendar size={11} />
-                  {formatDate(monday)} ←’ {formatDate(sunday)}
+                  {formatDate(monday)} → {formatDate(sunday)}
                 </p>
               </div>
             </div>
@@ -208,7 +207,7 @@ function WeeklyReportModal({ trades, score, onClose }: WeeklyReportModalProps) {
             </div>
           </div>
 
-          {/* ”€”€ Statistiques de la semaine ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€ */}
+          {/* ── Statistiques de la semaine ──────────────────────────────── */}
           {stats ? (
             <>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -265,7 +264,7 @@ function WeeklyReportModal({ trades, score, onClose }: WeeklyReportModalProps) {
             </div>
           )}
 
-          {/* ”€”€ Erreurs de la semaine ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€ */}
+          {/* ── Erreurs de la semaine ───────────────────────────────────── */}
           {weekErrors.length > 0 && (
             <div className="rounded-2xl p-4"
               style={{ background: 'rgba(255,59,92,0.06)', border: '1px solid rgba(255,59,92,0.2)' }}>
@@ -276,7 +275,7 @@ function WeeklyReportModal({ trades, score, onClose }: WeeklyReportModalProps) {
               <div className="space-y-2">
                 {weekErrors.map((e, i) => (
                   <div key={i} className="flex items-start gap-2">
-                    <span className="text-destructive mt-0.5 shrink-0">"¢</span>
+                    <span className="text-destructive mt-0.5 shrink-0">•</span>
                     <p className="text-sm text-muted-foreground">{e}</p>
                   </div>
                 ))}
@@ -284,7 +283,7 @@ function WeeklyReportModal({ trades, score, onClose }: WeeklyReportModalProps) {
             </div>
           )}
 
-          {/* ”€”€ Points forts ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€ */}
+          {/* ── Points forts ────────────────────────────────────────────── */}
           {weekStrengths.length > 0 && (
             <div className="rounded-2xl p-4"
               style={{ background: 'rgba(0,212,170,0.06)', border: '1px solid rgba(0,212,170,0.2)' }}>
@@ -303,7 +302,7 @@ function WeeklyReportModal({ trades, score, onClose }: WeeklyReportModalProps) {
             </div>
           )}
 
-          {/* ”€”€ Objectifs semaine prochaine ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€ */}
+          {/* ── Objectifs semaine prochaine ─────────────────────────────── */}
           <div className="rounded-2xl p-4"
             style={{ background: 'rgba(26,107,255,0.06)', border: '1px solid rgba(26,107,255,0.2)' }}>
             <div className="flex items-center gap-2 mb-3">
@@ -320,7 +319,7 @@ function WeeklyReportModal({ trades, score, onClose }: WeeklyReportModalProps) {
             </div>
           </div>
 
-          {/* ”€”€ Mot de Mentor-X ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€ */}
+          {/* ── Mot de Mentor-X ─────────────────────────────────────────── */}
           <div className="rounded-2xl p-4"
             style={{ background: 'rgba(108,58,255,0.06)', border: '1px solid rgba(108,58,255,0.2)' }}>
             <div className="flex items-start gap-3">
@@ -357,9 +356,9 @@ function WeeklyReportModal({ trades, score, onClose }: WeeklyReportModalProps) {
   );
 }
 
-// ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
+// ─────────────────────────────────────────────────────────────────────────────
 // PAGE PRINCIPALE
-// ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
+// ─────────────────────────────────────────────────────────────────────────────
 export default function CoachAlphaPage() {
   const { user } = useAuth();
   const trades  = useFilteredTrades();
@@ -371,10 +370,13 @@ export default function CoachAlphaPage() {
 
   const scoreColor = score >= 70 ? 'text-success' : score >= 40 ? 'text-warning' : 'text-destructive';
 
-const filteredAdvice = useMemo(() => {
-    if (filterCategory === 'Points forts') return advice.filter(a => a.type === 'strength');
-    if (filterCategory === 'Points faibles') return advice.filter(a => a.type === 'weakness');
-    return advice;
+  const filteredAdvice = useMemo(() => {
+    if (filterCategory === 'Erreurs critiques') return [];
+    if (filterCategory === 'Points forts') return [];
+    return advice.filter(a => {
+      if (filterCategory !== 'Tout' && a.category !== filterCategory) return false;
+      return true;
+    });
   }, [advice, filterCategory]);
 
   const frequentErrors = useMemo(() => {
@@ -397,10 +399,10 @@ const filteredAdvice = useMemo(() => {
       return q <= 5;
     });
     if (lowQuality.length >= 2)
-      errors.push({ label: `${lowQuality.length} trades de qualité faible "” t'entrais trop tôt ou sans setup clair`, count: lowQuality.length, severity: 'medium' });
+      errors.push({ label: `${lowQuality.length} trades de qualité faible — t'entrais trop tôt ou sans setup clair`, count: lowQuality.length, severity: 'medium' });
     const winRate = closed.filter(t => t.status === 'WIN').length / closed.length;
     if (winRate < 0.4 && closed.length >= 5)
-      errors.push({ label: `Win Rate de ${Math.round(winRate * 100)}% "” revois tes critères de sélection`, count: Math.round((1 - winRate) * closed.length), severity: 'high' });
+      errors.push({ label: `Win Rate de ${Math.round(winRate * 100)}% — revois tes critères de sélection`, count: Math.round((1 - winRate) * closed.length), severity: 'high' });
     return errors.sort((a, b) => b.count - a.count).slice(0, 5);
   }, [trades]);
 
@@ -460,11 +462,11 @@ const filteredAdvice = useMemo(() => {
         <div>
           <h1 className="text-2xl md:text-3xl font-bold gradient-text">Mentor-X</h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Ton coach de trading intelligent "” analyse {trades.length} trade{trades.length > 1 ? 's' : ''}
+            Ton coach de trading intelligent — analyse {trades.length} trade{trades.length > 1 ? 's' : ''}
           </p>
         </div>
 
-        {/* ”€”€ BOUTON RAPPORT HEBDOMADAIRE ”€”€ */}
+        {/* ── BOUTON RAPPORT HEBDOMADAIRE ── */}
         <motion.button
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
@@ -526,13 +528,13 @@ const filteredAdvice = useMemo(() => {
             className="mt-4 inline-flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors"
           >
             <Calendar size={11} />
-            {weekTradeCount} trade{weekTradeCount > 1 ? 's' : ''} cette semaine "” voir le rapport
+            {weekTradeCount} trade{weekTradeCount > 1 ? 's' : ''} cette semaine — voir le rapport
             <ChevronRight size={11} />
           </button>
         )}
       </GlassCard>
 
-      {/* ”€”€ FILTRES ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€ */}
+      {/* ── FILTRES ─────────────────────────────────────────────────────────── */}
       <GlassCard className="animate-fade-up">
         <div className="flex items-center gap-2 mb-3">
           <Filter size={14} className="text-primary" />
@@ -555,45 +557,45 @@ const filteredAdvice = useMemo(() => {
         </div>
       </GlassCard>
 
-      {/* ”€”€ ERREURS FRÉQUENTES ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€ */}
-        {(filterCategory === 'Tout' || filterCategory === 'Points faibles') && frequentErrors.length > 0 && (
-          <GlassCard className="animate-fade-up">
-            <div className="flex items-center gap-2 mb-4">
-              <TrendingDown size={16} className="text-destructive" />
-              <h3 className="text-sm font-bold text-foreground">Points faibles récurrents</h3>
-            </div>
-            <div className="space-y-2">
-              {[...frequentErrors].sort((a, b) => b.count - a.count).map((err, i) => {
-                const borderColor = err.count >= 20 ? 'border-l-red-500' : err.count >= 8 ? 'border-l-orange-500' : 'border-l-yellow-500';
-                const bgColor = err.count >= 20 ? 'bg-red-500/5' : err.count >= 8 ? 'bg-orange-500/5' : 'bg-yellow-500/5';
-                return (
-                  <div key={i} className={`flex items-start gap-3 p-3 rounded-xl border-l-4 ${borderColor} ${bgColor} ${
-                    err.severity === 'high' ? 'border-r border-t border-b border-destructive/20' : 'border-r border-t border-b border-warning/20'
+      {/* ── ERREURS FRÉQUENTES ──────────────────────────────────────────────── */}
+      {(filterCategory === 'Tout' || filterCategory === 'Erreurs critiques') && frequentErrors.length > 0 && (
+        <GlassCard className="animate-fade-up">
+          <div className="flex items-center gap-2 mb-4">
+            <TrendingDown size={16} className="text-destructive" />
+            <h3 className="text-sm font-bold text-foreground">Erreurs fréquentes détectées</h3>
+          </div>
+          <div className="space-y-2">
+            {[...frequentErrors].sort((a, b) => b.count - a.count).map((err, i) => {
+              const borderColor = err.count >= 20 ? 'border-l-red-500' : err.count >= 8 ? 'border-l-orange-500' : 'border-l-yellow-500';
+              const bgColor = err.count >= 20 ? 'bg-red-500/5' : err.count >= 8 ? 'bg-orange-500/5' : 'bg-yellow-500/5';
+              return (
+                <div key={i} className={`flex items-start gap-3 p-3 rounded-xl border-l-4 ${borderColor} ${bgColor} ${
+                  err.severity === 'high' ? 'border-r border-t border-b border-destructive/20' : 'border-r border-t border-b border-warning/20'
+                }`}>
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded mt-0.5 shrink-0 ${
+                    err.severity === 'high' ? 'bg-destructive/20 text-destructive' : 'bg-warning/20 text-warning'
                   }`}>
-                    <span className={`text-xs font-bold px-2 py-0.5 rounded mt-0.5 shrink-0 ${
-                      err.severity === 'high' ? 'bg-destructive/20 text-destructive' : 'bg-warning/20 text-warning'
-                    }`}>
-                      {err.count}x
-                    </span>
-                    <p className="text-sm text-foreground flex-1">{err.label}</p>
-                    {err.severity === 'high' && (
-                      <motion.span
-                        animate={{ scale: [1, 1.06, 1] }}
-                        transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
-                        className="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wide shrink-0"
-                        style={{ background: 'rgba(239,68,68,0.15)', color: '#f87171', border: '1px solid rgba(239,68,68,0.25)' }}
-                      >
-                        RÉCURRENT
-                      </motion.span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </GlassCard>
-        )}
+                    {err.count}x
+                  </span>
+                  <p className="text-sm text-foreground flex-1">{err.label}</p>
+                  {err.severity === 'high' && (
+                    <motion.span
+                      animate={{ scale: [1, 1.06, 1] }}
+                      transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
+                      className="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wide shrink-0"
+                      style={{ background: 'rgba(239,68,68,0.15)', color: '#f87171', border: '1px solid rgba(239,68,68,0.25)' }}
+                    >
+                      URGENT
+                    </motion.span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </GlassCard>
+      )}
 
-      {/* ”€”€ POINTS FORTS ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€ */}
+      {/* ── POINTS FORTS ────────────────────────────────────────────────────── */}
       {(filterCategory === 'Tout' || filterCategory === 'Points forts') && strengths.length > 0 && (
         <GlassCard className="animate-fade-up">
           <div className="flex items-center gap-2 mb-4">
@@ -612,66 +614,53 @@ const filteredAdvice = useMemo(() => {
         </GlassCard>
       )}
 
-      {/* ”€”€ CONSEILS MENTOR-X ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€ */}
-        {(
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filteredAdvice.map((a, i) => {
-              const iconMap: Record<string, { icon: React.ElementType; color: string }> = {
-                'Psychologie':    { icon: Brain,       color: '#7C3AED' },
-                'Win Rate':       { icon: Target,      color: '#1A6BFF' },
-                'Risk':           { icon: TrendingDown, color: '#FF3B5C' },
-                'Performance':    { icon: AlertTriangle, color: '#F59E0B' },
-                'Discipline':     { icon: Clock,        color: '#00D4AA' },
-                'Paire forte':    { icon: Target,       color: '#00D4AA' },
-                'Paire perdante': { icon: TrendingDown, color: '#FF3B5C' },
-                'Setup gagnant':  { icon: Target,       color: '#00D4AA' },
-                'Setup perdant':  { icon: AlertTriangle, color: '#FF3B5C' },
-                'Émotion récurrente': { icon: Brain,    color: '#7C3AED' },
-              };
-              const iconInfo = iconMap[a.category] || { icon: Bot, color: '#1A6BFF' };
-              const IconComp = iconInfo.icon;
-              const borderColor = a.type === 'strength' ? 'rgba(0,212,170,0.2)' : a.type === 'weakness' ? 'rgba(255,59,92,0.2)' : 'rgba(26,107,255,0.2)';
-              return (
-                <GlassCard key={i} className="animate-fade-up" style={{ borderColor }}>
-                  <div className="flex items-start gap-3">
-                    <IconComp size={18} style={{ color: iconInfo.color }} className="shrink-0 mt-0.5" />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <span className="text-xs font-bold text-foreground">{a.category}</span>
-                        {a.repeatCount && (
-                          <span className="text-[10px] px-2 py-0.5 rounded-full font-bold"
-                            style={{ background: a.type === 'strength' ? 'rgba(0,212,170,0.15)' : 'rgba(255,59,92,0.15)', color: a.type === 'strength' ? '#00D4AA' : '#FF3B5C' }}>
-                            {a.repeatCount}x répété
-                          </span>
-                        )}
-                        {a.priority >= 8 && (
-                          <motion.span
-                            animate={{ scale: [1, 1.06, 1] }}
-                            transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
-                            className="text-[10px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wide"
-                            style={{ background: 'rgba(239,68,68,0.15)', color: '#f87171', border: '1px solid rgba(239,68,68,0.25)' }}
-                          >
-                            RÉCURRENT
-                          </motion.span>
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground leading-relaxed">{a.message}</p>
+      {/* ── CONSEILS MENTOR-X ───────────────────────────────────────────────── */}
+      {(filterCategory === 'Tout' || !['Erreurs critiques', 'Points forts'].includes(filterCategory)) && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {filteredAdvice.map((a, i) => {
+            const iconMap: Record<string, { icon: React.ElementType; color: string }> = {
+              'Psychologie': { icon: Brain, color: '#7C3AED' },
+              'Win Rate':    { icon: Target, color: '#1A6BFF' },
+              'Risk':        { icon: TrendingDown, color: '#FF3B5C' },
+              'Performance': { icon: AlertTriangle, color: '#F59E0B' },
+              'Discipline':  { icon: Clock, color: '#00D4AA' },
+            };
+            const iconInfo = iconMap[a.category] || { icon: Bot, color: '#1A6BFF' };
+            const IconComp = iconInfo.icon;
+            return (
+              <GlassCard key={i} className="animate-fade-up" glow={a.priority >= 8 ? 'blue' : 'none'}>
+                <div className="flex items-start gap-3">
+                  <IconComp size={18} style={{ color: iconInfo.color }} className="shrink-0 mt-0.5" />
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs font-bold text-foreground">{a.category}</span>
+                      {a.priority >= 8 && (
+                        <motion.span
+                          animate={{ scale: [1, 1.06, 1] }}
+                          transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
+                          className="text-[10px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wide"
+                          style={{ background: 'rgba(239,68,68,0.15)', color: '#f87171', border: '1px solid rgba(239,68,68,0.25)' }}
+                        >
+                          URGENT
+                        </motion.span>
+                      )}
                     </div>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{a.message}</p>
                   </div>
-                </GlassCard>
-              );
-            })}
-          </div>
-        )}
+                </div>
+              </GlassCard>
+            );
+          })}
+          {filteredAdvice.length === 0 && trades.length === 0 && (
+            <div className="col-span-2 text-center py-12 text-muted-foreground">
+              <Bot size={40} className="mx-auto mb-3 opacity-30" />
+              <p className="text-sm">Enregistre tes premiers trades. Mentor-X t'analysera.</p>
+            </div>
+          )}
+        </div>
+      )}
 
-{filteredAdvice.length === 0 && trades.length === 0 && (
-  <div className="text-center py-12 text-muted-foreground">
-    <Bot size={40} className="mx-auto mb-3 opacity-30" />
-    <p className="text-sm">Enregistre tes premiers trades. Mentor-X t'analysera.</p>
-  </div>
-)}
-
-      {/* ”€”€ HISTORIQUE RÉCENT ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€ */}
+      {/* ── HISTORIQUE RÉCENT ───────────────────────────────────────────────── */}
       {sessionHistory.length > 0 && (
         <GlassCard className="animate-fade-up">
           <div className="flex items-center gap-2 mb-4">
@@ -686,8 +675,8 @@ const filteredAdvice = useMemo(() => {
                   <span className="text-sm font-medium text-foreground">{s.pair}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className={`metric-value text-sm ${s.result != null && s.result >= 0 ? 'text-success' : 'text-destructive'}`}>
-                    {s.result != null ? (s.result >= 0 ? '+' : '') + s.result.toFixed(2) + 'R' : 'À définir'}
+                  <span className={`metric-value text-sm ${s.result >= 0 ? 'text-success' : 'text-destructive'}`}>
+                    {s.result >= 0 ? '+' : ''}{s.result.toFixed(2)}R
                   </span>
                   <span className={`text-xs font-bold px-2 py-0.5 rounded ${
                     s.status === 'WIN' ? 'badge-win' : s.status === 'LOSS' ? 'badge-loss' : 'badge-be'
@@ -701,7 +690,3 @@ const filteredAdvice = useMemo(() => {
     </div>
   );
 }
-
-
-
-
