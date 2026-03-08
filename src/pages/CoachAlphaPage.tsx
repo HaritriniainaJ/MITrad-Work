@@ -1,4 +1,4 @@
-// ─────────────────────────────────────────────────────────────────────────────
+﻿// ─────────────────────────────────────────────────────────────────────────────
 // PAGE : Mentor-X (ex Coach Alpha)
 // Analyse complète de la performance avec filtres avancés.
 // MODIFIÉ v3 : Rapport Hebdomadaire Automatique ajouté
@@ -362,7 +362,7 @@ function WeeklyReportModal({ trades, score, onClose }: WeeklyReportModalProps) {
 export default function CoachAlphaPage() {
   const { user } = useAuth();
   const trades  = useFilteredTrades();
-  const advice  = useMemo(() => generateCoachAdvice(trades), [trades]);
+  const advice  = useMemo(() => generateCoachAdvice(trades, mode, capital), [trades, mode, capital]);
   const score   = useMemo(() => getDisciplineScore(trades), [trades]);
 
   const [filterCategory, setFilterCategory] = useState('Tout');
