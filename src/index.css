@@ -672,3 +672,167 @@ a.gradient-primary::before {
   height: 3px !important;
   box-shadow: 0 0 10px #1a6bff, 0 0 5px #7c3aed !important;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   MODE CLAIR — Corrections complètes
+   ══════════════════════════════════════════════════════════════ */
+
+[data-theme="light"] body {
+  background: hsl(210 40% 98%);
+  color: hsl(218 65% 8%);
+}
+
+/* Sidebar */
+[data-theme="light"] aside {
+  background: rgba(255,255,255,0.97) !important;
+  border-color: rgba(0,0,0,0.08) !important;
+}
+
+/* Header mobile */
+[data-theme="light"] header {
+  background: rgba(255,255,255,0.95) !important;
+  border-color: rgba(0,0,0,0.08) !important;
+}
+
+/* Cards et conteneurs */
+[data-theme="light"] .glass {
+  background: rgba(255,255,255,0.9) !important;
+  border-color: rgba(0,0,0,0.07) !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08) !important;
+}
+
+/* Textes muted */
+[data-theme="light"] .text-muted-foreground {
+  color: hsl(218 20% 45%) !important;
+}
+
+/* Inputs */
+[data-theme="light"] .input-dark {
+  background: rgba(0,0,0,0.04) !important;
+  border-color: rgba(0,0,0,0.1) !important;
+  color: hsl(218 65% 8%) !important;
+}
+[data-theme="light"] .input-dark::placeholder {
+  color: hsl(218 20% 60%) !important;
+}
+[data-theme="light"] .select-dark {
+  background: rgba(0,0,0,0.04) !important;
+  border-color: rgba(0,0,0,0.1) !important;
+  color: hsl(218 65% 8%) !important;
+}
+[data-theme="light"] .select-dark option {
+  background: white !important;
+  color: hsl(218 65% 8%) !important;
+}
+
+/* Scrollbar */
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.15) !important;
+}
+
+/* Skeleton */
+[data-theme="light"] .skeleton {
+  background: linear-gradient(90deg,
+    rgba(0,0,0,0.06) 25%,
+    rgba(0,0,0,0.1) 50%,
+    rgba(0,0,0,0.06) 75%
+  ) !important;
+}
+
+/* Dropdown compte actif */
+[data-theme="light"] [style*="background: #0a0d16"],
+[data-theme="light"] [style*="background: rgba(10,13,22"] {
+  background: white !important;
+  color: hsl(218 65% 8%) !important;
+}
+
+/* Tooltip */
+[data-theme="light"] .tooltip::after {
+  background: rgba(255,255,255,0.97) !important;
+  border-color: rgba(0,0,0,0.1) !important;
+  color: hsl(218 65% 8%) !important;
+}
+
+/* Nav items inactifs */
+[data-theme="light"] nav a:not(.gradient-primary) {
+  color: hsl(218 20% 40%) !important;
+}
+[data-theme="light"] nav a:not(.gradient-primary):hover {
+  background: rgba(0,0,0,0.05) !important;
+  color: hsl(218 65% 8%) !important;
+}
+
+/* Boutons et accents */
+[data-theme="light"] [style*="rgba(255,255,255,0.04)"] {
+  background: rgba(0,0,0,0.04) !important;
+}
+[data-theme="light"] [style*="rgba(255,255,255,0.05)"] {
+  background: rgba(0,0,0,0.04) !important;
+}
+[data-theme="light"] [style*="rgba(10,13,22,0.95)"] {
+  background: rgba(255,255,255,0.97) !important;
+}
+[data-theme="light"] [style*="rgba(10,13,22,0.9)"] {
+  background: rgba(255,255,255,0.95) !important;
+}
+[data-theme="light"] [style*="rgba(13,17,23"] {
+  background: rgba(255,255,255,0.97) !important;
+}
+
+/* Borders */
+[data-theme="light"] [style*="border-color: rgba(255,255,255"] {
+  border-color: rgba(0,0,0,0.08) !important;
+}
+
+/* Orbs — cacher en mode clair */
+[data-theme="light"] .orb {
+  opacity: 0.06 !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   MODE CLAIR — Ombres professionnelles
+   ══════════════════════════════════════════════════════════════ */
+
+[data-theme="light"] aside {
+  box-shadow: 4px 0 24px rgba(0,0,0,0.12), 8px 0 48px rgba(0,0,0,0.06) !important;
+}
+
+[data-theme="light"] .glass {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04) !important;
+}
+
+[data-theme="light"] .glass:hover:not(.no-hover) {
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08), 0 0 0 1px rgba(26,107,255,0.1) !important;
+}
+
+[data-theme="light"] .gradient-btn {
+  box-shadow: 0 4px 16px rgba(26,107,255,0.3), 0 1px 4px rgba(0,0,0,0.1) !important;
+}
+
+[data-theme="light"] header {
+  box-shadow: 0 2px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   MODE CLAIR — Ombres encore plus prononcées
+   ══════════════════════════════════════════════════════════════ */
+
+[data-theme="light"] aside {
+  box-shadow: 4px 0 40px rgba(0,0,0,0.18), 12px 0 60px rgba(0,0,0,0.1) !important;
+}
+
+[data-theme="light"] .glass {
+  box-shadow: 0 8px 32px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.05) !important;
+}
+
+[data-theme="light"] .glass:hover:not(.no-hover) {
+  box-shadow: 0 16px 56px rgba(0,0,0,0.18), 0 4px 16px rgba(0,0,0,0.12), 0 0 0 1px rgba(26,107,255,0.15) !important;
+}
+
+[data-theme="light"] .gradient-btn {
+  box-shadow: 0 6px 24px rgba(26,107,255,0.4), 0 2px 8px rgba(0,0,0,0.15) !important;
+}
+
+[data-theme="light"] header {
+  box-shadow: 0 4px 24px rgba(0,0,0,0.12), 0 1px 6px rgba(0,0,0,0.08) !important;
+}
