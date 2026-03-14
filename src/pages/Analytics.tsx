@@ -542,14 +542,14 @@ const fmtDD = () => {
           <h3 className="text-sm font-medium text-muted-foreground mb-4">Distribution Win / Loss / BE</h3>
           <div className="h-[220px]">
             <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width='100%' height='100%'>
               <PieChart>
-                <Pie data={statusData} dataKey="value" nameKey="name" cx="50%" cy="45%" outerRadius={70}
-                  isAnimationActive animationDuration={1500}>
-                  <Cell fill="#00D4AA" />
-                  <Cell fill="#FF4757" />
-                  <Cell fill="#8899AA" />
+                <Pie data={statusData.filter(d => d.value > 0)} dataKey='value' nameKey='name' cx='50%' cy='45%' outerRadius={70}
+                  isAnimationActive animationDuration={1500} label={({ name, value, percent }) => ${name}:  (%)} labelLine={false}>
+                  {statusData.filter(d => d.value > 0).map((entry) => (
+                    <Cell key={entry.name} fill={entry.name === 'WIN' ? '#00D4AA' : entry.name === 'LOSS' ? '#FF4757' : '#8899AA'} />
+                  ))}
                 </Pie>
-                <Tooltip contentStyle={tooltipStyle} />
                 <Legend layout="horizontal" verticalAlign="bottom" iconType="circle" wrapperStyle={{ fontSize: 11 }} />
               </PieChart>
             </ResponsiveContainer>

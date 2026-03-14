@@ -196,9 +196,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         broker:        updates.broker,
         avatar:        updates.avatar,
         banner:        updates.banner,
-        is_public:     updates.isPublic,
-      }),
-    }).then(async (r) => {
+         is_public:     updates.isPublic,
+         custom_setups: updates.customSetups ?? user.customSetups,
+       }),
       if (r && r.ok) {
         const profile = await r.json();
         if (profile) {
