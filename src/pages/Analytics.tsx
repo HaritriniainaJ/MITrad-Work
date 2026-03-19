@@ -11,6 +11,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceDot, ReferenceLine, Legend,
 } from 'recharts';
 import { X, Share2 } from 'lucide-react';
+import { Sparkline, Gauge, MiniBar } from '@/components/KpiCharts';
 
 const CHART_COLORS = ['#1A6BFF', '#6C3AFF', '#00D4AA', '#FF4757', '#FFB800', '#FF6B9D', '#00BCD4', '#8BC34A'];
 const tooltipStyle = {
@@ -195,59 +196,48 @@ const fmtDD = () => {
       </GlassCard>
       {/* â”€â”€ KPI ROW 1 (compact) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <GlassCard className="animate-fade-up stagger-1 !py-3 !px-4 relative overflow-hidden"
-          style={{ boxShadow: totalR >= 0 ? '0 0 16px rgba(0,212,170,0.08)' : '0 0 16px rgba(255,59,92,0.08)' }}>
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <svg width="14" height="14" fill="none" stroke="#1A6BFF" strokeWidth="2" viewBox="0 0 24 24">
-              <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-            </svg>
+        <GlassCard className="animate-fade-up stagger-1 !py-3 !px-4 relative overflow-hidden">
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Trades clôturés</p>
+          <div className="flex items-end justify-between">
+            <div>
+              <p className="metric-value text-xl font-bold text-foreground">{closed.length}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">{wins.length}W · {losses.length}L · {be.length}BE</p>
+            </div>
+            <Sparkline data={cumData.slice(-12).map(d => d.r)} color={totalR >= 0 ? '#00D4AA' : '#FF3B5C'} />
           </div>
-          <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Trades clôturés</p>
-          <p className="metric-value text-xl font-bold text-foreground mt-0.5">{closed.length}</p>
         </GlassCard>
 
         <GlassCard className="animate-fade-up stagger-2 !py-3 !px-4 relative overflow-hidden">
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <svg width="14" height="14" fill="none" stroke={winRate >= 50 ? '#00D4AA' : '#FF3B5C'} strokeWidth="2" viewBox="0 0 24 24">
-              <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>
-            </svg>
-          </div>
-          <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Win Rate</p>
-          <p className={`metric-value text-xl font-bold mt-0.5 ${winRate >= 50 ? 'text-success' : 'text-destructive'}`}>
-            {winRate.toFixed(0)}%
-          </p>
-          <div className="h-1 rounded-full bg-accent mt-2 overflow-hidden">
-            <div className="h-full rounded-full transition-all duration-1000"
-              style={{ width:`${winRate}%`, background: winRate >= 50 ? '#00D4AA' : '#FF3B5C' }} />
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Win Rate</p>
+          <div className="flex items-end justify-between">
+            <div>
+              <p className={`metric-value text-xl font-bold mt-0.5 ${winRate >= 50 ? 'text-success' : 'text-destructive'}`}>{winRate.toFixed(0)}%</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">{wins.length} gagnants</p>
+            </div>
+            <Gauge value={winRate} max={100} color={winRate >= 50 ? '#00D4AA' : '#FF3B5C'} size={64} />
           </div>
         </GlassCard>
 
         <GlassCard className="animate-fade-up stagger-3 !py-3 !px-4 relative overflow-hidden"
           style={{ boxShadow: totalR >= 0 ? '0 0 16px rgba(0,212,170,0.12)' : '0 0 16px rgba(255,59,92,0.12)' }}>
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <svg width="14" height="14" fill="none" stroke={totalR >= 0 ? '#00D4AA' : '#FF3B5C'} strokeWidth="2" viewBox="0 0 24 24">
-              <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
-            </svg>
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">P&L Total</p>
+          <div className="flex items-end justify-between">
+            <div>
+              <p className={`metric-value text-xl font-bold mt-0.5 ${totalDollar > 0 ? 'text-success' : totalDollar < 0 ? 'text-destructive' : 'text-warning'}`}>{formatResult(totalR, totalDollar, capital)}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">{totalR >= 0 ? '+' : ''}{totalR.toFixed(2)}R</p>
+            </div>
+            <Sparkline data={cumData.slice(-12).map(d => d.r)} color={totalR >= 0 ? '#00D4AA' : '#FF3B5C'} />
           </div>
-          <p className="text-[10px] uppercase tracking-widest text-muted-foreground">P&L Total</p>
-          <p className={`metric-value text-xl font-bold mt-0.5 ${totalDollar > 0 ? 'text-success' : totalDollar < 0 ? 'text-destructive' : 'text-warning'}`}>
-            {formatResult(totalR, totalDollar, capital)}
-          </p>
         </GlassCard>
 
         <GlassCard className="animate-fade-up stagger-4 !py-3 !px-4 relative overflow-hidden">
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <svg width="14" height="14" fill="none" stroke={pf >= 1.5 ? '#00D4AA' : pf >= 1 ? '#F59E0B' : '#FF3B5C'} strokeWidth="2" viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
-            </svg>
-          </div>
-          <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Profit Factor</p>
-          <p className={`metric-value text-xl font-bold mt-0.5 ${pf >= 1.5 ? 'text-success' : pf >= 1 ? 'text-warning' : 'text-destructive'}`}>
-            {pf.toFixed(2)}
-          </p>
-          <div className="h-1 rounded-full bg-accent mt-2 overflow-hidden">
-            <div className="h-full rounded-full transition-all duration-1000"
-              style={{ width:`${Math.min(pf/3*100,100)}%`, background: pf >= 1.5 ? '#00D4AA' : pf >= 1 ? '#F59E0B' : '#FF3B5C' }} />
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Profit Factor</p>
+          <div className="flex items-end justify-between">
+            <div>
+              <p className={`metric-value text-xl font-bold mt-0.5 ${pf >= 1.5 ? 'text-success' : pf >= 1 ? 'text-warning' : 'text-destructive'}`}>{pf.toFixed(2)}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">cible &ge; 1.5</p>
+            </div>
+            <MiniBar value={pf} max={3} color={pf >= 1.5 ? '#00D4AA' : pf >= 1 ? '#F59E0B' : '#FF3B5C'} negColor="#FF3B5C" />
           </div>
         </GlassCard>
       </div>
@@ -256,14 +246,22 @@ const fmtDD = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <GlassCard className="animate-fade-up !p-5">
           <p className="text-xs text-muted-foreground uppercase tracking-wide">Capital initial</p>
-          <p className="metric-value text-2xl text-foreground mt-1">${capital.toLocaleString('fr')}</p>
+          <div className="flex items-end justify-between">
+            <p className="metric-value text-2xl text-foreground mt-1">${capital.toLocaleString('fr')}</p>
+            <MiniBar value={1} max={1} color="#1A6BFF" negColor="#1A6BFF" />
+          </div>
         </GlassCard>
 
         <GlassCard className="animate-fade-up stagger-1 !p-5">
           <p className="text-xs text-muted-foreground uppercase tracking-wide">Croissance</p>
-          <p className={`metric-value text-2xl mt-1 ${croissancePct >= 0 ? 'text-success' : 'text-destructive'}`}>
-            {croissancePct >= 0 ? '+' : ''}{croissancePct.toFixed(2)}%
-          </p>
+          <div className="flex items-end justify-between">
+            <div>
+              <p className={`metric-value text-2xl mt-1 ${croissancePct >= 0 ? 'text-success' : 'text-destructive'}`}>
+                {croissancePct >= 0 ? '+' : ''}{croissancePct.toFixed(2)}%
+              </p>
+            </div>
+            <Sparkline data={cumData.slice(-12).map(d => d.r)} color={croissancePct >= 0 ? '#00D4AA' : '#FF3B5C'} />
+          </div>
         </GlassCard>
 
         <GlassCard className="animate-fade-up stagger-2 !p-5 relative overflow-hidden">
@@ -275,10 +273,13 @@ const fmtDD = () => {
             </svg>
           </div>
           <p className="text-xs text-muted-foreground uppercase tracking-wide">Max Drawdown</p>
-          <p className={`metric-value text-3xl mt-1 ${maxDD.dollar > 5 ? 'text-destructive' : 'text-warning'}`}>
-            {fmtDD()}
-          </p>
-          <p className="text-[10px] text-muted-foreground mt-1">affiché en {modeUnit}</p>
+          <div className="flex items-end justify-between">
+            <div>
+              <p className={`metric-value text-2xl mt-1 ${maxDD.dollar > 5 ? 'text-destructive' : 'text-warning'}`}>{fmtDD()}</p>
+              <p className="text-[10px] text-muted-foreground mt-1">{maxDD.pct.toFixed(2)}%</p>
+            </div>
+            <Gauge value={maxDD.pct} max={20} color={maxDD.pct > 10 ? '#FF3B5C' : '#F59E0B'} size={64} />
+          </div>
         </GlassCard>
 
         <GlassCard className="animate-fade-up stagger-3 !p-5 relative overflow-hidden">
@@ -291,10 +292,13 @@ const fmtDD = () => {
             </svg>
           </div>
           <p className="text-xs text-muted-foreground uppercase tracking-wide">R Moyen / Trade</p>
-          <p className={`metric-value text-3xl mt-1 ${avgR >= 0 ? 'text-success' : 'text-destructive'}`}>
-            {formatResult(avgR, avgR * capital * 0.01, capital)}
-          </p>
-          <div className="mt-2 h-0.5 w-8 rounded-full bg-blue-400/50" />
+          <div className="flex items-end justify-between">
+            <div>
+              <p className={`metric-value text-2xl mt-1 ${avgR >= 0 ? 'text-success' : 'text-destructive'}`}>{formatResult(avgR, avgR * capital * 0.01, capital)}</p>
+              <p className="text-[10px] text-muted-foreground mt-1">{avgR >= 0 ? '+' : ''}{avgR.toFixed(2)}R</p>
+            </div>
+            <MiniBar value={avgR} max={5} color="#60A5FA" negColor="#FF3B5C" />
+          </div>
         </GlassCard>
       </div>
 
