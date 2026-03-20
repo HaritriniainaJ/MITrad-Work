@@ -182,192 +182,206 @@ function WeeklyReportModal({ trades, score, onClose, mode, capital }: WeeklyRepo
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/70 backdrop-blur-sm p-4 py-8"
+        className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 py-8"
+        style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }}
         onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
       >
         <motion.div
-          initial={{ opacity: 0, y: 40, scale: 0.96 }}
+          initial={{ opacity: 0, y: 32, scale: 0.97 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 40, scale: 0.96 }}
-          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          className="w-full max-w-2xl space-y-4"
+          exit={{ opacity: 0, y: 32, scale: 0.97 }}
+          transition={{ type: 'spring', stiffness: 280, damping: 28 }}
+          className="w-full max-w-2xl rounded-3xl overflow-hidden"
+          style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', boxShadow: '0 32px 80px rgba(0,0,0,0.35)' }}
         >
-          {/* ── En-tête rapport ─────────────────────────────────────────── */}
-          <div className="rounded-2xl p-5 relative overflow-hidden"
-            style={{
-              background: 'linear-gradient(135deg, rgba(26,107,255,0.15) 0%, rgba(108,58,255,0.15) 100%)',
-              border: '1px solid rgba(26,107,255,0.3)',
-            }}>
-            {/* Glow décoratif */}
-            <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-20"
-              style={{ background: 'radial-gradient(circle, #6C3AFF, transparent)' }} />
+          {/* ── En-tête ──────────────────────────────────────────────────── */}
+          <div className="relative overflow-hidden p-6 pb-5"
+            style={{ background: 'linear-gradient(135deg, rgba(26,107,255,0.15) 0%, rgba(108,58,255,0.18) 100%)', borderBottom: '1px solid hsl(var(--border))' }}>
+            <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full pointer-events-none"
+              style={{ background: 'radial-gradient(circle, rgba(108,58,255,0.25), transparent 70%)' }} />
+            <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full pointer-events-none"
+              style={{ background: 'radial-gradient(circle, rgba(26,107,255,0.2), transparent 70%)' }} />
             <button onClick={onClose}
-              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors">
-              <X size={18} />
+              className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-110"
+              style={{ background: 'rgba(255,255,255,0.1)', color: 'hsl(var(--muted-foreground))' }}>
+              <X size={15} />
             </button>
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
-                <FileText size={18} className="text-white" />
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 rounded-2xl gradient-primary flex items-center justify-center shadow-lg">
+                <FileText size={20} className="text-white" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-foreground">Rapport Hebdomadaire</h2>
-                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                <h2 className="text-xl font-black text-foreground tracking-tight">Rapport Hebdomadaire</h2>
+                <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
                   <Calendar size={11} />
-                  {formatDate(monday)} → {formatDate(sunday)}
+                  {formatDate(monday)} — {formatDate(sunday)}
                 </p>
               </div>
             </div>
-
-            {/* Verdict */}
-            <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold ${verdict.bg} ${verdict.color}`}>
+            <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold ${verdict.bg} ${verdict.color}`}
+              style={{ backdropFilter: 'blur(8px)' }}>
               <span>{verdict.emoji}</span>
               <span>{verdict.label}</span>
             </div>
           </div>
 
-          {/* ── Statistiques de la semaine ──────────────────────────────── */}
-          {stats ? (
-            <>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {[
-                  { label: 'Trades', value: stats.total, icon: Target, color: '#1A6BFF' },
-                  { label: 'Win Rate', value: `${Math.round(stats.winRate)}%`, icon: TrendingUp, color: '#00D4AA' },
-                  { label: mode === '%' ? 'Total %' : mode === '$' ? 'Total $' : 'Total R', value: fmtPnl(stats.totalPnl, mode), icon: Award, color: stats.totalPnl >= 0 ? '#00D4AA' : '#FF3B5C' },
-                  { label: 'Score', value: `${score}/100`, icon: Zap, color: score >= 70 ? '#00D4AA' : score >= 40 ? '#F59E0B' : '#FF3B5C' },
-                ].map(({ label, value, icon: Icon, color }) => (
-                  <div key={label} className="rounded-xl p-3 text-center"
-                    style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                    <Icon size={16} style={{ color }} className="mx-auto mb-1" />
-                    <p className="text-xs text-muted-foreground">{label}</p>
-                    <p className="text-base font-bold text-foreground mt-0.5">{value}</p>
-                  </div>
-                ))}
-              </div>
+          {/* ── Corps de la modal ─────────────────────────────────────────── */}
+          <div className="p-6 space-y-5">
 
-              {/* W/L/BE detail */}
-              <div className="rounded-xl p-4 flex items-center justify-around"
-                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-success">{stats.wins}</p>
-                  <p className="text-xs text-muted-foreground">WIN</p>
-                </div>
-                <div className="h-8 w-px bg-border/40" />
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-destructive">{stats.losses}</p>
-                  <p className="text-xs text-muted-foreground">LOSS</p>
-                </div>
-                <div className="h-8 w-px bg-border/40" />
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-muted-foreground">{stats.be}</p>
-                  <p className="text-xs text-muted-foreground">BE</p>
-                </div>
-                {stats.bestPair && (
-                  <>
-                    <div className="h-8 w-px bg-border/40" />
-                    <div className="text-center">
-                      <p className="text-sm font-bold text-foreground">{stats.bestPair[0]}</p>
-                      <p className="text-xs text-success">{fmtPnl(stats.bestPair[1], mode)}</p>
-                      <p className="text-[10px] text-muted-foreground">Meilleure paire</p>
+            {/* Stats KPI */}
+            {stats ? (
+              <>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {[
+                    { label: 'Trades', value: String(stats.total), icon: Target, color: '#1A6BFF' },
+                    { label: 'Win Rate', value: `${Math.round(stats.winRate)}%`, icon: TrendingUp, color: '#00D4AA' },
+                    { label: mode === '%' ? 'Total %' : mode === '$' ? 'Total $' : 'Total R', value: fmtPnl(stats.totalPnl, mode), icon: Award, color: stats.totalPnl >= 0 ? '#00D4AA' : '#FF3B5C' },
+                    { label: 'Score', value: `${score}/100`, icon: Zap, color: score >= 70 ? '#00D4AA' : score >= 40 ? '#F59E0B' : '#FF3B5C' },
+                  ].map(({ label, value, icon: Icon, color }) => (
+                    <div key={label} className="rounded-2xl p-4 text-center"
+                      style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}>
+                      <div className="w-8 h-8 rounded-xl mx-auto mb-2 flex items-center justify-center"
+                        style={{ background: color + '18' }}>
+                        <Icon size={15} style={{ color }} />
+                      </div>
+                      <p className="text-xs text-muted-foreground font-medium">{label}</p>
+                      <p className="text-lg font-black text-foreground mt-0.5">{value}</p>
                     </div>
-                  </>
-                )}
-              </div>
-            </>
-          ) : (
-            <div className="rounded-xl p-8 text-center"
-              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
-              <Bot size={32} className="mx-auto mb-3 opacity-30" />
-              <p className="text-sm text-muted-foreground">Aucun trade clôturé cette semaine.</p>
-              <p className="text-xs text-muted-foreground mt-1">Reviens après avoir enregistré des trades !</p>
-            </div>
-          )}
-
-          {/* ── Erreurs de la semaine ───────────────────────────────────── */}
-          {weekErrors.length > 0 && (
-            <div className="rounded-2xl p-4"
-              style={{ background: 'rgba(255,59,92,0.06)', border: '1px solid rgba(255,59,92,0.2)' }}>
-              <div className="flex items-center gap-2 mb-3">
-                <TrendingDown size={14} className="text-destructive" />
-                <h3 className="text-sm font-bold text-foreground">Points à corriger</h3>
-              </div>
-              <div className="space-y-2">
-                {weekErrors.map((e, i) => (
-                  <div key={i} className="flex items-start gap-2">
-                    <span className="text-destructive mt-0.5 shrink-0">•</span>
-                    <p className="text-sm text-muted-foreground">{e}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* ── Points forts ────────────────────────────────────────────── */}
-          {weekStrengths.length > 0 && (
-            <div className="rounded-2xl p-4"
-              style={{ background: 'rgba(0,212,170,0.06)', border: '1px solid rgba(0,212,170,0.2)' }}>
-              <div className="flex items-center gap-2 mb-3">
-                <Star size={14} className="text-warning" />
-                <h3 className="text-sm font-bold text-foreground">Points forts cette semaine</h3>
-              </div>
-              <div className="space-y-2">
-                {weekStrengths.map((s, i) => (
-                  <div key={i} className="flex items-start gap-2">
-                    <CheckCircle size={14} style={{ color: '#00D4AA' }} className="mt-0.5 shrink-0" />
-                    <p className="text-sm text-muted-foreground">{s}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* ── Objectifs semaine prochaine ─────────────────────────────── */}
-          <div className="rounded-2xl p-4"
-            style={{ background: 'rgba(26,107,255,0.06)', border: '1px solid rgba(26,107,255,0.2)' }}>
-            <div className="flex items-center gap-2 mb-3">
-              <Target size={14} className="text-primary" />
-              <h3 className="text-sm font-bold text-foreground">Objectifs pour la semaine prochaine</h3>
-            </div>
-            <div className="space-y-2">
-              {nextWeekGoals.map((g, i) => (
-                <div key={i} className="flex items-start gap-2">
-                  <ChevronRight size={14} className="text-primary mt-0.5 shrink-0" />
-                  <p className="text-sm text-muted-foreground">{g}</p>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
 
-          {/* ── Mot de Mentor-X ─────────────────────────────────────────── */}
-          <div className="rounded-2xl p-4"
-            style={{ background: 'rgba(108,58,255,0.06)', border: '1px solid rgba(108,58,255,0.2)' }}>
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center shrink-0 mt-0.5">
-                <Bot size={14} className="text-white" />
+                {/* W/L/BE */}
+                <div className="rounded-2xl p-4"
+                  style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">Résultats détaillés</p>
+                  <div className="flex items-center justify-around">
+                    <div className="text-center">
+                      <p className="text-3xl font-black text-success">{stats.wins}</p>
+                      <p className="text-xs font-semibold text-muted-foreground mt-0.5">WIN</p>
+                    </div>
+                    <div className="h-10 w-px" style={{ background: 'hsl(var(--border))' }} />
+                    <div className="text-center">
+                      <p className="text-3xl font-black text-destructive">{stats.losses}</p>
+                      <p className="text-xs font-semibold text-muted-foreground mt-0.5">LOSS</p>
+                    </div>
+                    <div className="h-10 w-px" style={{ background: 'hsl(var(--border))' }} />
+                    <div className="text-center">
+                      <p className="text-3xl font-black text-muted-foreground">{stats.be}</p>
+                      <p className="text-xs font-semibold text-muted-foreground mt-0.5">BE</p>
+                    </div>
+                    {stats.bestPair && (
+                      <>
+                        <div className="h-10 w-px" style={{ background: 'hsl(var(--border))' }} />
+                        <div className="text-center">
+                          <p className="text-base font-black text-foreground">{stats.bestPair[0]}</p>
+                          <p className="text-sm font-bold text-success">{fmtPnl(stats.bestPair[1], mode)}</p>
+                          <p className="text-[10px] text-muted-foreground mt-0.5">Meilleure paire</p>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="rounded-2xl p-10 text-center"
+                style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}>
+                <Bot size={36} className="mx-auto mb-3 text-muted-foreground opacity-40" />
+                <p className="text-sm font-semibold text-foreground">Aucun trade clôturé cette semaine</p>
+                <p className="text-xs text-muted-foreground mt-1">Reviens après avoir enregistré des trades !</p>
               </div>
-              <div>
-                <p className="text-xs font-bold text-foreground mb-1">Message de Mentor-X</p>
-                <p className="text-sm text-muted-foreground leading-relaxed italic">
-                  {!stats || weekTrades.length === 0
-                    ? "Commence à enregistrer tes trades cette semaine. Chaque trade est une donnée, chaque donnée est une leçon. Je serai là pour analyser et t'aider à progresser."
-                    : stats.totalPnl > 0 && stats.winRate >= 55
-                      ? `Excellent travail cette semaine ! ${stats.total} trades, ${Math.round(stats.winRate)}% de win rate et ${fmtPnl(stats.totalPnl, mode)}. Garde ce niveau de discipline et continue à appliquer ta stratégie avec rigueur.`
-                      : stats.totalPnl >= 0
-                        ? `Semaine correcte avec ${stats.total} trades. Tu es dans le bon, mais il reste de la marge. Concentre-toi sur la qualité plutôt que la quantité la semaine prochaine.`
-                        : `Cette semaine a été difficile, mais c'est normal dans ce métier. Ce qui compte, c'est ta réaction : analyse, corrige, reviens plus fort. Le marché sera là la semaine prochaine.`
-                  }
-                </p>
+            )}
+
+            {/* Points à corriger */}
+            {weekErrors.length > 0 && (
+              <div className="rounded-2xl p-4"
+                style={{ background: 'rgba(255,59,92,0.06)', border: '1px solid rgba(255,59,92,0.2)' }}>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: 'rgba(255,59,92,0.15)' }}>
+                    <TrendingDown size={13} className="text-destructive" />
+                  </div>
+                  <h3 className="text-sm font-bold text-foreground">Points à corriger</h3>
+                </div>
+                <div className="space-y-2.5">
+                  {weekErrors.map((e, i) => (
+                    <div key={i} className="flex items-start gap-3">
+                      <div className="w-1.5 h-1.5 rounded-full bg-destructive mt-1.5 shrink-0" />
+                      <p className="text-sm text-foreground leading-relaxed" style={{ opacity: 0.82 }}>{e}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Points forts */}
+            {weekStrengths.length > 0 && (
+              <div className="rounded-2xl p-4"
+                style={{ background: 'rgba(0,212,170,0.06)', border: '1px solid rgba(0,212,170,0.2)' }}>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: 'rgba(0,212,170,0.15)' }}>
+                    <Star size={13} style={{ color: '#00D4AA' }} />
+                  </div>
+                  <h3 className="text-sm font-bold text-foreground">Points forts cette semaine</h3>
+                </div>
+                <div className="space-y-2.5">
+                  {weekStrengths.map((s, i) => (
+                    <div key={i} className="flex items-start gap-3">
+                      <CheckCircle size={14} style={{ color: '#00D4AA' }} className="mt-0.5 shrink-0" />
+                      <p className="text-sm text-foreground leading-relaxed" style={{ opacity: 0.82 }}>{s}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Objectifs */}
+            <div className="rounded-2xl p-4"
+              style={{ background: 'rgba(26,107,255,0.06)', border: '1px solid rgba(26,107,255,0.2)' }}>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: 'rgba(26,107,255,0.15)' }}>
+                  <Target size={13} className="text-primary" />
+                </div>
+                <h3 className="text-sm font-bold text-foreground">Objectifs semaine prochaine</h3>
+              </div>
+              <div className="space-y-2.5">
+                {nextWeekGoals.map((g, i) => (
+                  <div key={i} className="flex items-start gap-3">
+                    <ChevronRight size={14} className="text-primary mt-0.5 shrink-0" />
+                    <p className="text-sm text-foreground leading-relaxed" style={{ opacity: 0.82 }}>{g}</p>
+                  </div>
+                ))}
               </div>
             </div>
-          </div>
 
-          {/* Bouton fermer */}
-          <button
-            onClick={onClose}
-            className="w-full py-3 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground transition-all"
-            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
-          >
-            Fermer le rapport
-          </button>
+            {/* Message Mentor-X */}
+            <div className="rounded-2xl p-5"
+              style={{ background: 'rgba(108,58,255,0.07)', border: '1px solid rgba(108,58,255,0.2)' }}>
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shrink-0 shadow-md">
+                  <Bot size={16} className="text-white" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs font-bold text-foreground mb-2 uppercase tracking-widest" style={{ color: '#7C3AED' }}>Message de Mentor-X</p>
+                  <p className="text-sm text-foreground leading-relaxed italic" style={{ opacity: 0.85 }}>
+                    {!stats || weekTrades.length === 0
+                      ? "Commence à enregistrer tes trades cette semaine. Chaque trade est une donnée, chaque donnée est une leçon. Je serai là pour analyser et t'aider à progresser."
+                      : stats.totalPnl > 0 && stats.winRate >= 55
+                        ? `Excellent travail cette semaine ! ${stats.total} trades, ${Math.round(stats.winRate)}% de win rate et ${fmtPnl(stats.totalPnl, mode)}. Garde ce niveau de discipline et continue à appliquer ta stratégie avec rigueur.`
+                        : stats.totalPnl >= 0
+                          ? `Semaine correcte avec ${stats.total} trades. Tu es dans le bon, mais il reste de la marge. Concentre-toi sur la qualité plutôt que la quantité la semaine prochaine.`
+                          : `Cette semaine a été difficile, mais c'est normal dans ce métier. Ce qui compte, c'est ta réaction : analyse, corrige, reviens plus fort. Le marché sera là la semaine prochaine.`
+                    }
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Bouton fermer */}
+            <button onClick={onClose}
+              className="w-full py-3.5 rounded-2xl text-sm font-semibold transition-all hover:opacity-80"
+              style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))', color: 'hsl(var(--muted-foreground))' }}>
+              Fermer le rapport
+            </button>
+          </div>
         </motion.div>
       </motion.div>
     </AnimatePresence>
