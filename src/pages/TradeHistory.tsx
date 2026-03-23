@@ -56,6 +56,8 @@ export default function TradeHistory() {
   const [filters, setFilters] = useState({
     pair: '', session: '', direction: '', setup: '', emotion: '', status: ''
   });
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo]     = useState('');
   const [page, setPage]                   = useState(1);
   const [selectedTrade, setSelectedTrade] = useState<Trade | null>(null);
   const [editingTrade, setEditingTrade]   = useState<Trade | null>(null);
@@ -66,14 +68,16 @@ export default function TradeHistory() {
   const allTrades = useFilteredTrades(refreshKey);
 
   const filtered = useMemo(() => allTrades.filter(t => {
-    if (filters.pair      && t.pair      !== filters.pair)      return false;
+    if (filters.pair      && t.pair?.split('.')[0] !== filters.pair)      return false;
     if (filters.session   && t.session   !== filters.session)   return false;
     if (filters.direction && t.direction !== filters.direction) return false;
     if (filters.setup     && t.setup     !== filters.setup)     return false;
     if (filters.emotion   && t.emotion   !== filters.emotion)   return false;
     if (filters.status    && t.status    !== filters.status)    return false;
+    if (dateFrom && t.date < dateFrom) return false;
+    if (dateTo   && t.date > dateTo)   return false;
     return true;
-  }), [allTrades, filters]);
+  }), [allTrades, filters, dateFrom, dateTo]);
 
   const paginated  = filtered.slice((page - 1) * perPage, page * perPage);
   const totalPages = Math.ceil(filtered.length / perPage);
@@ -264,7 +268,7 @@ export default function TradeHistory() {
     <select
       value={value}
       onChange={e => { onChange(e.target.value); setPage(1); }}
-      className="select-dark text-xs py-2"
+      className="select-dark text-xs py-2 min-w-[120px]"
     >
       <option value="">{label}</option>
       {options.map(o => <option key={o} value={o}>{o}</option>)}
@@ -284,19 +288,42 @@ export default function TradeHistory() {
         </button>
       </div>
 
-      <GlassCard className="animate-fade-up">
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-          <FilterSelect label="Toutes paires"   value={filters.pair}      onChange={v => setFilters(p => ({ ...p, pair: v }))}      options={ALL_PAIRS} />
-          <FilterSelect label="Sessions"         value={filters.session}   onChange={v => setFilters(p => ({ ...p, session: v }))}   options={ALL_SESSIONS} />
-          <FilterSelect label="Direction"        value={filters.direction} onChange={v => setFilters(p => ({ ...p, direction: v }))} options={['BUY', 'SELL']} />
-          <FilterSelect label="Setups"           value={filters.setup}     onChange={v => setFilters(p => ({ ...p, setup: v }))}     options={allSetups} />
-          <FilterSelect label="Émotion"          value={filters.emotion}   onChange={v => setFilters(p => ({ ...p, emotion: v }))}   options={ALL_EMOTIONS} />
-          <FilterSelect label="Statut"           value={filters.status}    onChange={v => setFilters(p => ({ ...p, status: v }))}    options={['WIN', 'LOSS', 'BE', 'RUNNING']} />
+      <GlassCard className="animate-fade-up !py-2 !px-3">
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-none">
+          <FilterSelect label="Paire"     value={filters.pair}      onChange={v => setFilters(p => ({ ...p, pair: v }))}      options={ALL_PAIRS} />
+          <FilterSelect label="Session"   value={filters.session}   onChange={v => setFilters(p => ({ ...p, session: v }))}   options={ALL_SESSIONS} />
+          <FilterSelect label="Direction" value={filters.direction} onChange={v => setFilters(p => ({ ...p, direction: v }))} options={['BUY', 'SELL']} />
+          <FilterSelect label="Setup"     value={filters.setup}     onChange={v => setFilters(p => ({ ...p, setup: v }))}     options={allSetups} />
+          <FilterSelect label="Émotion"   value={filters.emotion}   onChange={v => setFilters(p => ({ ...p, emotion: v }))}   options={ALL_EMOTIONS} />
+          <FilterSelect label="Statut"    value={filters.status}    onChange={v => setFilters(p => ({ ...p, status: v }))}    options={['WIN', 'LOSS', 'BE', 'RUNNING']} />
+
+          <div className="w-px h-6 bg-white/10 shrink-0" />
+
+          <div className="flex items-center gap-1.5 glass rounded-xl px-3 py-2 border border-white/10 shrink-0">
+            <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="text-muted-foreground">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <input type="date" value={dateFrom} onChange={e => { setDateFrom(e.target.value); setPage(1); }}
+              className="bg-transparent text-xs text-foreground outline-none w-28 cursor-pointer" />
+          </div>
+
+          <span className="text-muted-foreground text-xs shrink-0">→</span>
+
+          <div className="flex items-center gap-1.5 glass rounded-xl px-3 py-2 border border-white/10 shrink-0">
+            <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="text-muted-foreground">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <input type="date" value={dateTo} onChange={e => { setDateTo(e.target.value); setPage(1); }}
+              className="bg-transparent text-xs text-foreground outline-none w-28 cursor-pointer" />
+          </div>
+
+          <div className="w-px h-6 bg-white/10 shrink-0" />
+
           <button
-            onClick={() => { setFilters({ pair: '', session: '', direction: '', setup: '', emotion: '', status: '' }); setPage(1); }}
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors py-2 hover:bg-accent/30 rounded-lg"
+            onClick={() => { setFilters({ pair: '', session: '', direction: '', setup: '', emotion: '', status: '' }); setDateFrom(''); setDateTo(''); setPage(1); }}
+            className="shrink-0 text-xs text-muted-foreground hover:text-destructive transition-colors px-2 py-1.5 hover:bg-destructive/10 rounded-lg whitespace-nowrap"
           >
-            Réinitialiser
+            ✕ Reset
           </button>
         </div>
       </GlassCard>
