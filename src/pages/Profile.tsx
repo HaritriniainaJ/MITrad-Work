@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useFilteredTrades } from '@/hooks/useFilteredTrades';
+import { useDisplayMode } from '@/context/DisplayModeContext';
 
 
 // â”€â”€ Counter animé â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -82,6 +83,7 @@ useEffect(() => {
 }, [user]);
   const [showAccounts, setShowAccounts] = useState(false);
   const trades = useFilteredTrades();
+  const { mode } = useDisplayMode();
   const accounts = authAccounts;
   const closed  = trades.filter(t => t.status !== 'RUNNING');
   const wins    = closed.filter(t => t.status === 'WIN');
@@ -92,12 +94,6 @@ useEffect(() => {
   const grossLoss   = Math.abs(losses.reduce((s, t) => s + (t.resultDollar ?? 0), 0));
   const pf = grossLoss > 0 ? Math.round((grossProfit / grossLoss) * 100) / 100 : grossProfit > 0 ? 99 : 0;
   const badges = useMemo(() => calculateBadges(closed), [closed]);
-
-  const cumData = useMemo(() => {
-    const sorted = [...closed].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    let cum = 0;
-    return sorted.map(t => { cum += t.resultR; return { r: Math.round(cum * 100) / 100 }; });
-  }, [closed]);
 
   // â”€â”€ Banner & Avatar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const compressImage = (file: File, maxWidth: number, quality: number): Promise<string> => {
@@ -165,10 +161,32 @@ const handleSave = () => {
     return               { emoji: "🚀", label: "Legend",  color: "text-primary" };
   };
   const level = getLevel(pnlPercent);
+  const cumData = useMemo(() => {
+    const sorted = [...closed].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    let cumR = 0; let cumDollar = 0;
+    return sorted.map(t => {
+      cumR += t.resultR;
+      cumDollar += (t.resultDollar ?? 0);
+      const cumPct = totalCapital > 0 ? (cumDollar / totalCapital) * 100 : cumR;
+      return {
+        r:      Math.round(cumR * 100) / 100,
+        dollar: Math.round(cumDollar * 100) / 100,
+        pct:    Math.round(cumPct * 100) / 100,
+      };
+    });
+  }, [closed, totalCapital]);
+
+  const pnlKpi = (() => {
+    if (mode === 'R')  return { value: closed.reduce((s,t) => s + t.resultR, 0),      suffix: 'R', decimals: 2 };
+    if (mode === '$')  return { value: totalDollar,                                    suffix: '$', decimals: 0 };
+    const pct = totalCapital > 0 ? (totalDollar / totalCapital) * 100 : 0;
+    return { value: pct, suffix: '%', decimals: 2 };
+  })();
   const kpis = [
-    { label: 'Win Rate',      value: winRate,  suffix: '%',  decimals: 0, icon: Target,    color: 'text-primary' },
-    { label: 'P&L Total', value: totalDollar, suffix: '$', decimals: 0, icon: TrendingUp, color: totalDollar >= 0 ? 'text-success' : 'text-destructive', showSign: true },    { label: 'Profit Factor', value: pf,       suffix: '',   decimals: 2, icon: BarChart2,  color: 'text-foreground' },
-    { label: 'Trades',        value: closed.length, suffix: '', decimals: 0, icon: Zap,  color: 'text-foreground' },
+    { label: 'Win Rate',      value: winRate,           suffix: '%',          decimals: 0, icon: Target,    color: 'text-primary' },
+    { label: 'P&L Total',     value: pnlKpi.value,      suffix: pnlKpi.suffix, decimals: pnlKpi.decimals, icon: TrendingUp, color: pnlKpi.value >= 0 ? 'text-success' : 'text-destructive', showSign: true },
+    { label: 'Profit Factor', value: pf,                suffix: '',           decimals: 2, icon: BarChart2,  color: 'text-foreground' },
+    { label: 'Trades',        value: closed.length,     suffix: '',           decimals: 0, icon: Zap,        color: 'text-foreground' },
   ];
 
   return (
@@ -450,7 +468,7 @@ const handleSave = () => {
       {/* â”€â”€ Equity curve â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <GlassCard className="animate-fade-up stagger-4">
         <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">
-          Performance cumulée (en R)
+          Performance cumulée {mode === 'R' ? '(en R)' : mode === '$' ? '(en $)' : '(en %)'}
         </h3>
         {cumData.length > 1 ? (
           <div className="h-[160px]">
@@ -464,11 +482,16 @@ const handleSave = () => {
                     color: '#fff',
                     fontSize: 12,
                   }}
-                  formatter={(v: number) => [`${v >= 0 ? '+' : ''}${v}R`, 'P&L']}
+                  formatter={(v: number) => [
+                    mode === 'R'  ? `${v >= 0 ? '+' : ''}${v}R` :
+                    mode === '$'  ? `${v >= 0 ? '+' : '-'}$${Math.abs(v).toFixed(0)}` :
+                                    `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`,
+                    'P&L'
+                  ]}
                 />
                 <Line
                   type="monotone"
-                  dataKey="r"
+                  dataKey={mode === 'R' ? 'r' : mode === '$' ? 'dollar' : 'pct'}
                   stroke="#1A6BFF"
                   strokeWidth={2}
                   dot={false}
