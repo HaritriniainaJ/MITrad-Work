@@ -998,3 +998,18 @@ a.gradient-primary::before {
 [data-theme="light"] .recharts-rectangle.recharts-tooltip-cursor {
   fill: rgba(0,0,0,0.04) !important;
 }
+
+[data-theme='light'] .recharts-cartesian-grid line { stroke: rgba(0,0,0,0.15) !important; }
+[data-theme='light'] .recharts-cartesian-axis-line { stroke: rgba(0,0,0,0.2) !important; }
+[data-theme='light'] .recharts-cartesian-axis-tick-line { stroke: rgba(0,0,0,0.2) !important; }
+
+
+[data-theme='light'] .recharts-cartesian-grid line { stroke: rgba(0,0,0,0.15) !important; }
+[data-theme='light'] .recharts-cartesian-axis-line { stroke: rgba(0,0,0,0.2) !important; }
+[data-theme='light'] .recharts-cartesian-axis-tick-line { stroke: rgba(0,0,0,0.2) !important; }
+
+/* Grilles graphiques mode clair - visibilite maximale */
+[data-theme='light'] .recharts-cartesian-grid line { stroke: rgba(0,0,0,0.25) !important; }
+[data-theme='light'] .recharts-cartesian-axis-line { stroke: rgba(0,0,0,0.3) !important; }
+[data-theme='light'] .recharts-cartesian-axis-tick-line { stroke: rgba(0,0,0,0.3) !important; }
+[data-theme='light'] .recharts-text tspan { fill: rgba(0,0,0,0.7) !important; }

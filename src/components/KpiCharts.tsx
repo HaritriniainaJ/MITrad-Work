@@ -32,11 +32,11 @@ interface GaugeProps {
   size?: number;
 }
 
-export function Gauge({ value, max = 100, color = '#00D4AA', size = 60 }: GaugeProps) {
+export function Gauge({ value, max = 100, color = '#00D4AA', size = 64, showTrack = true }: GaugeProps & { showTrack?: boolean }) {
   const pct = Math.min(value / max, 1);
   const r = size / 2 - 6;
   const cx = size / 2;
-  const cy = size / 2 + 6;
+  const cy = size - 4;
   const startAngle = Math.PI;
   const endAngle = startAngle + pct * Math.PI;
   const x1 = cx + r * Math.cos(startAngle);
@@ -45,9 +45,11 @@ export function Gauge({ value, max = 100, color = '#00D4AA', size = 60 }: GaugeP
   const y2 = cy + r * Math.sin(endAngle);
   const largeArc = pct > 0.5 ? 1 : 0;
   return (
-    <svg width={size} height={size / 2 + 8} viewBox={`0 0 ${size} ${size / 2 + 8}`}>
-      <path d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
-        fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="5" strokeLinecap="round" />
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      {showTrack && (
+        <path d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
+          fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="5" strokeLinecap="round" />
+      )}
       {pct > 0 && (
         <path d={`M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2}`}
           fill="none" stroke={color} strokeWidth="5" strokeLinecap="round" />

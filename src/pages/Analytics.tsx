@@ -210,14 +210,14 @@ const fmtDD = () => {
           </div>
         </GlassCard>
 
-        <GlassCard className="animate-fade-up stagger-2 !py-3 !px-4 relative overflow-hidden">
+        <GlassCard className="animate-fade-up stagger-2 !py-3 !px-4 relative overflow-visible">
           <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Win Rate</p>
           <div className="flex items-end justify-between">
             <div>
               <p className={`metric-value text-xl font-bold mt-0.5 ${winRate >= 50 ? 'text-success' : 'text-destructive'}`}>{winRate.toFixed(0)}%</p>
               <p className="text-[10px] text-muted-foreground mt-0.5">{wins.length}W · {losses.length}L · {be.length}BE</p>
             </div>
-            <Gauge value={winRate} max={100} color={winRate >= 50 ? '#00D4AA' : '#FF3B5C'} size={64} />
+            <Gauge value={winRate} max={100} color={winRate >= 50 ? '#00D4AA' : '#FF3B5C'} size={50} showTrack={false} />
           </div>
         </GlassCard>
 
@@ -399,7 +399,7 @@ const fmtDD = () => {
                         <stop offset={`${zeroOffset * 100}%`} stopColor="#FF3B5C" />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(128,128,128,0.5)" />
                     <XAxis dataKey="date" tick={{ fill:'#8899AA', fontSize:10 }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fill:'#8899AA', fontSize:10 }} axisLine={false} tickLine={false} />
                     <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: "#fff" }} itemStyle={{ color: "#fff" }} wrapperStyle={{ outline: "none" }} formatter={(v:number) => [`${v.toFixed(2)}${modeUnit}`,'Cumul']} />
@@ -418,7 +418,7 @@ const fmtDD = () => {
             {chartView === 'bar' && (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={dayData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(128,128,128,0.5)" />
                   <XAxis dataKey="day" tick={{ fill:'#8899AA', fontSize:10 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fill:'#8899AA', fontSize:10 }} axisLine={false} tickLine={false} />
                   <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: "#fff" }} itemStyle={{ color: "#fff" }} wrapperStyle={{ outline: "none" }} formatter={(v:number) => [`${v.toFixed(2)}${modeUnit}`,'P&L']} />
@@ -431,7 +431,7 @@ const fmtDD = () => {
             {chartView === 'distribution' && (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={setupData} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(128,128,128,0.5)" />
                   <XAxis type="number" tick={{ fill:'#8899AA', fontSize:10 }} axisLine={false} tickLine={false} />
                   <YAxis type="category" dataKey="setup" tick={{ fill:'#8899AA', fontSize:10 }} axisLine={false} tickLine={false} width={80} />
                   <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: "#fff" }} itemStyle={{ color: "#fff" }} wrapperStyle={{ outline: "none" }} formatter={(v:number) => [`${v.toFixed(2)}R`,'P&L']} />
@@ -452,7 +452,7 @@ const fmtDD = () => {
           <div className="h-[220px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={dayData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(128,128,128,0.5)" />
                 <XAxis dataKey="day" tick={{ fill: '#8899AA', fontSize: 10 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fill: '#8899AA', fontSize: 10 }} axisLine={false} tickLine={false} />
                 <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: "#fff" }} itemStyle={{ color: "#fff" }} wrapperStyle={{ outline: "none" }} formatter={(v: number) => [`${v.toFixed(2)}${modeUnit}`, 'P&L']} />
@@ -472,7 +472,7 @@ const fmtDD = () => {
           <div className="h-[220px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={pairData} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(128,128,128,0.5)" />
                 <XAxis type="number" tick={{ fill: '#8899AA', fontSize: 10 }} axisLine={false} tickLine={false} />
                 <YAxis type="category" dataKey="pair" tick={{ fill: '#8899AA', fontSize: 10 }} axisLine={false} tickLine={false} width={60} />
                 <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: "#fff" }} itemStyle={{ color: "#fff" }} wrapperStyle={{ outline: "none" }} formatter={(v: number) => [`${v.toFixed(2)}${modeUnit}`, 'P&L']} />
@@ -508,7 +508,7 @@ const fmtDD = () => {
           <div className="h-[220px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={emotionData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(128,128,128,0.5)" />
                 <XAxis dataKey="emotion" tick={{ fill: '#8899AA', fontSize: 9 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fill: '#8899AA', fontSize: 10 }} axisLine={false} tickLine={false} />
                 <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: "#fff" }} itemStyle={{ color: "#fff" }} wrapperStyle={{ outline: "none" }} formatter={(v: number) => [`${v.toFixed(2)}${modeUnit}`, 'P&L']} />
