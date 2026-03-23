@@ -15,12 +15,15 @@ import { Sparkline, Gauge, MiniBar } from '@/components/KpiCharts';
 
 const CHART_COLORS = ['#1A6BFF', '#6C3AFF', '#00D4AA', '#FF4757', '#FFB800', '#FF6B9D', '#00BCD4', '#8BC34A'];
 const tooltipStyle = {
-  background: '#0A1628',
-  border: '1px solid rgba(255,255,255,0.08)',
+  background: 'rgb(8,14,28)',
+  border: '1px solid rgba(255,255,255,0.15)',
   borderRadius: 10,
-  color: '#fff',
+  color: '#ffffff',
   fontSize: 12,
+  boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
 };
+const tooltipLabelStyle = { color: '#ffffff', fontWeight: 600 };
+const tooltipItemStyle = { color: '#ffffff' };
 
 export default function Analytics() {
   const { user, accounts, activeAccounts } = useAuth();
@@ -399,7 +402,7 @@ const fmtDD = () => {
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
                     <XAxis dataKey="date" tick={{ fill:'#8899AA', fontSize:10 }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fill:'#8899AA', fontSize:10 }} axisLine={false} tickLine={false} />
-                    <Tooltip contentStyle={tooltipStyle} formatter={(v:number) => [`${v.toFixed(2)}${modeUnit}`,'Cumul']} />
+                    <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: "#fff" }} itemStyle={{ color: "#fff" }} wrapperStyle={{ outline: "none" }} formatter={(v:number) => [`${v.toFixed(2)}${modeUnit}`,'Cumul']} />
                     <ReferenceLine y={0} stroke="rgba(255,255,255,0.15)" strokeDasharray="4 4" />
                     <Area type="monotone" dataKey={modeKey} stroke="url(#equityStroke)" strokeWidth={2.5}
                       strokeLinecap="round" fill="url(#equityGrad)" isAnimationActive animationDuration={1800} />
@@ -418,7 +421,7 @@ const fmtDD = () => {
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
                   <XAxis dataKey="day" tick={{ fill:'#8899AA', fontSize:10 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fill:'#8899AA', fontSize:10 }} axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={tooltipStyle} formatter={(v:number) => [`${v.toFixed(2)}${modeUnit}`,'P&L']} />
+                  <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: "#fff" }} itemStyle={{ color: "#fff" }} wrapperStyle={{ outline: "none" }} formatter={(v:number) => [`${v.toFixed(2)}${modeUnit}`,'P&L']} />
                   <Bar dataKey={modeKey} radius={[6,6,0,0]} isAnimationActive animationDuration={1500}>
                     {dayData.map((entry,i) => <Cell key={i} fill={entry.r >= 0 ? '#00D4AA' : '#FF3B5C'} />)}
                   </Bar>
@@ -431,7 +434,7 @@ const fmtDD = () => {
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
                   <XAxis type="number" tick={{ fill:'#8899AA', fontSize:10 }} axisLine={false} tickLine={false} />
                   <YAxis type="category" dataKey="setup" tick={{ fill:'#8899AA', fontSize:10 }} axisLine={false} tickLine={false} width={80} />
-                  <Tooltip contentStyle={tooltipStyle} formatter={(v:number) => [`${v.toFixed(2)}R`,'P&L']} />
+                  <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: "#fff" }} itemStyle={{ color: "#fff" }} wrapperStyle={{ outline: "none" }} formatter={(v:number) => [`${v.toFixed(2)}R`,'P&L']} />
                   <Bar dataKey="r" radius={[0,6,6,0]} isAnimationActive animationDuration={1500}>
                     {setupData.map((e,i) => <Cell key={i} fill={e.r >= 0 ? '#00D4AA' : '#FF3B5C'} />)}
                   </Bar>
@@ -452,7 +455,7 @@ const fmtDD = () => {
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
                 <XAxis dataKey="day" tick={{ fill: '#8899AA', fontSize: 10 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fill: '#8899AA', fontSize: 10 }} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`${v.toFixed(2)}${modeUnit}`, 'P&L']} />
+                <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: "#fff" }} itemStyle={{ color: "#fff" }} wrapperStyle={{ outline: "none" }} formatter={(v: number) => [`${v.toFixed(2)}${modeUnit}`, 'P&L']} />
                 <Bar dataKey={modeKey} radius={[6, 6, 0, 0]} isAnimationActive animationDuration={1500}>
                   {dayData.map((entry, i) => <Cell key={i} fill={entry.r >= 0 ? '#00D4AA' : '#FF4757'} />)}
                 </Bar>
@@ -472,7 +475,7 @@ const fmtDD = () => {
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
                 <XAxis type="number" tick={{ fill: '#8899AA', fontSize: 10 }} axisLine={false} tickLine={false} />
                 <YAxis type="category" dataKey="pair" tick={{ fill: '#8899AA', fontSize: 10 }} axisLine={false} tickLine={false} width={60} />
-                <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`${v.toFixed(2)}${modeUnit}`, 'P&L']} />
+                <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: "#fff" }} itemStyle={{ color: "#fff" }} wrapperStyle={{ outline: "none" }} formatter={(v: number) => [`${v.toFixed(2)}${modeUnit}`, 'P&L']} />
                 <Bar dataKey={modeKey} radius={[0, 6, 6, 0]} isAnimationActive animationDuration={1500}>
                   {pairData.map((entry, i) => <Cell key={i} fill={entry.r >= 0 ? '#00D4AA' : '#FF4757'} />)}
                 </Bar>
@@ -490,7 +493,7 @@ const fmtDD = () => {
                   isAnimationActive animationDuration={1500}>
                   {sessionData.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
                 </Pie>
-                <Tooltip contentStyle={tooltipStyle} />
+                <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: "#fff" }} itemStyle={{ color: "#fff" }} wrapperStyle={{ outline: "none" }} />
                 <Legend layout="horizontal" verticalAlign="bottom" iconType="circle" wrapperStyle={{ fontSize: 11 }} />
               </PieChart>
             </ResponsiveContainer>
@@ -508,7 +511,7 @@ const fmtDD = () => {
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
                 <XAxis dataKey="emotion" tick={{ fill: '#8899AA', fontSize: 9 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fill: '#8899AA', fontSize: 10 }} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`${v.toFixed(2)}${modeUnit}`, 'P&L']} />
+                <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: "#fff" }} itemStyle={{ color: "#fff" }} wrapperStyle={{ outline: "none" }} formatter={(v: number) => [`${v.toFixed(2)}${modeUnit}`, 'P&L']} />
                 <Bar dataKey={modeKey} radius={[6, 6, 0, 0]} isAnimationActive animationDuration={1500}>
                   {emotionData.map((entry, i) => <Cell key={i} fill={entry.r >= 0 ? '#6C3AFF' : '#FF4757'} />)}
                 </Bar>
@@ -528,7 +531,7 @@ const fmtDD = () => {
                   <Cell fill="#FF4757" />
                   <Cell fill="#8899AA" />
                 </Pie>
-                <Tooltip contentStyle={tooltipStyle} />
+                <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: "#fff" }} itemStyle={{ color: "#fff" }} wrapperStyle={{ outline: "none" }} />
                 <Legend layout="horizontal" verticalAlign="bottom" iconType="circle" wrapperStyle={{ fontSize: 11 }} />
               </PieChart>
             </ResponsiveContainer>
