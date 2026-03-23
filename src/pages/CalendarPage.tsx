@@ -173,7 +173,7 @@ export default function CalendarPage() {
             return (
               <div key={wIdx} className="grid grid-cols-8 gap-1.5 items-stretch">
                 {wIdx === 0 && Array.from({ length: firstDayOfWeekDow }, (_, i) => (
-                  <div key={`pad-${i}`} className="min-h-[40px] sm:min-h-[70px]" />
+                  <div key={`pad-${i}`} className="min-h-[30px] sm:min-h-[55px]" />
                 ))}
                 {dayNames.map((_, di) => {
                   const dayIdx = wIdx === 0 ? di - firstDayOfWeekDow : di;
@@ -189,12 +189,12 @@ export default function CalendarPage() {
                   const dv = mode === 'R' ? dayR : dayDollar;
                   const bgClass = !validDay ? '' : !hasTrades ? 'bg-accent/20 border-transparent' : dv > 0 ? 'bg-success/15 hover:bg-success/25' : dv < 0 ? 'bg-destructive/15 hover:bg-destructive/25' : 'bg-warning/15 hover:bg-warning/25';
                   const borderStyle = validDay && hasTrades ? dv > 0 ? '1px solid rgba(0,212,170,0.4)' : dv < 0 ? '1px solid rgba(255,59,92,0.4)' : '1px solid rgba(245,158,11,0.4)' : undefined;
-                  if (!validDay) return <div key={`empty-${wIdx}-${di}`} className="min-h-[40px] sm:min-h-[70px]" />;
+                  if (!validDay) return <div key={`empty-${wIdx}-${di}`} className="min-h-[30px] sm:min-h-[55px]" />;
                   return (
                     <div key={day} className="relative">
                       <button
                         onClick={() => hasTrades && setSelectedDay(isSelected ? null : key)}
-                        className={`min-h-[40px] sm:min-h-[70px] w-full rounded-xl border p-1 sm:p-1.5 text-xs transition-all duration-200 flex flex-col items-center justify-start relative ${bgClass} ${hasTrades ? 'cursor-pointer hover:scale-[1.04]' : 'cursor-default border-transparent'} ${isSelected ? 'ring-2 ring-primary/60 scale-[1.04]' : ''} ${isToday && !hasTrades ? 'border-primary/30 bg-primary/10' : ''}`}
+                        className={`min-h-[30px] sm:min-h-[55px] w-full rounded-xl border p-1 sm:p-1.5 text-xs transition-all duration-200 flex flex-col items-center justify-start relative ${bgClass} ${hasTrades ? 'cursor-pointer hover:scale-[1.04]' : 'cursor-default border-transparent'} ${isSelected ? 'ring-2 ring-primary/60 scale-[1.04]' : ''} ${isToday && !hasTrades ? 'border-primary/30 bg-primary/10' : ''}`}
                         style={{ border: borderStyle }}>
                         <span className={`font-semibold leading-tight self-start text-xs ${isToday ? 'text-primary' : hasTrades ? 'text-foreground' : 'text-muted-foreground/60'}`}>{day}</span>
                         {hasTrades && (
@@ -210,7 +210,7 @@ export default function CalendarPage() {
                   );
                 })}
                 {/* Total semaine */}
-                <div className={`min-h-[40px] sm:min-h-[70px] rounded-xl border p-2 flex flex-col items-center justify-center text-center ${!hasAnyTrade ? 'bg-accent/10 border-border/20' : weekValue > 0 ? 'bg-success/10 border-success/25' : weekValue < 0 ? 'bg-destructive/10 border-destructive/25' : 'bg-warning/10 border-warning/25'}`}>
+                <div className={`min-h-[30px] sm:min-h-[55px] rounded-xl border p-2 flex flex-col items-center justify-center text-center ${!hasAnyTrade ? 'bg-accent/10 border-border/20' : weekValue > 0 ? 'bg-success/10 border-success/25' : weekValue < 0 ? 'bg-destructive/10 border-destructive/25' : 'bg-warning/10 border-warning/25'}`}>
                   <span className="text-[8px] sm:text-[9px] text-muted-foreground uppercase tracking-wide mb-1">Sem. {wIdx + 1}</span>
                   {hasAnyTrade ? (
                     <>
