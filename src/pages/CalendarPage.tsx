@@ -11,7 +11,6 @@ export default function CalendarPage() {
   const { mode, formatResult } = useDisplayMode();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
-  const [hoveredDay, setHoveredDay] = useState<string | null>(null);
 
   const capital = useMemo(() => {
     const targets = activeAccounts.length > 0 ? activeAccounts : accounts;
@@ -174,7 +173,7 @@ export default function CalendarPage() {
             return (
               <div key={wIdx} className="grid grid-cols-8 gap-1.5 items-stretch">
                 {wIdx === 0 && Array.from({ length: firstDayOfWeekDow }, (_, i) => (
-                  <div key={`pad-${i}`} className="min-h-[48px] sm:min-h-[90px]" />
+                  <div key={`pad-${i}`} className="min-h-[40px] sm:min-h-[70px]" />
                 ))}
                 {dayNames.map((_, di) => {
                   const dayIdx = wIdx === 0 ? di - firstDayOfWeekDow : di;
@@ -187,55 +186,36 @@ export default function CalendarPage() {
                   const hasTrades = dayTrades.length > 0;
                   const isToday = validDay && new Date().toDateString() === new Date(year, month, day).toDateString();
                   const isSelected = selectedDay === key;
-                  const isHovered = hoveredDay === key;
                   const dv = mode === 'R' ? dayR : dayDollar;
                   const bgClass = !validDay ? '' : !hasTrades ? 'bg-accent/20 border-transparent' : dv > 0 ? 'bg-success/15 hover:bg-success/25' : dv < 0 ? 'bg-destructive/15 hover:bg-destructive/25' : 'bg-warning/15 hover:bg-warning/25';
                   const borderStyle = validDay && hasTrades ? dv > 0 ? '1px solid rgba(0,212,170,0.4)' : dv < 0 ? '1px solid rgba(255,59,92,0.4)' : '1px solid rgba(245,158,11,0.4)' : undefined;
-                  if (!validDay) return <div key={`empty-${wIdx}-${di}`} className="min-h-[48px] sm:min-h-[90px]" />;
+                  if (!validDay) return <div key={`empty-${wIdx}-${di}`} className="min-h-[40px] sm:min-h-[70px]" />;
                   return (
                     <div key={day} className="relative">
                       <button
                         onClick={() => hasTrades && setSelectedDay(isSelected ? null : key)}
-                        onMouseEnter={() => hasTrades && setHoveredDay(key)}
-                        onMouseLeave={() => setHoveredDay(null)}
-                        className={`min-h-[48px] sm:min-h-[90px] w-full rounded-xl border p-1 sm:p-1.5 text-xs transition-all duration-200 flex flex-col items-center justify-start relative ${bgClass} ${hasTrades ? 'cursor-pointer hover:scale-[1.04]' : 'cursor-default border-transparent'} ${isSelected ? 'ring-2 ring-primary/60 scale-[1.04]' : ''} ${isToday && !hasTrades ? 'border-primary/30 bg-primary/10' : ''}`}
+                        className={`min-h-[40px] sm:min-h-[70px] w-full rounded-xl border p-1 sm:p-1.5 text-xs transition-all duration-200 flex flex-col items-center justify-start relative ${bgClass} ${hasTrades ? 'cursor-pointer hover:scale-[1.04]' : 'cursor-default border-transparent'} ${isSelected ? 'ring-2 ring-primary/60 scale-[1.04]' : ''} ${isToday && !hasTrades ? 'border-primary/30 bg-primary/10' : ''}`}
                         style={{ border: borderStyle }}>
                         <span className={`font-semibold leading-tight self-start text-xs ${isToday ? 'text-primary' : hasTrades ? 'text-foreground' : 'text-muted-foreground/60'}`}>{day}</span>
                         {hasTrades && (
                           <>
                             <span className={`metric-value text-[9px] sm:text-sm font-bold leading-tight mt-auto ${dv > 0 ? 'text-success' : dv < 0 ? 'text-destructive' : 'text-warning'}`}>{fmtDay(dayR, dayDollar)}</span>
-                            <span className="text-[8px] sm:text-[10px] text-muted-foreground">{dayTrades.length}T</span>
+
                           </>
                         )}
                         {!hasTrades && <div className="w-1.5 h-1.5 rounded-full bg-white/10 mx-auto mt-4" />}
                       </button>
-                      {isHovered && hasTrades && (
-                        <div className="absolute z-50 bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 pointer-events-none" style={{ minWidth: 180 }}>
-                          <div className="rounded-xl p-3 shadow-[0_8px_32px_rgba(0,0,0,0.6)]" style={{ background: '#0A0D16', border: '1px solid rgba(255,255,255,0.08)' }}>
-                            <p className="text-xs font-semibold text-foreground mb-2">{new Date(key + 'T12:00:00').toLocaleDateString('fr', { weekday: 'short', day: 'numeric', month: 'short' })}</p>
-                            {dayTrades.map(t => (
-                              <div key={t.id} className="flex items-center justify-between gap-3 text-[10px] mb-1">
-                                <span className="text-muted-foreground">{t.pair} {t.direction}</span>
-                                <span className={t.resultR >= 0 ? 'text-success' : 'text-destructive'}>{t.resultR >= 0 ? '+' : ''}{t.resultR.toFixed(1)}R</span>
-                              </div>
-                            ))}
-                            <div className="border-t border-white/8 mt-2 pt-1.5 flex justify-between">
-                              <span className="text-[10px] text-muted-foreground">Total</span>
-                              <span className={`text-xs font-bold ${dayR >= 0 ? 'text-success' : 'text-destructive'}`}>{dayR >= 0 ? '+' : ''}{dayR.toFixed(2)}R</span>
-                            </div>
-                          </div>
-                        </div>
-                      )}
+
                     </div>
                   );
                 })}
                 {/* Total semaine */}
-                <div className={`min-h-[48px] sm:min-h-[90px] rounded-xl border p-2 flex flex-col items-center justify-center text-center ${!hasAnyTrade ? 'bg-accent/10 border-border/20' : weekValue > 0 ? 'bg-success/10 border-success/25' : weekValue < 0 ? 'bg-destructive/10 border-destructive/25' : 'bg-warning/10 border-warning/25'}`}>
+                <div className={`min-h-[40px] sm:min-h-[70px] rounded-xl border p-2 flex flex-col items-center justify-center text-center ${!hasAnyTrade ? 'bg-accent/10 border-border/20' : weekValue > 0 ? 'bg-success/10 border-success/25' : weekValue < 0 ? 'bg-destructive/10 border-destructive/25' : 'bg-warning/10 border-warning/25'}`}>
                   <span className="text-[8px] sm:text-[9px] text-muted-foreground uppercase tracking-wide mb-1">Sem. {wIdx + 1}</span>
                   {hasAnyTrade ? (
                     <>
                       <span className={`metric-value text-[9px] sm:text-sm font-bold ${weekValue > 0 ? 'text-success' : weekValue < 0 ? 'text-destructive' : 'text-warning'}`}>{fmtDay(week.R, week.dollar)}</span>
-                      <span className="text-[8px] text-muted-foreground mt-0.5">{week.trades.length}T</span>
+
                     </>
                   ) : (
                     <span className="text-[9px] text-muted-foreground/40">—</span>
