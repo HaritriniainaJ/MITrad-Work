@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from 'react';
+﻿import { useMemo, useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useDisplayMode, DisplayModeToggle } from '@/context/DisplayModeContext';
 import { useFilteredTrades } from '@/hooks/useFilteredTrades';
@@ -10,6 +10,14 @@ export default function CalendarPage() {
   const { accounts, activeAccounts } = useAuth();
   const { mode, formatResult } = useDisplayMode();
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [isDark, setIsDark] = useState(document.documentElement.getAttribute('data-theme') !== 'light');
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.getAttribute('data-theme') !== 'light');
+    });
+    observer.observe(document.documentElement, { attributeFilter: ['data-theme'] });
+    return () => observer.disconnect();
+  }, []);
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
 
   const capital = useMemo(() => {
@@ -92,6 +100,31 @@ export default function CalendarPage() {
   const selectedDayR = selectedDayTrades.reduce((s, t) => s + t.resultR, 0);
   const selectedDayDollar = selectedDayTrades.reduce((s, t) => s + t.resultDollar, 0);
 
+  const BOX = 91;
+
+  // Couleurs inline selon mode sombre/clair — utilisées pour les boxes calendrier ET total semaine
+  const getBoxStyle = (value: number, hasTrades: boolean) => {
+    if (!hasTrades) return {};
+    if (isDark) {
+      // Mode sombre : transparent comme sur la photo
+      if (value > 0) return { backgroundColor: 'rgba(0,212,170,0.10)', border: '1px solid rgba(0,212,170,0.25)' };
+      if (value < 0) return { backgroundColor: 'rgba(255,59,92,0.10)', border: '1px solid rgba(255,59,92,0.25)' };
+      return { backgroundColor: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.25)' };
+    } else {
+      // Mode clair : pastel avec bordures colorées
+      if (value > 0) return { backgroundColor: '#bbf7d0', border: '1px solid #4ade80' };
+      if (value < 0) return { backgroundColor: '#fecaca', border: '1px solid #f87171' };
+      return { backgroundColor: '#fef08a', border: '1px solid #fbbf24' };
+    }
+  };
+
+  // Couleur du texte PnL selon mode
+  const getPnlColor = (value: number) => {
+    if (value > 0) return isDark ? 'text-success' : 'text-green-700';
+    if (value < 0) return isDark ? 'text-destructive' : 'text-red-700';
+    return isDark ? 'text-warning' : 'text-yellow-700';
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
@@ -154,26 +187,26 @@ export default function CalendarPage() {
         </div>
 
         {/* En-têtes jours */}
-        <div className="grid grid-cols-8 gap-1 mb-2 border-b border-white/5 pb-2">
+        <div className="flex gap-1.5 mb-2 border-b border-white/5 pb-2 justify-center">
           {dayNames.map(d => (
-            <div key={d} className="text-center text-[9px] sm:text-[11px] uppercase tracking-[0.1em] font-semibold text-muted-foreground/60 py-1">
+            <div key={d} style={{ width: BOX, flexShrink: 0 }} className="text-center text-[9px] sm:text-[11px] uppercase tracking-[0.1em] font-semibold text-muted-foreground/60 py-1">
               <span className="hidden sm:inline">{d}</span>
               <span className="sm:hidden">{d.charAt(0)}</span>
             </div>
           ))}
-          <div className="text-center text-[9px] sm:text-[11px] uppercase tracking-[0.1em] font-semibold text-muted-foreground/60 py-1">Total</div>
+          <div style={{ width: BOX, flexShrink: 0 }} className="text-center text-[9px] sm:text-[11px] uppercase tracking-[0.1em] font-semibold text-muted-foreground/60 py-1">Total</div>
         </div>
 
         {/* Rangées par semaine */}
-        <div className="space-y-1.5">
+        <div className="space-y-1.5 flex flex-col items-center">
           {weeks.map((week, wIdx) => {
             const weekValue = mode === 'R' ? week.R : week.dollar;
             const hasAnyTrade = week.trades.length > 0;
             const firstDayOfWeekDow = (firstDay + week.days[0] - 1) % 7;
             return (
-              <div key={wIdx} className="grid grid-cols-8 gap-1.5 items-stretch">
+              <div key={wIdx} className="flex gap-1.5">
                 {wIdx === 0 && Array.from({ length: firstDayOfWeekDow }, (_, i) => (
-                  <div key={`pad-${i}`} className="min-h-[30px] sm:min-h-[55px]" />
+                  <div key={`pad-${i}`} style={{ width: BOX, height: BOX, flexShrink: 0 }} />
                 ))}
                 {dayNames.map((_, di) => {
                   const dayIdx = wIdx === 0 ? di - firstDayOfWeekDow : di;
@@ -187,36 +220,31 @@ export default function CalendarPage() {
                   const isToday = validDay && new Date().toDateString() === new Date(year, month, day).toDateString();
                   const isSelected = selectedDay === key;
                   const dv = mode === 'R' ? dayR : dayDollar;
-                  const bgClass = !validDay ? '' : !hasTrades ? 'bg-accent/20 border-transparent' : dv > 0 ? 'bg-success/15 hover:bg-success/25' : dv < 0 ? 'bg-destructive/15 hover:bg-destructive/25' : 'bg-warning/15 hover:bg-warning/25';
-                  const borderStyle = validDay && hasTrades ? dv > 0 ? '1px solid rgba(0,212,170,0.4)' : dv < 0 ? '1px solid rgba(255,59,92,0.4)' : '1px solid rgba(245,158,11,0.4)' : undefined;
-                  if (!validDay) return <div key={`empty-${wIdx}-${di}`} className="min-h-[30px] sm:min-h-[55px]" />;
+                  const boxStyle = getBoxStyle(dv, hasTrades);
+
+                  if (!validDay) return <div key={`empty-${wIdx}-${di}`} style={{ width: BOX, height: BOX, flexShrink: 0 }} />;
                   return (
-                    <div key={day} className="relative">
+                    <div key={day} style={{ width: BOX, height: BOX, flexShrink: 0 }}>
                       <button
                         onClick={() => hasTrades && setSelectedDay(isSelected ? null : key)}
-                        className={`min-h-[30px] sm:min-h-[55px] w-full rounded-xl border p-1 sm:p-1.5 text-xs transition-all duration-200 flex flex-col items-center justify-start relative ${bgClass} ${hasTrades ? 'cursor-pointer hover:scale-[1.04]' : 'cursor-default border-transparent'} ${isSelected ? 'ring-2 ring-primary/60 scale-[1.04]' : ''} ${isToday && !hasTrades ? 'border-primary/30 bg-primary/10' : ''}`}
-                        style={{ border: borderStyle }}>
-                        <span className={`font-semibold leading-tight self-start text-xs ${isToday ? 'text-primary' : hasTrades ? 'text-foreground' : 'text-muted-foreground/60'}`}>{day}</span>
+                        className={`rounded-xl border text-xs transition-all duration-200 flex flex-col items-center justify-center gap-0.5 relative ${!hasTrades ? 'bg-accent/20 border-transparent' : ''} ${hasTrades ? 'cursor-pointer hover:scale-[1.04]' : 'cursor-default border-transparent'} ${isSelected ? 'ring-2 ring-primary/60 scale-[1.04]' : ''} ${isToday && !hasTrades ? 'border-primary/30 bg-primary/10' : ''}`}
+                        style={{ width: BOX, height: BOX, ...boxStyle }}>
+                        <span className={`font-semibold leading-tight text-xs absolute top-1 left-1 ${isToday ? 'text-primary' : hasTrades ? (isDark ? 'text-foreground' : 'text-gray-700') : 'text-muted-foreground/60'}`}>{day}</span>
                         {hasTrades && (
-                          <>
-                            <span className={`metric-value text-[9px] sm:text-sm font-bold leading-tight mt-auto ${dv > 0 ? 'text-success' : dv < 0 ? 'text-destructive' : 'text-warning'}`}>{fmtDay(dayR, dayDollar)}</span>
-
-                          </>
+                          <span className={`metric-value text-[9px] font-bold text-center ${getPnlColor(dv)}`}>{fmtDay(dayR, dayDollar)}</span>
                         )}
-                        {!hasTrades && <div className="w-1.5 h-1.5 rounded-full bg-white/10 mx-auto mt-4" />}
+                        {!hasTrades && <div className="w-1.5 h-1.5 rounded-full bg-black/10 dark:bg-white/10" />}
                       </button>
-
                     </div>
                   );
                 })}
-                {/* Total semaine */}
-                <div className={`min-h-[30px] sm:min-h-[55px] rounded-xl border p-2 flex flex-col items-center justify-center text-center ${!hasAnyTrade ? 'bg-accent/10 border-border/20' : weekValue > 0 ? 'bg-success/10 border-success/25' : weekValue < 0 ? 'bg-destructive/10 border-destructive/25' : 'bg-warning/10 border-warning/25'}`}>
-                  <span className="text-[8px] sm:text-[9px] text-muted-foreground uppercase tracking-wide mb-1">Sem. {wIdx + 1}</span>
+                {/* Total semaine — même style que les boxes calendrier */}
+                <div
+                  style={{ width: BOX, height: BOX, flexShrink: 0, ...getBoxStyle(weekValue, hasAnyTrade) }}
+                  className={`rounded-xl border text-xs transition-all duration-200 flex flex-col items-center justify-center gap-1 relative ${!hasAnyTrade ? 'bg-accent/10 border-border/20' : ''}`}>
+                  <span className="text-[8px] text-muted-foreground uppercase tracking-wide absolute top-1 left-1">Sem. {wIdx + 1}</span>
                   {hasAnyTrade ? (
-                    <>
-                      <span className={`metric-value text-[9px] sm:text-sm font-bold ${weekValue > 0 ? 'text-success' : weekValue < 0 ? 'text-destructive' : 'text-warning'}`}>{fmtDay(week.R, week.dollar)}</span>
-
-                    </>
+                    <span className={`metric-value text-[9px] font-bold ${getPnlColor(weekValue)}`}>{fmtDay(week.R, week.dollar)}</span>
                   ) : (
                     <span className="text-[9px] text-muted-foreground/40">—</span>
                   )}
