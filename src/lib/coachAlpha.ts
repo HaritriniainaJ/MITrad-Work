@@ -1,4 +1,4 @@
-import { Trade } from '@/types/trading';
+﻿import { Trade } from '@/types/trading';
 import { getMaxLossStreak, getMaxWinStreak } from './badgeEngine';
 
 export interface CoachAdvice {
@@ -323,28 +323,91 @@ export function generateCoachAdvice(
   return advice.sort((a, b) => b.priority - a.priority);
 }
 
-export function getDisciplineScore(trades: Trade[]): number {
+// ── Note sur 10 basée sur 4 critères ────────────────────────────────────────
+// Chaque critère vaut 2.5 points → total max = 10
+//
+// 1. Win Rate
+//    ≥60%      → 2.5
+//    50-60%    → 2.0
+//    40-50%    → 1.5
+//    30-40%    → 0.5
+//    <30%      → 0
+//
+// 2. Drawdown max (en % du capital, calculé sur la courbe des capitaux cumulés)
+//    <1%       → 2.5
+//    1-2%      → 2.0
+//    2-5%      → 1.0
+//    ≥5%       → 0
+//
+// 3. Croissance du capital (PnL total en % du capital)
+//    ≥5%       → 2.5
+//    2-5%      → 2.0
+//    0-2%      → 1.0
+//    <0%       → 0
+//
+// 4. Profit Factor
+//    ≥2.0      → 2.5
+//    1.5-2.0   → 2.0
+//    1.0-1.5   → 1.0
+//    <1.0      → 0
+
+export function getDisciplineScore(trades: Trade[], capital: number = 10000): number {
   const closed = trades.filter(t => t.status !== 'RUNNING');
   if (closed.length === 0) return 0;
 
-  let score = 0;
   const wins = closed.filter(t => t.status === 'WIN');
-  const winRate = wins.length / closed.length;
+  const losses = closed.filter(t => t.status === 'LOSS');
 
-  if (winRate > 0.5) score += 15;
-  else if (winRate > 0.4) score += 5;
-  else score -= 10;
+  // ── 1. Win Rate (2.5 pts) ─────────────────────────────────────────────
+  const winRate = (wins.length / closed.length) * 100;
+  let scoreWR = 0;
+  if (winRate >= 60) scoreWR = 2.5;
+  else if (winRate >= 50) scoreWR = 2.0;
+  else if (winRate >= 40) scoreWR = 1.5;
+  else if (winRate >= 30) scoreWR = 0.5;
+  else scoreWR = 0;
 
-  const fomo = closed.filter(t => t.emotion === 'FOMO').length;
-  const revenge = closed.filter(t => t.emotion === 'Revenge Trading').length;
-  score -= fomo * 3;
-  score -= revenge * 5;
+  // ── 2. Drawdown max en % du capital (2.5 pts) ─────────────────────────
+  // On reconstruit la courbe du capital cumulé pour trouver le drawdown max
+  let peak = capital;
+  let currentCapital = capital;
+  let maxDrawdownPct = 0;
 
-  const disciplined = closed.filter(t => t.emotion === 'Discipliné' || t.emotion === 'Confiant').length;
-  score += Math.min(disciplined * 2, 20);
+  closed.forEach(t => {
+    currentCapital += t.resultDollar ?? 0;
+    if (currentCapital > peak) peak = currentCapital;
+    const dd = peak > 0 ? ((peak - currentCapital) / peak) * 100 : 0;
+    if (dd > maxDrawdownPct) maxDrawdownPct = dd;
+  });
 
-  const aPlus = closed.filter(t => t.quality === 'A+' || t.quality === 'A').length;
-  score += Math.min(Math.floor((aPlus / closed.length) * 20), 15);
+  let scoreDD = 0;
+  if (maxDrawdownPct < 1) scoreDD = 2.5;
+  else if (maxDrawdownPct < 2) scoreDD = 2.0;
+  else if (maxDrawdownPct < 5) scoreDD = 1.0;
+  else scoreDD = 0;
 
-  return Math.max(0, Math.min(100, Math.round(score)));
+  // ── 3. Croissance du capital en % (2.5 pts) ───────────────────────────
+  const totalPnlDollar = closed.reduce((s, t) => s + (t.resultDollar ?? 0), 0);
+  const growthPct = capital > 0 ? (totalPnlDollar / capital) * 100 : 0;
+
+  let scoreGrowth = 0;
+  if (growthPct >= 5) scoreGrowth = 2.5;
+  else if (growthPct >= 2) scoreGrowth = 2.0;
+  else if (growthPct >= 0) scoreGrowth = 1.0;
+  else scoreGrowth = 0;
+
+  // ── 4. Profit Factor (2.5 pts) ────────────────────────────────────────
+  const grossProfit = wins.reduce((s, t) => s + (t.resultDollar ?? 0), 0);
+  const grossLoss = Math.abs(losses.reduce((s, t) => s + (t.resultDollar ?? 0), 0));
+  const pf = grossLoss > 0 ? grossProfit / grossLoss : grossProfit > 0 ? 99 : 0;
+
+  let scorePF = 0;
+  if (pf >= 2.0) scorePF = 2.5;
+  else if (pf >= 1.5) scorePF = 2.0;
+  else if (pf >= 1.0) scorePF = 1.0;
+  else scorePF = 0;
+
+  // ── Total sur 10 ──────────────────────────────────────────────────────
+  const total = scoreWR + scoreDD + scoreGrowth + scorePF;
+  return Math.round(total * 10) / 10; // arrondi à 1 décimale ex: 7.5
 }

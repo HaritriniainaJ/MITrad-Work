@@ -236,7 +236,7 @@ function WeeklyReportModal({ trades, score, onClose, mode, capital }: WeeklyRepo
                     { label: 'Trades', value: String(stats.total), icon: Target, color: '#1A6BFF' },
                     { label: 'Win Rate', value: `${Math.round(stats.winRate)}%`, icon: TrendingUp, color: '#00D4AA' },
                     { label: mode === '%' ? 'Total %' : mode === '$' ? 'Total $' : 'Total R', value: fmtPnl(stats.totalPnl, mode), icon: Award, color: stats.totalPnl >= 0 ? '#00D4AA' : '#FF3B5C' },
-                    { label: 'Score', value: `${score}/100`, icon: Zap, color: score >= 70 ? '#00D4AA' : score >= 40 ? '#F59E0B' : '#FF3B5C' },
+                    { label: 'Score', value: `${score}/10`, icon: Zap, color: score >= 70 ? '#00D4AA' : score >= 40 ? '#F59E0B' : '#FF3B5C' },
                   ].map(({ label, value, icon: Icon, color }) => (
                     <div key={label} className="rounded-2xl p-4 text-center"
                       style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}>
@@ -401,12 +401,12 @@ export default function CoachAlphaPage() {
   }, [activeAccounts, accounts]);
   console.log('DEBUG Mentor-X mode:', mode, 'capital:', capital, 'trades sample:', trades.slice(0,2).map((t:any)=>({pair:t.pair,resultDollar:t.resultDollar})));
   const advice  = useMemo(() => generateCoachAdvice(trades, mode, capital), [trades, mode, capital]);
-  const score   = useMemo(() => getDisciplineScore(trades), [trades]);
+  const score   = useMemo(() => getDisciplineScore(trades, capital), [trades, capital]);
 
   const [filterCategory, setFilterCategory] = useState('Tout');
   const [showWeeklyReport, setShowWeeklyReport] = useState(false);
 
-  const scoreColor = score >= 70 ? 'text-success' : score >= 40 ? 'text-warning' : 'text-destructive';
+  const scoreColor = score >= 7 ? 'text-success' : score >= 4 ? 'text-warning' : 'text-destructive';
 
   const filteredAdvice = useMemo(() => {
     if (filterCategory === 'Points faibles') return advice.filter(a => a.type === 'weakness');
@@ -458,7 +458,7 @@ export default function CoachAlphaPage() {
     closed.forEach(t => { pairPnl[t.pair] = (pairPnl[t.pair] || 0) + getPnl(t, mode, capital); });
     const bestPair = Object.entries(pairPnl).sort((a, b) => b[1] - a[1])[0];
     if (bestPair && bestPair[1] > 0) s.push(`Paire forte : ${bestPair[0]} (${fmtPnl(bestPair[1], mode)})`);
-    if (score >= 70) s.push(`Score discipline excellent : ${score}/100`);
+    if (score >= 7) s.push(`Score discipline excellent : ${score}/10`);
     return s.slice(0, 4);
   }, [trades, score, mode, capital]);
 
@@ -547,7 +547,7 @@ export default function CoachAlphaPage() {
               <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="8" />
               <circle cx="50" cy="50" r="42" fill="none"
                 stroke="url(#scoreGrad)" strokeWidth="8" strokeLinecap="round"
-                strokeDasharray={`${score * 2.64} ${264 - score * 2.64}`}
+                strokeDasharray={`${score * 26.4} ${264 - score * 26.4}`}
               />
               <defs>
                 <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -557,7 +557,7 @@ export default function CoachAlphaPage() {
               </defs>
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className={`metric-value text-3xl ${scoreColor}`}>{score}</span>
+              <span className={`metric-value text-3xl ${scoreColor}`}>{score}<span className="text-lg text-muted-foreground">/10</span></span>
             </div>
           </div>
         </div>
