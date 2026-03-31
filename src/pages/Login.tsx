@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+ï»¿import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import NProgress from 'nprogress';
@@ -11,11 +11,11 @@ import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 
 const FEATURES = [
-  { icon: BarChart2, title: 'Analytiques avancées', desc: 'KPIs, equity curve, drawdown, profit factor en temps réel.', color: '#1A6BFF' },
-  { icon: Target,    title: 'Plan de trading',      desc: 'Définis tes règles, illustre-les, suivi rigoureux.', color: '#7C3AED' },
-  { icon: Shield,    title: 'Discipline de fer',    desc: 'Score de discipline, alertes émotionnelles, Mentor-X.', color: '#00D4AA' },
-  { icon: Zap,       title: 'Multi-comptes',        desc: 'Personnel, Funded, Démo, Propfirm "” tout en un.', color: '#F59E0B' },
-  { icon: TrendingUp,title: 'Suivi de croissance',  desc: 'Capital réel, P&L cumulé, progression visuelle.', color: '#EC4899' },
+  { icon: BarChart2, title: 'Analytiques avancï¿½es', desc: 'KPIs, equity curve, drawdown, profit factor en temps rï¿½el.', color: '#1A6BFF' },
+  { icon: Target,    title: 'Plan de trading',      desc: 'Dï¿½finis tes rï¿½gles, illustre-les, suivi rigoureux.', color: '#7C3AED' },
+  { icon: Shield,    title: 'Discipline de fer',    desc: 'Score de discipline, alertes ï¿½motionnelles, Mentor-X.', color: '#00D4AA' },
+  { icon: Zap,       title: 'Multi-comptes',        desc: 'Personnel, Funded, Dï¿½mo, Propfirm "ï¿½ tout en un.', color: '#F59E0B' },
+  { icon: TrendingUp,title: 'Suivi de croissance',  desc: 'Capital rï¿½el, P&L cumulï¿½, progression visuelle.', color: '#EC4899' },
 ];
 const CONTACTS = [
   { label: 'Email',    icon: Mail,          href: 'https://mail.google.com/mail/?view=cm&to=Investhari04@gmail.com' },
@@ -154,7 +154,7 @@ useEffect(() => {
     }
     if (error) {
       const msg = params.get('msg');
-      setError('? Connexion Discord échouée. Réessaie dans quelques instants.');
+      setError('? Connexion Discord ï¿½chouï¿½e. Rï¿½essaie dans quelques instants.');
       return;
     }
     if (token && userStr) {
@@ -213,7 +213,7 @@ useEffect(() => {
       <div className="absolute bottom-[-10%] right-[-5%] w-[400px] h-[400px] rounded-full pointer-events-none"
         style={{ background:'radial-gradient(circle,rgba(124,58,237,0.12) 0%,transparent 65%)', filter:'blur(40px)' }} />
 
-      {/* Éléments flottants "” fixés dans la zone extrême gauche du viewport */}
+      {/* ï¿½lï¿½ments flottants "ï¿½ fixï¿½s dans la zone extrï¿½me gauche du viewport */}
       <div
         className="hidden xl:block"
         style={{
@@ -251,13 +251,13 @@ useEffect(() => {
 
           <div>
             <h1 className="text-5xl xl:text-6xl font-black leading-[1.08] tracking-tight">
-              <span className="gradient-text">Maîtrise</span> <span className="text-foreground">chaque</span><br />
+              <span className="gradient-text">Maï¿½trise</span> <span className="text-foreground">chaque</span><br />
               <span className="text-foreground">trade.</span> <span className="gradient-text">Domine</span><br />
               <span className="text-foreground">chaque session.</span>
             </h1>
             <p className="text-muted-foreground mt-5 text-lg leading-relaxed max-w-xl">
-              Le journal de trading professionnel pensé pour les traders africains.
-              Analyse, discipline et performance "” <span className="text-foreground font-medium">tout en un.</span>
+              Le journal de trading professionnel pensï¿½ pour les traders africains.
+              Analyse, discipline et performance "ï¿½ <span className="text-foreground font-medium">tout en un.</span>
             </p>
           </div>
 
@@ -308,7 +308,7 @@ useEffect(() => {
           </div>
         </motion.div>
 
-        {/* Colonne droite "” Formulaire */}
+        {/* Colonne droite "ï¿½ Formulaire */}
         <motion.div style={{ rotateX:sRotX, rotateY:sRotY, transformPerspective:1200 }}
           onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave}
           initial={{ opacity:0, y:30 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.6, delay:0.2 }} className="w-full">
@@ -316,7 +316,7 @@ useEffect(() => {
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-32 pointer-events-none"
               style={{ background:'radial-gradient(ellipse at 50% 0%,rgba(26,107,255,0.2) 0%,transparent 70%)' }} />
 
-            {/* Logo animé avec anneaux */}
+            {/* Logo animï¿½ avec anneaux */}
             <div className="text-center mb-8 relative">
               <div className="relative flex items-center justify-center w-32 h-32 mx-auto mb-4">
                 <motion.div className="absolute w-24 h-24 rounded-full pointer-events-none"
@@ -332,7 +332,7 @@ useEffect(() => {
                 </motion.div>
               </div>
               <h2 className="text-2xl font-black gradient-text">Pro MITrad Journal</h2>
-              <p className="text-muted-foreground text-sm mt-1">Connecte-toi à ton espace de trading</p>
+              <p className="text-muted-foreground text-sm mt-1">Connecte-toi ï¿½ ton espace de trading</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -351,7 +351,7 @@ useEffect(() => {
                   <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
                   <input type={showPw?'text':'password'} value={password} onChange={e => setPassword(e.target.value)}
                     onFocus={() => setPassFoc(true)} onBlur={() => setPassFoc(false)}
-                    className="input-dark pl-10 pr-10" placeholder="••••••••" required style={inputStyle(passFoc)} />
+                    className="input-dark pl-10 pr-10" placeholder="ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½" required style={inputStyle(passFoc)} />
                   <button type="button" onClick={() => setShowPw(!showPw)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
                     {showPw ? <EyeOff size={17} /> : <Eye size={17} />}
@@ -379,7 +379,7 @@ useEffect(() => {
               </motion.button>
             </form>
 
-            {/* Séparateur */}
+            {/* Sï¿½parateur */}
             {/* Bouton Discord */}
             <motion.button
               type="button"
@@ -393,14 +393,14 @@ useEffect(() => {
               Se connecter avec Discord
             </motion.button>
 
-            {/* Séparateur */}
+            {/* Sï¿½parateur */}
             <div className="h-px bg-white/8 my-4" />
 
-            {/* Bloc démo */}
+            {/* Bloc dï¿½mo */}
             <div className="rounded-xl p-3" style={{ background:'rgba(26,107,255,0.08)', border:'1px solid rgba(26,107,255,0.2)', borderRadius:12 }}>
               <div className="flex items-center gap-1.5 mb-2">
                 <Zap size={14} style={{ color:'#1A6BFF' }} />
-                <span className="text-xs font-semibold text-primary">Accès démo</span>
+                <span className="text-xs font-semibold text-primary">Accï¿½s dï¿½mo</span>
               </div>
               <div className="flex items-center justify-between py-1">
                 <span className="text-xs text-muted-foreground font-mono">demo@mitrad.com</span>
@@ -417,16 +417,16 @@ useEffect(() => {
               <button type="button" onClick={fillDemo}
                 className="mt-2 w-full py-2 rounded-xl text-xs font-medium transition-all duration-200 text-primary"
                 style={{ background:'rgba(26,107,255,0.1)', border:'1px solid rgba(26,107,255,0.2)' }}>
-                Remplir automatiquement ?’
+                Remplir automatiquement ?ï¿½
               </button>
             </div>
 
             <div className="mt-4 p-3.5 rounded-xl bg-accent/30 border border-border/40 text-center">
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   <Link to="/register" className="font-semibold" style={{ color:'#1A6BFF' }}>
-                    Créer un compte
+                    Crï¿½er un compte
                   </Link>
-                  {' · '}Pour accéder à ce journal, contacte l'administrateur — ton compte sera activé sous 24h.
+                  {' ï¿½ '}Pour accï¿½der ï¿½ ce journal, contacte l'administrateur ï¿½ ton compte sera activï¿½ sous 24h.
                 </p>
               <div className="flex items-center justify-center gap-3 mt-3 lg:hidden">
                 {CONTACTS.map(c => (

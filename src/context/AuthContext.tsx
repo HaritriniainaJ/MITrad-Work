@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+ï»¿import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { TradingAccount } from '@/types/trading';
 import { getAccounts } from '@/lib/api';
 
@@ -31,21 +31,21 @@ const DEMO_USER = {
 
 const DEMO_ACCOUNT = {
   id: 'demo-account',
-  name: 'Compte Démo',
-  type: 'Démo',
+  name: 'Compte Dï¿½mo',
+  type: 'Dï¿½mo',
   capital: 10000,
   currency: 'USD',
 };
 
-// Clé unique par utilisateur
+// Clï¿½ unique par utilisateur
 const getUserKey = (userId: string | number) => `mitrad_user_${userId}`;
 const getTokenKey = (userId: string | number) => `mitrad_token_${userId}`;
 
-// Récupère l'utilisateur actif (via clé générique qui pointe vers son ID)
+// Rï¿½cupï¿½re l'utilisateur actif (via clï¿½ gï¿½nï¿½rique qui pointe vers son ID)
 const getActiveUser = () => {
   const activeId = localStorage.getItem('mitrad_active_id');
   if (!activeId) {
-    // Fallback : ancienne clé pour migration
+    // Fallback : ancienne clï¿½ pour migration
     const legacy = localStorage.getItem('mitrad_user');
     return legacy ? JSON.parse(legacy) : null;
   }
@@ -65,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(false);
 
   const [accounts, setAccounts] = useState<TradingAccount[]>(
-    savedUser?.isDemo ? [{ id: 'demo-account', name: 'Compte Démo', type: 'Démo', capital: 10000, currency: 'USD' } as any] : []
+    savedUser?.isDemo ? [{ id: 'demo-account', name: 'Compte Dï¿½mo', type: 'Dï¿½mo', capital: 10000, currency: 'USD' } as any] : []
   );
   const [activeAccount, setActiveAccount] = useState<TradingAccount | null>(null);
   const [activeAccounts, setActiveAccountsState] = useState<TradingAccount[]>([]);
@@ -76,7 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     getAccounts().then(data => setAccounts(Array.isArray(data) ? data : []));
   };
 
-  // Recharge le profil frais depuis le serveur au démarrage
+  // Recharge le profil frais depuis le serveur au dï¿½marrage
   useEffect(() => {
     const token = getActiveToken();
     const saved = getActiveUser();
@@ -126,7 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('mitrad_active_id', String(userId));
         localStorage.setItem(getUserKey(userId), JSON.stringify(data.user));
         localStorage.setItem(getTokenKey(userId), data.token);
-        // Compatibilité ancienne clé
+        // Compatibilitï¿½ ancienne clï¿½
         localStorage.setItem('mitrad_token', data.token);
         localStorage.setItem('mitrad_user', JSON.stringify(data.user));
         setUser(data.user);
@@ -175,7 +175,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       trading_style: updates.tradingStyle || user.tradingStyle || "",
     };
     localStorage.setItem(getUserKey(user.id), JSON.stringify(updated));
-    localStorage.setItem('mitrad_user', JSON.stringify(updated)); // compatibilité
+    localStorage.setItem('mitrad_user', JSON.stringify(updated)); // compatibilitï¿½
     setUser(updated);
 
     const token = getActiveToken();

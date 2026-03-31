@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+ï»¿import { useMemo, useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useDisplayMode, DisplayModeToggle } from '@/context/DisplayModeContext';
 import { useFilteredTrades } from '@/hooks/useFilteredTrades';
@@ -60,7 +60,7 @@ export default function CalendarPage() {
     const result: { label: string; days: (number | null)[]; trades: Trade[]; R: number; dollar: number; wins: number; losses: number }[] = [];
     let weekNum = 1;
 
-    // Construire une grille complète de 7 colonnes par semaine
+    // Construire une grille complï¿½te de 7 colonnes par semaine
     const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
     const allDays: (number | null)[] = [];
     for (let i = 0; i < firstDay; i++) allDays.push(null);
@@ -131,7 +131,7 @@ export default function CalendarPage() {
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold gradient-text">Calendrier</h1>
-          <p className="text-muted-foreground text-sm mt-1">Vue d'ensemble de tes journées de trading</p>
+          <p className="text-muted-foreground text-sm mt-1">Vue d'ensemble de tes journï¿½es de trading</p>
         </div>
         <DisplayModeToggle />
       </div>
@@ -175,7 +175,7 @@ export default function CalendarPage() {
           </div>
           <p className="text-xs text-muted-foreground uppercase tracking-wide">R Moyen / Jour</p>
           <p className={`metric-value text-2xl mt-0.5 ${monthR >= 0 ? 'text-success' : 'text-destructive'}`}>
-            {tradingDays > 0 ? formatResult(monthR / tradingDays, monthDollar / tradingDays, capital) : '—'}
+            {tradingDays > 0 ? formatResult(monthR / tradingDays, monthDollar / tradingDays, capital) : 'ï¿½'}
           </p>
         </GlassCard>
       </div>
@@ -187,7 +187,7 @@ export default function CalendarPage() {
           <button onClick={nextMonth} className="w-9 h-9 rounded-xl glass flex items-center justify-center hover:bg-accent/60 transition-all text-muted-foreground hover:text-foreground"><ChevronRight size={16} /></button>
         </div>
 
-        {/* En-têtes jours */}
+        {/* En-tï¿½tes jours */}
         <div className="flex gap-1.5 mb-2 border-b border-white/5 pb-2 justify-center">
           {dayNames.map(d => (
             <div key={d} style={{ width: BOX, flexShrink: 0 }} className="text-center text-[9px] sm:text-[11px] uppercase tracking-[0.1em] font-semibold text-muted-foreground/60 py-1">
@@ -198,7 +198,7 @@ export default function CalendarPage() {
           <div style={{ width: BOX, flexShrink: 0 }} className="text-center text-[9px] sm:text-[11px] uppercase tracking-[0.1em] font-semibold text-muted-foreground/60 py-1">Total</div>
         </div>
 
-        {/* Rangées par semaine */}
+        {/* Rangï¿½es par semaine */}
         <div className="space-y-1.5">
           {weeks.map((week, wIdx) => {
             const weekValue = mode === 'R' ? week.R : week.dollar;
@@ -241,7 +241,7 @@ export default function CalendarPage() {
                   {hasAnyTrade ? (
                     <span className={`metric-value text-[9px] font-bold ${getPnlColor(weekValue)}`}>{fmtDay(week.R, week.dollar)}</span>
                   ) : (
-                    <span className="text-[9px] text-muted-foreground/40">—</span>
+                    <span className="text-[9px] text-muted-foreground/40">ï¿½</span>
                   )}
                 </div>
               </div>
@@ -250,7 +250,7 @@ export default function CalendarPage() {
         </div>
 
         <div className="flex items-center flex-wrap gap-3 mt-5 pt-4 border-t border-border/30">
-          {[{ bg: 'bg-success/30 border-success/40', label: 'Positif' }, { bg: 'bg-destructive/30 border-destructive/40', label: 'Négatif' }, { bg: 'bg-warning/30 border-warning/40', label: 'Breakeven' }].map(item => (
+          {[{ bg: 'bg-success/30 border-success/40', label: 'Positif' }, { bg: 'bg-destructive/30 border-destructive/40', label: 'Nï¿½gatif' }, { bg: 'bg-warning/30 border-warning/40', label: 'Breakeven' }].map(item => (
             <div key={item.label} className="flex items-center gap-1.5">
               <div className={`w-3 h-3 rounded-sm border ${item.bg}`} />
               <span className="text-[10px] text-muted-foreground">{item.label}</span>
@@ -300,7 +300,7 @@ export default function CalendarPage() {
                   </div>
                   <div className="flex items-center gap-2 text-right">
                     <div>
-                      <p className={`metric-value text-sm ${t.resultR != null && t.resultR >= 0 ? 'text-success' : 'text-destructive'}`}>{t.resultR != null ? (t.resultR >= 0 ? '+' : '') + t.resultR.toFixed(2) + 'R' : 'RR à définir'}</p>
+                      <p className={`metric-value text-sm ${t.resultR != null && t.resultR >= 0 ? 'text-success' : 'text-destructive'}`}>{t.resultR != null ? (t.resultR >= 0 ? '+' : '') + t.resultR.toFixed(2) + 'R' : 'RR ï¿½ dï¿½finir'}</p>
                       <p className="text-[10px] text-muted-foreground">{t.resultDollar != null ? (t.resultDollar >= 0 ? '+' : '-') + '$' + Math.abs(t.resultDollar).toFixed(0) : ''}</p>
                     </div>
                     <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${t.status === 'WIN' ? 'badge-win' : t.status === 'LOSS' ? 'badge-loss' : 'badge-be'}`}>{t.status}</span>
