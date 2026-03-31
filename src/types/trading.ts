@@ -43,7 +43,7 @@ export interface Trade {
   direction: 'BUY' | 'SELL';
   session: string;            // Session de trading (London, NY, Asia...)
   quality?: 'A+' | 'A' | 'B' | 'C' | number | null;
-  setup?: string | null;           // Optionnel pour trades import�s
+  setup?: string | null;           // Optionnel pour trades importés
   emotion: string;            // État émotionnel lors du trade
   entryPrice: number;
   stopLoss: number;
