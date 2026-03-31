@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import NProgress from 'nprogress';
@@ -423,10 +423,7 @@ export default function Login() {
 
             <div className="mt-4 p-3.5 rounded-xl bg-accent/30 border border-border/40 text-center">
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  <Link to="/register" className="font-semibold" style={{ color:'#1A6BFF' }}>
-                    Créer un compte
-                  </Link>
-                  {' — '}Pour accéder à ce journal, contacte l'administrateur — ton compte sera activé sous 24h.
+                  Pour accéder à ce journal, contacte l'administrateur — ton compte sera activé sous 24h.
                 </p>
               <div className="flex items-center justify-center gap-3 mt-3 lg:hidden">
                 {CONTACTS.map(c => (
