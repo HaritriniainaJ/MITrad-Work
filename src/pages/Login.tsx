@@ -11,10 +11,10 @@ import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 
 const FEATURES = [
-  { icon: BarChart2, title: 'Analytiques avancées', desc: 'KPIs, equity curve, drawdown, profit factor en temps réel.', color: '#1A6BFF' },
+  { icon: BarChart2, title: 'Analytiques avancées', desc: 'KPIs, equity curve, drawdown, profit factor en temps r�el.', color: '#1A6BFF' },
   { icon: Target,    title: 'Plan de trading',      desc: 'Définis tes règles, illustre-les, suivi rigoureux.', color: '#7C3AED' },
   { icon: Shield,    title: 'Discipline de fer',    desc: 'Score de discipline, alertes émotionnelles, Mentor-X.', color: '#00D4AA' },
-  { icon: Zap,       title: 'Multi-comptes',        desc: 'Personnel, Funded, Démo, Propfirm — tout en un.', color: '#F59E0B' },
+  { icon: Zap,       title: 'Multi-comptes',        desc: 'Personnel, Funded, Démo, Propfirm "- tout en un.', color: '#F59E0B' },
   { icon: TrendingUp,title: 'Suivi de croissance',  desc: 'Capital réel, P&L cumulé, progression visuelle.', color: '#EC4899' },
 ];
 const CONTACTS = [
@@ -393,10 +393,10 @@ export default function Login() {
               Se connecter avec Discord
             </motion.button>
 
-            {/* Séparateur */}
+            {/* S�parateur */}
             <div className="h-px bg-white/8 my-4" />
 
-            {/* Bloc démo */}
+            {/* Bloc d�mo */}
             <div className="rounded-xl p-3" style={{ background:'rgba(26,107,255,0.08)', border:'1px solid rgba(26,107,255,0.2)', borderRadius:12 }}>
               <div className="flex items-center gap-1.5 mb-2">
                 <Zap size={14} style={{ color:'#1A6BFF' }} />
@@ -416,17 +416,13 @@ export default function Login() {
               </div>
               <button type="button" onClick={fillDemo}
                 className="mt-2 w-full py-2 rounded-xl text-xs font-medium transition-all duration-200 text-primary"
-                style={{ background:'rgba(26,107,255,0.1)', border:'1px solid rgba(26,107,255,0.2)' }}>
-                Remplir automatiquement ⚡
+                style={{ background:'rgba(26,107,255,0.1)', border:'1px solid rgba(26,107,255,0.2)' }}>                Remplir automatiquement ⚡
               </button>
             </div>
 
             <div className="mt-4 p-3.5 rounded-xl bg-accent/30 border border-border/40 text-center">
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  <Link to="/register" className="font-semibold" style={{ color:'#1A6BFF' }}>
-                    Créer un compte
-                  </Link>
-                  {' — '}Pour accéder à ce journal, contacte l'administrateur — ton compte sera activé sous 24h.
+                  Pour accéder à ce journal, contacte l'administrateur — ton compte sera activé sous 24h.
                 </p>
               <div className="flex items-center justify-center gap-3 mt-3 lg:hidden">
                 {CONTACTS.map(c => (

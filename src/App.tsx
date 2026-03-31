@@ -8,7 +8,6 @@ import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { DisplayModeProvider } from "@/context/DisplayModeContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import Layout from "@/components/Layout";
-import Register from '@/pages/Register';
 import Login from "@/pages/Login";
 import Analytics from "@/pages/Analytics";
 import NewTrade from "@/pages/NewTrade";
@@ -58,7 +57,6 @@ function AppRoutes() {
 
   return (
     <Routes>
-      <Route path="/register" element={<Register />} />
       <Route path="/login" element={<><DiscordCallback />{user ? <Navigate to="/analytics" replace /> : <Login />}</>} />
       <Route path="/" element={<Navigate to={user ? "/analytics" : "/login"} replace />} />
 
