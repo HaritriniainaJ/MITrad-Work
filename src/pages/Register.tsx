@@ -71,7 +71,7 @@ function FloatingChart({ delay=0, style }: { delay?: number; style?: React.CSSPr
   );
 }
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://mitrad-backend.onrender.com/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.mitradacademy.mg/api';
 
 export default function Register() {
   const [name,     setName]     = useState('');

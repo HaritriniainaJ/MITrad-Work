@@ -26,7 +26,7 @@ function demoToast() {
   setTimeout(() => el.remove(), 2500);
 }
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://mitrad-backend.onrender.com/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.mitradacademy.mg/api';
 const getToken = () => localStorage.getItem('mitrad_token');
 const headers = () => ({
   'Content-Type': 'application/json',

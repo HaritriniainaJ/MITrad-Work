@@ -1,4 +1,4 @@
-Ôªøimport { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import NProgress from 'nprogress';
@@ -11,11 +11,11 @@ import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 
 const FEATURES = [
-  { icon: BarChart2, title: 'Analytiques avanc√©es', desc: 'KPIs, equity curve, drawdown, profit factor en temps r√©el.', color: '#1A6BFF' },
-  { icon: Target,    title: 'Plan de trading',      desc: 'D√©finis tes r√®gles, illustre-les, suivi rigoureux.', color: '#7C3AED' },
-  { icon: Shield,    title: 'Discipline de fer',    desc: 'Score de discipline, alertes √©motionnelles, Mentor-X.', color: '#00D4AA' },
-  { icon: Zap,       title: 'Multi-comptes',        desc: 'Personnel, Funded, D√©mo, Propfirm "‚Äù tout en un.', color: '#F59E0B' },
-  { icon: TrendingUp,title: 'Suivi de croissance',  desc: 'Capital r√©el, P&L cumul√©, progression visuelle.', color: '#EC4899' },
+  { icon: BarChart2, title: 'Analytiques avancÈes', desc: 'KPIs, equity curve, drawdown, profit factor en temps rÈel.', color: '#1A6BFF' },
+  { icon: Target,    title: 'Plan de trading',      desc: 'DÈfinis tes rËgles, illustre-les, suivi rigoureux.', color: '#7C3AED' },
+  { icon: Shield,    title: 'Discipline de fer',    desc: 'Score de discipline, alertes Èmotionnelles, Mentor-X.', color: '#00D4AA' },
+  { icon: Zap,       title: 'Multi-comptes',        desc: 'Personnel, Funded, DÈmo, Propfirm "î tout en un.', color: '#F59E0B' },
+  { icon: TrendingUp,title: 'Suivi de croissance',  desc: 'Capital rÈel, P&L cumulÈ, progression visuelle.', color: '#EC4899' },
 ];
 const CONTACTS = [
   { label: 'Email',    icon: Mail,          href: 'https://mail.google.com/mail/?view=cm&to=Investhari04@gmail.com' },
@@ -148,13 +148,13 @@ useEffect(() => {
     console.log('URL params:', { token, userStr, error });
     
     if (error === 'not_member') {
-      setError("‚ùå Tu n'es pas membre du serveur MITrad Academy.");
+      setError("? Tu n'es pas membre du serveur MITrad Academy.");
       window.history.replaceState({}, '', '/login');
       return;
     }
     if (error) {
       const msg = params.get('msg');
-      setError('‚ùå Connexion Discord √©chou√©e. R√©essaie dans quelques instants.');
+      setError('? Connexion Discord ÈchouÈe. RÈessaie dans quelques instants.');
       return;
     }
     if (token && userStr) {
@@ -213,7 +213,7 @@ useEffect(() => {
       <div className="absolute bottom-[-10%] right-[-5%] w-[400px] h-[400px] rounded-full pointer-events-none"
         style={{ background:'radial-gradient(circle,rgba(124,58,237,0.12) 0%,transparent 65%)', filter:'blur(40px)' }} />
 
-      {/* √âl√©ments flottants "‚Äù fix√©s dans la zone extr√™me gauche du viewport */}
+      {/* …lÈments flottants "î fixÈs dans la zone extrÍme gauche du viewport */}
       <div
         className="hidden xl:block"
         style={{
@@ -251,13 +251,13 @@ useEffect(() => {
 
           <div>
             <h1 className="text-5xl xl:text-6xl font-black leading-[1.08] tracking-tight">
-              <span className="gradient-text">Ma√Ætrise</span> <span className="text-foreground">chaque</span><br />
+              <span className="gradient-text">MaÓtrise</span> <span className="text-foreground">chaque</span><br />
               <span className="text-foreground">trade.</span> <span className="gradient-text">Domine</span><br />
               <span className="text-foreground">chaque session.</span>
             </h1>
             <p className="text-muted-foreground mt-5 text-lg leading-relaxed max-w-xl">
-              Le journal de trading professionnel pens√© pour les traders africains.
-              Analyse, discipline et performance "‚Äù <span className="text-foreground font-medium">tout en un.</span>
+              Le journal de trading professionnel pensÈ pour les traders africains.
+              Analyse, discipline et performance "î <span className="text-foreground font-medium">tout en un.</span>
             </p>
           </div>
 
@@ -308,7 +308,7 @@ useEffect(() => {
           </div>
         </motion.div>
 
-        {/* Colonne droite "‚Äù Formulaire */}
+        {/* Colonne droite "î Formulaire */}
         <motion.div style={{ rotateX:sRotX, rotateY:sRotY, transformPerspective:1200 }}
           onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave}
           initial={{ opacity:0, y:30 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.6, delay:0.2 }} className="w-full">
@@ -316,7 +316,7 @@ useEffect(() => {
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-32 pointer-events-none"
               style={{ background:'radial-gradient(ellipse at 50% 0%,rgba(26,107,255,0.2) 0%,transparent 70%)' }} />
 
-            {/* Logo anim√© avec anneaux */}
+            {/* Logo animÈ avec anneaux */}
             <div className="text-center mb-8 relative">
               <div className="relative flex items-center justify-center w-32 h-32 mx-auto mb-4">
                 <motion.div className="absolute w-24 h-24 rounded-full pointer-events-none"
@@ -332,7 +332,7 @@ useEffect(() => {
                 </motion.div>
               </div>
               <h2 className="text-2xl font-black gradient-text">Pro MITrad Journal</h2>
-              <p className="text-muted-foreground text-sm mt-1">Connecte-toi √† ton espace de trading</p>
+              <p className="text-muted-foreground text-sm mt-1">Connecte-toi ‡ ton espace de trading</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -351,7 +351,7 @@ useEffect(() => {
                   <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
                   <input type={showPw?'text':'password'} value={password} onChange={e => setPassword(e.target.value)}
                     onFocus={() => setPassFoc(true)} onBlur={() => setPassFoc(false)}
-                    className="input-dark pl-10 pr-10" placeholder="‚Ä¢‚Ä¢‚Ä¢‚Ä¢‚Ä¢‚Ä¢‚Ä¢‚Ä¢" required style={inputStyle(passFoc)} />
+                    className="input-dark pl-10 pr-10" placeholder="ïïïïïïïï" required style={inputStyle(passFoc)} />
                   <button type="button" onClick={() => setShowPw(!showPw)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
                     {showPw ? <EyeOff size={17} /> : <Eye size={17} />}
@@ -379,12 +379,12 @@ useEffect(() => {
               </motion.button>
             </form>
 
-            {/* S√©parateur */}
+            {/* SÈparateur */}
             {/* Bouton Discord */}
             <motion.button
               type="button"
               whileHover={{ scale:1.02 }} whileTap={{ scale:0.98 }}
-              onClick={() => { window.location.href = 'https://mitrad-backend.onrender.com/api/auth/discord/redirect'; }}
+              onClick={() => { window.location.href = 'https://api.mitradacademy.mg/api/auth/discord/redirect'; }}
               className="w-full py-3 mt-4 flex items-center justify-center gap-3 rounded-xl font-bold text-sm transition-all"
               style={{ background:'#5865F2', color:'#fff', border:'1px solid #4752C4', boxShadow:'0 4px 20px rgba(88,101,242,0.35)' }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
@@ -393,14 +393,14 @@ useEffect(() => {
               Se connecter avec Discord
             </motion.button>
 
-            {/* S√©parateur */}
+            {/* SÈparateur */}
             <div className="h-px bg-white/8 my-4" />
 
-            {/* Bloc d√©mo */}
+            {/* Bloc dÈmo */}
             <div className="rounded-xl p-3" style={{ background:'rgba(26,107,255,0.08)', border:'1px solid rgba(26,107,255,0.2)', borderRadius:12 }}>
               <div className="flex items-center gap-1.5 mb-2">
                 <Zap size={14} style={{ color:'#1A6BFF' }} />
-                <span className="text-xs font-semibold text-primary">Acc√®s d√©mo</span>
+                <span className="text-xs font-semibold text-primary">AccËs dÈmo</span>
               </div>
               <div className="flex items-center justify-between py-1">
                 <span className="text-xs text-muted-foreground font-mono">demo@mitrad.com</span>
@@ -417,16 +417,16 @@ useEffect(() => {
               <button type="button" onClick={fillDemo}
                 className="mt-2 w-full py-2 rounded-xl text-xs font-medium transition-all duration-200 text-primary"
                 style={{ background:'rgba(26,107,255,0.1)', border:'1px solid rgba(26,107,255,0.2)' }}>
-                Remplir automatiquement ‚Üê‚Äô
+                Remplir automatiquement ?í
               </button>
             </div>
 
             <div className="mt-4 p-3.5 rounded-xl bg-accent/30 border border-border/40 text-center">
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   <Link to="/register" className="font-semibold" style={{ color:'#1A6BFF' }}>
-                    Cr√©er un compte
+                    CrÈer un compte
                   </Link>
-                  {' ¬∑ '}Pour acc√©der √† ce journal, contacte l'administrateur ‚Äî ton compte sera activ√© sous 24h.
+                  {' ∑ '}Pour accÈder ‡ ce journal, contacte l'administrateur ó ton compte sera activÈ sous 24h.
                 </p>
               <div className="flex items-center justify-center gap-3 mt-3 lg:hidden">
                 {CONTACTS.map(c => (
