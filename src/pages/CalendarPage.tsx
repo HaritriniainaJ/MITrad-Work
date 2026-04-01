@@ -57,31 +57,36 @@ export default function CalendarPage() {
   const tradingDays = Object.keys(tradesByDay).length;
 
   const weeks = useMemo(() => {
-    const result: { label: string; days: number[]; trades: Trade[]; R: number; dollar: number; wins: number; losses: number }[] = [];
-    let weekDays: number[] = [];
+    const result: { label: string; days: (number | null)[]; trades: Trade[]; R: number; dollar: number; wins: number; losses: number }[] = [];
     let weekNum = 1;
-    for (let d = 1; d <= daysInMonth; d++) {
-      const dayOfWeek = (firstDay + d - 1) % 7;
-      weekDays.push(d);
-      if (dayOfWeek === 6 || d === daysInMonth) {
-        const weekTrades: Trade[] = [];
-        weekDays.forEach(day => {
+
+    // Construire une grille complète de 7 colonnes par semaine
+    const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
+    const allDays: (number | null)[] = [];
+    for (let i = 0; i < firstDay; i++) allDays.push(null);
+    for (let d = 1; d <= daysInMonth; d++) allDays.push(d);
+    while (allDays.length % 7 !== 0) allDays.push(null);
+
+    for (let w = 0; w < allDays.length / 7; w++) {
+      const weekDays = allDays.slice(w * 7, w * 7 + 7);
+      const weekTrades: Trade[] = [];
+      weekDays.forEach(day => {
+        if (day !== null) {
           const key = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
           if (tradesByDay[key]) weekTrades.push(...tradesByDay[key]);
-        });
-        const closed = weekTrades.filter(t => t.status !== 'RUNNING');
-        result.push({
-          label: `Semaine ${weekNum}`,
-          days: [...weekDays],
-          trades: weekTrades,
-          R: closed.reduce((s, t) => s + t.resultR, 0),
-          dollar: closed.reduce((s, t) => s + t.resultDollar, 0),
-          wins: closed.filter(t => t.status === 'WIN').length,
-          losses: closed.filter(t => t.status === 'LOSS').length,
-        });
-        weekDays = [];
-        weekNum++;
-      }
+        }
+      });
+      const closed = weekTrades.filter(t => t.status !== 'RUNNING');
+      result.push({
+        label: `Semaine ${weekNum}`,
+        days: weekDays,
+        trades: weekTrades,
+        R: closed.reduce((s, t) => s + t.resultR, 0),
+        dollar: closed.reduce((s, t) => s + t.resultDollar, 0),
+        wins: closed.filter(t => t.status === 'WIN').length,
+        losses: closed.filter(t => t.status === 'LOSS').length,
+      });
+      weekNum++;
     }
     return result;
   }, [tradesByDay, firstDay, daysInMonth, month, year]);
@@ -102,23 +107,19 @@ export default function CalendarPage() {
 
   const BOX = 91;
 
-  // Couleurs inline selon mode sombre/clair — utilisées pour les boxes calendrier ET total semaine
   const getBoxStyle = (value: number, hasTrades: boolean) => {
     if (!hasTrades) return {};
     if (isDark) {
-      // Mode sombre : transparent comme sur la photo
       if (value > 0) return { backgroundColor: 'rgba(0,212,170,0.10)', border: '1px solid rgba(0,212,170,0.25)' };
       if (value < 0) return { backgroundColor: 'rgba(255,59,92,0.10)', border: '1px solid rgba(255,59,92,0.25)' };
       return { backgroundColor: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.25)' };
     } else {
-      // Mode clair : pastel avec bordures colorées
       if (value > 0) return { backgroundColor: '#bbf7d0', border: '1px solid #4ade80' };
       if (value < 0) return { backgroundColor: '#fecaca', border: '1px solid #f87171' };
       return { backgroundColor: '#fef08a', border: '1px solid #fbbf24' };
     }
   };
 
-  // Couleur du texte PnL selon mode
   const getPnlColor = (value: number) => {
     if (value > 0) return isDark ? 'text-success' : 'text-green-700';
     if (value < 0) return isDark ? 'text-destructive' : 'text-red-700';
@@ -187,7 +188,7 @@ export default function CalendarPage() {
         </div>
 
         {/* En-têtes jours */}
-        <div className="flex gap-1.5 mb-2 border-b border-white/5 pb-2 justify-center">
+        <div className="flex gap-1.5 mb-2 border-b border-white/5 pb-2">
           {dayNames.map(d => (
             <div key={d} style={{ width: BOX, flexShrink: 0 }} className="text-center text-[9px] sm:text-[11px] uppercase tracking-[0.1em] font-semibold text-muted-foreground/60 py-1">
               <span className="hidden sm:inline">{d}</span>
@@ -198,27 +199,26 @@ export default function CalendarPage() {
         </div>
 
         {/* Rangées par semaine */}
-        <div className="space-y-1.5 flex flex-col items-center">
+        <div className="space-y-1.5">
           {weeks.map((week, wIdx) => {
             const weekValue = mode === 'R' ? week.R : week.dollar;
             const hasAnyTrade = week.trades.length > 0;
-            const firstDayOfWeekDow = (firstDay + week.days[0] - 1) % 7;
             return (
               <div key={wIdx} className="flex gap-1.5">
-                                  {wIdx === 0 && Array.from({ length: firstDay }, (_, i) => (
-                    <div key={`pad-${i}`} style={{ width: BOX, height: BOX, flexShrink: 0 }} />
-                  ))}
-                  {week.days.map((day) => {
-                    const key = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                    const dayTrades = tradesByDay[key] || [];
-                    const dayR = dayTrades.reduce((s, t) => s + t.resultR, 0);
-                    const dayDollar = dayTrades.reduce((s, t) => s + t.resultDollar, 0);
-                    const hasTrades = dayTrades.length > 0;
-                    const isToday = new Date().toDateString() === new Date(year, month, day).toDateString();
-                    const isSelected = selectedDay === key;
-                    const dv = mode === 'R' ? dayR : dayDollar;
-                    const boxStyle = getBoxStyle(dv, hasTrades);
-                    return (
+                {week.days.map((day, di) => {
+                  if (day === null) {
+                    return <div key={`empty-${wIdx}-${di}`} style={{ width: BOX, height: BOX, flexShrink: 0 }} />;
+                  }
+                  const key = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                  const dayTrades = tradesByDay[key] || [];
+                  const dayR = dayTrades.reduce((s, t) => s + t.resultR, 0);
+                  const dayDollar = dayTrades.reduce((s, t) => s + t.resultDollar, 0);
+                  const hasTrades = dayTrades.length > 0;
+                  const isToday = new Date().toDateString() === new Date(year, month, day).toDateString();
+                  const isSelected = selectedDay === key;
+                  const dv = mode === 'R' ? dayR : dayDollar;
+                  const boxStyle = getBoxStyle(dv, hasTrades);
+                  return (
                     <div key={day} style={{ width: BOX, height: BOX, flexShrink: 0 }}>
                       <button
                         onClick={() => hasTrades && setSelectedDay(isSelected ? null : key)}
@@ -233,7 +233,7 @@ export default function CalendarPage() {
                     </div>
                   );
                 })}
-                {/* Total semaine — même style que les boxes calendrier */}
+                {/* Total semaine */}
                 <div
                   style={{ width: BOX, height: BOX, flexShrink: 0, ...getBoxStyle(weekValue, hasAnyTrade) }}
                   className={`rounded-xl border text-xs transition-all duration-200 flex flex-col items-center justify-center gap-1 relative ${!hasAnyTrade ? 'bg-accent/10 border-border/20' : ''}`}>
