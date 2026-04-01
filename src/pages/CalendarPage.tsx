@@ -205,25 +205,20 @@ export default function CalendarPage() {
             const firstDayOfWeekDow = (firstDay + week.days[0] - 1) % 7;
             return (
               <div key={wIdx} className="flex gap-1.5">
-                {wIdx === 0 && Array.from({ length: firstDayOfWeekDow }, (_, i) => (
-                  <div key={`pad-${i}`} style={{ width: BOX, height: BOX, flexShrink: 0 }} />
-                ))}
-                {dayNames.map((_, di) => {
-                  const dayIdx = wIdx === 0 ? di - firstDayOfWeekDow : di;
-                  const day = week.days[dayIdx];
-                  const validDay = day !== undefined && day >= 1 && day <= daysInMonth;
-                  const key = validDay ? `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` : '';
-                  const dayTrades = validDay ? (tradesByDay[key] || []) : [];
-                  const dayR = dayTrades.reduce((s, t) => s + t.resultR, 0);
-                  const dayDollar = dayTrades.reduce((s, t) => s + t.resultDollar, 0);
-                  const hasTrades = dayTrades.length > 0;
-                  const isToday = validDay && new Date().toDateString() === new Date(year, month, day).toDateString();
-                  const isSelected = selectedDay === key;
-                  const dv = mode === 'R' ? dayR : dayDollar;
-                  const boxStyle = getBoxStyle(dv, hasTrades);
-
-                  if (!validDay) return <div key={`empty-${wIdx}-${di}`} style={{ width: BOX, height: BOX, flexShrink: 0 }} />;
-                  return (
+                                  {wIdx === 0 && Array.from({ length: firstDay }, (_, i) => (
+                    <div key={`pad-${i}`} style={{ width: BOX, height: BOX, flexShrink: 0 }} />
+                  ))}
+                  {week.days.map((day) => {
+                    const key = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    const dayTrades = tradesByDay[key] || [];
+                    const dayR = dayTrades.reduce((s, t) => s + t.resultR, 0);
+                    const dayDollar = dayTrades.reduce((s, t) => s + t.resultDollar, 0);
+                    const hasTrades = dayTrades.length > 0;
+                    const isToday = new Date().toDateString() === new Date(year, month, day).toDateString();
+                    const isSelected = selectedDay === key;
+                    const dv = mode === 'R' ? dayR : dayDollar;
+                    const boxStyle = getBoxStyle(dv, hasTrades);
+                    return (
                     <div key={day} style={{ width: BOX, height: BOX, flexShrink: 0 }}>
                       <button
                         onClick={() => hasTrades && setSelectedDay(isSelected ? null : key)}
