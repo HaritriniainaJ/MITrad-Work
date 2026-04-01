@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- TODO: Set the document title to the name of your application -->
+    <title>Pro MITrad Journal</title>
+    <meta name="description" content="Pro MITrad Journal" />
+    <meta name="author" content="MITrad" />
+
+    <!-- TODO: Update og:title to match your application name -->
+    <meta property="og:title" content="Pro MITrad Journal" />
+    <meta property="og:description" content="Pro MITrad Journal" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="-" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="-" />
+    <meta name="twitter:image" content="-" />
+    <script type="module" crossorigin src="/assets/index-C16bOejM.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-tuelQZSZ.css">
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <script>
+    // SPA fallback: restore last path on refresh
+    // Ne pas écraser l'URL si elle contient un token Discord
+    const hasDiscordToken = window.location.search.includes('token=') || window.location.search.includes('error=');
+    if (!hasDiscordToken) {
+      const path = sessionStorage.getItem("spa_path");
+      if (path && path !== "/") { sessionStorage.removeItem("spa_path"); window.history.replaceState(null, "", path); }
+    }
+    window.addEventListener("beforeunload", () => { 
+      if (!window.location.search.includes('token=')) {
+        sessionStorage.setItem("spa_path", window.location.pathname); 
+      }
+    });
+  </script>
+  </body>
+</html>
+
