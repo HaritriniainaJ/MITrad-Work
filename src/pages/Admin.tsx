@@ -210,6 +210,7 @@ export default function Admin() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
+const [search, setSearch] = useState('');
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -261,7 +262,11 @@ export default function Admin() {
     }
   };
 
-  const users = tab === 'discord' ? discord : classic;
+  const allUsers = tab === 'discord' ? discord : classic;
+const users = allUsers.filter(u =>
+  u.name?.toLowerCase().includes(search.toLowerCase()) ||
+  u.email?.toLowerCase().includes(search.toLowerCase())
+);
 
   return (
     <div style={{ minHeight: '100vh', background: '#060D1A', color: '#fff', fontFamily: 'Inter, sans-serif' }}>
@@ -305,12 +310,19 @@ export default function Admin() {
           ))}
         </div>
 
-        <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 20, alignItems: 'center' }}>
           {(['classic', 'discord'] as const).map(t => (
             <button key={t} onClick={() => setTab(t)} style={{ padding: '10px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 14, background: tab === t ? '#1A6BFF' : 'rgba(255,255,255,0.06)', color: tab === t ? '#fff' : '#8899AA', transition: 'all 0.2s' }}>
               {t === 'discord' ? `🟣 Discord (${discord.length})` : `👤 Classique (${classic.length})`}
             </button>
           ))}
+          <input
+            type="text"
+            placeholder="Rechercher par nom ou email..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            style={{ marginLeft: 'auto', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '10px 16px', color: '#fff', fontSize: 13, width: 260, outline: 'none' }}
+          />
         </div>
 
         {loading ? (
