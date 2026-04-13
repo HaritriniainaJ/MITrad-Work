@@ -87,20 +87,21 @@ function PasswordModal({ action, onConfirm, onCancel }: {
     const userData = localStorage.getItem('mitrad_user');
     const adminEmail = userData ? JSON.parse(userData).email : '';
     
-    const res = await fetch(`${API_URL}/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: adminEmail,
-        password,
-      }),
-    });
-    if (!res.ok) {
-      setError('Mot de passe incorrect.');
-      setLoading(false);
-      return;
-    }
-    onConfirm(password);
+const res = await fetch(`${API_URL}/admin/verify-password`, {
+    method: 'POST',
+    headers: { 
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${localStorage.getItem('mitrad_token')}`,
+    },
+    body: JSON.stringify({ password }),
+  });
+  const data = await res.json();
+  if (!data.success) {
+    setError('Mot de passe incorrect.');
+    setLoading(false);
+    return;
+  }
+  onConfirm(password);
   } catch {
     setError('Erreur de vérification.');
     setLoading(false);
