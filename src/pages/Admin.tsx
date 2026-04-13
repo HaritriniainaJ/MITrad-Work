@@ -93,7 +93,9 @@ function PasswordModal({ action, onConfirm, onCancel }: {
         setLoading(false);
         return;
       }
-      onConfirm(action); // on passe l'action directement
+      console.log('✅ verify-password OK, action à exécuter:', action);
+      onConfirm(action);
+      console.log('✅ onConfirm appelé');
     } catch (e) {
       console.error('verify-password error:', e);
       setError('Erreur réseau.');
@@ -230,6 +232,7 @@ export default function Admin() {
   useEffect(() => { fetchUsers(); }, []);
 
   const executeAction = async (action: PendingAction) => {
+    console.log('🚀 executeAction appelé avec:', action);
     setPendingAction(null);
     const { type, user } = action;
     try {
