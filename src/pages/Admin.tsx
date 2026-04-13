@@ -80,30 +80,32 @@ function PasswordModal({ action, onConfirm, onCancel }: {
   const info = getActionInfo();
 
   const handleSubmit = async () => {
-    if (!password) { setError('Mot de passe requis'); return; }
-    setLoading(true);
-    setError('');
-    try {
-      // Vérifier le mot de passe via l'API login
-      const res = await fetch(`${API_URL}/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: (window as any).__adminEmail,
-          password,
-        }),
-      });
-      if (!res.ok) {
-        setError('Mot de passe incorrect.');
-        setLoading(false);
-        return;
-      }
-      onConfirm(password);
-    } catch {
-      setError('Erreur de vérification.');
+  if (!password) { setError('Mot de passe requis'); return; }
+  setLoading(true);
+  setError('');
+  try {
+    const userData = localStorage.getItem('mitrad_user');
+    const adminEmail = userData ? JSON.parse(userData).email : '';
+    
+    const res = await fetch(`${API_URL}/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: adminEmail,
+        password,
+      }),
+    });
+    if (!res.ok) {
+      setError('Mot de passe incorrect.');
       setLoading(false);
+      return;
     }
-  };
+    onConfirm(password);
+  } catch {
+    setError('Erreur de vérification.');
+    setLoading(false);
+  }
+};
 
   return (
     <div style={{
