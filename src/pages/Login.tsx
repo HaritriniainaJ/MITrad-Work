@@ -174,9 +174,9 @@ export default function Login() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault(); setLoading(true); setError('');
     setTimeout(async () => {
-      const ok = await login(email, password);
-      if (ok) { window.location.href = '/analytics'; }
-      else { setError('Email ou mot de passe incorrect'); }
+      const result = await login(email, password);
+        if (result.ok) { window.location.href = '/analytics'; }
+        else { setError(result.message || 'Email ou mot de passe incorrect'); }
       setLoading(false);
     }, 600);
   };
@@ -392,6 +392,11 @@ export default function Login() {
               </svg>
               Se connecter avec Discord
             </motion.button>
+
+            <p className="text-center text-sm text-muted-foreground mt-4">
+              Pas encore de compte ?{' '}
+              <a href="/register" className="text-primary font-semibold hover:underline">Créer un compte</a>
+            </p>
 
             {/* Séparateur */}
             <div className="h-px bg-white/8 my-4" />

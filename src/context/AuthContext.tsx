@@ -7,7 +7,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'https://api.mitradacademy.mg/ap
 interface AuthContextType {
   user: any | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<{ ok: boolean; message?: string }>;
   logout: () => void;
   updateProfile: (updates: any) => void;
   accounts: TradingAccount[];
@@ -37,15 +37,12 @@ const DEMO_ACCOUNT = {
   currency: 'USD',
 };
 
-// Clé unique par utilisateur
 const getUserKey = (userId: string | number) => `mitrad_user_${userId}`;
 const getTokenKey = (userId: string | number) => `mitrad_token_${userId}`;
 
-// Récupère l'utilisateur actif (via clé générique qui pointe vers son ID)
 const getActiveUser = () => {
   const activeId = localStorage.getItem('mitrad_active_id');
   if (!activeId) {
-    // Fallback : ancienne cl� pour migration
     const legacy = localStorage.getItem('mitrad_user');
     return legacy ? JSON.parse(legacy) : null;
   }
@@ -76,7 +73,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     getAccounts().then(data => setAccounts(Array.isArray(data) ? data : []));
   };
 
-  // Recharge le profil frais depuis le serveur au démarrage
   useEffect(() => {
     const token = getActiveToken();
     const saved = getActiveUser();
@@ -101,7 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .catch(() => {});
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<{ ok: boolean; message?: string }> => {
     if (email === 'demo@mitrad.com' && password === 'mitrad123') {
       localStorage.setItem('mitrad_active_id', 'demo');
       localStorage.setItem(getUserKey('demo'), JSON.stringify(DEMO_USER));
@@ -109,7 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(DEMO_USER);
       setAccounts([DEMO_ACCOUNT as any]);
       setActiveAccount(DEMO_ACCOUNT as any);
-      return true;
+      return { ok: true };
     }
     try {
       const response = await fetch(`${API_URL}/login`, {
@@ -126,16 +122,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('mitrad_active_id', String(userId));
         localStorage.setItem(getUserKey(userId), JSON.stringify(data.user));
         localStorage.setItem(getTokenKey(userId), data.token);
-        // Compatibilité ancienne clé
         localStorage.setItem('mitrad_token', data.token);
         localStorage.setItem('mitrad_user', JSON.stringify(data.user));
         setUser(data.user);
-        return true;
+        return { ok: true };
       }
-      return false;
+      return { ok: false, message: data?.message || 'Email ou mot de passe incorrect' };
     } catch (error) {
       console.error('Login error:', error);
-      return false;
+      return { ok: false, message: 'Une erreur est survenue.' };
     }
   };
 
@@ -175,7 +170,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       trading_style: updates.tradingStyle || user.tradingStyle || "",
     };
     localStorage.setItem(getUserKey(user.id), JSON.stringify(updated));
-    localStorage.setItem('mitrad_user', JSON.stringify(updated)); // compatibilité
+    localStorage.setItem('mitrad_user', JSON.stringify(updated));
     setUser(updated);
 
     const token = getActiveToken();
