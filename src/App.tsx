@@ -24,6 +24,7 @@ import Import from "@/pages/Import";
 import Support from "@/pages/Support";
 import NotFound from '@/pages/NotFound';
 import ShareReport from '@/pages/ShareReport';
+import Admin from '@/pages/Admin';
 
 const queryClient = new QueryClient();
 
@@ -74,7 +75,9 @@ function AppRoutes() {
       <Route path="/import"         element={<ProtectedRoute><Import /></ProtectedRoute>} />
       <Route path="/support"        element={<ProtectedRoute><Support /></ProtectedRoute>} />
 
-      <Route path="/share/:token" element={<ShareReport />} /><Route path="*" element={<NotFound />} />
+      <Route path="/share/:token" element={<ShareReport />} />
+      <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }
