@@ -246,11 +246,13 @@ export default function Admin() {
           type === 'toggle_active' ? { is_active: !user.is_active } :
           type === 'toggle_public' ? { is_public: !user.is_public } :
           { is_admin: !user.is_admin };
-        await fetch(`${API_URL}/admin/users/${user.id}`, {
+        const putRes = await fetch(`${API_URL}/admin/users/${user.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
           body: JSON.stringify(payload),
         });
+        const putData = await putRes.json();
+        console.log('📡 PUT response:', putRes.status, putData);
       }
       await fetchUsers();
     } catch (e) {
