@@ -12,12 +12,11 @@ import {
   CalendarDays, FileText, Trophy, User, Calculator, Settings,
   LogOut, Menu, X, Bot, BookOpen, Award, Target,
   ChevronDown, Wallet, Check, Upload, HeadphonesIcon,
-  ChevronLeft, ChevronRight, Sun, Moon,
+  ChevronLeft, ChevronRight, Sun, Moon, Shield,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const NAV_ITEMS = [
-  // { path: '/dashboard',      label: 'Tableau de bord', icon: LayoutDashboard },
   { path: '/analytics',      label: 'Dashboard',     icon: BarChart3 },
   { path: '/new-trade',      label: 'Nouveau Trade',   icon: PlusCircle },
   { path: '/history',        label: 'Historique',      icon: ClipboardList },
@@ -27,9 +26,7 @@ const NAV_ITEMS = [
   { path: '/trading-plan',   label: 'Mon Plan',        icon: BookOpen },
   { path: '/objectives',     label: 'Mes Objectifs',   icon: Target },
   { path: '/successes',      label: 'Mes Succès',      icon: Award },
-  // { path: '/leaderboard',    label: 'Classement',      icon: Trophy },
   { path: '/profile',        label: 'Mon Profil',      icon: User },
-  // { path: '/calculator',     label: 'Calculateur',     icon: Calculator },
   { path: '/import',         label: 'Importer',        icon: Upload },
   { path: '/support',        label: 'Support',         icon: HeadphonesIcon },
   { path: '/settings',       label: 'Paramètres',      icon: Settings },
@@ -48,6 +45,7 @@ const SIDEBAR_MINI = 68;
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { user, logout, accounts, activeAccounts, setActiveAccounts } = useAuth();
   const isDemoMode = (user as any)?.isDemo === true;
+  const isAdmin = (user as any)?.is_admin === true || (user as any)?.is_admin === 1;
   usePageProgress();
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
@@ -71,7 +69,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   const allSelected  = activeAccounts.length === 0;
   const sidebarWidth = collapsed ? SIDEBAR_MINI : SIDEBAR_W;
-
 
   const toggleAccount = (acc: typeof accounts[0]) => {
     const isSelected = activeAccounts.some(a => String(a.id) === String(acc.id));
@@ -115,7 +112,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         )}
         style={{ background: 'rgba(10,13,22,0.95)', backdropFilter: 'blur(24px)', overflow: 'visible' }}
       >
-        {/* Bouton collapse repositionné sur le bord droit */}
+        {/* Bouton collapse */}
         <button
           onClick={() => setCollapsed(p => !p)}
           className="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-card border border-border items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-all z-10 shadow-lg"
@@ -123,6 +120,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         >
           <ChevronLeft size={12} className={cn('transition-transform duration-300', collapsed && 'rotate-180')} />
         </button>
+
         {/* Logo */}
         <div className="p-4 flex items-center justify-between border-b border-border/40 shrink-0" style={{ minHeight: 64 }}>
           <AnimatePresence mode="wait">
@@ -144,8 +142,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               </motion.div>
             )}
           </AnimatePresence>
-
-          {/* Bouton fermer mobile */}
           <button onClick={() => setMobileOpen(false)} className="lg:hidden text-muted-foreground">
             <X size={20} />
           </button>
@@ -263,18 +259,49 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     </motion.span>
                   )}
                 </AnimatePresence>
-
-                {/* Tooltip mini sidebar */}
                 {collapsed && (
                   <div className="absolute left-full ml-2 px-2 py-1 rounded-lg text-xs font-medium bg-card border border-border shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
                     {item.label}
                   </div>
                 )}
-
                 {active && <div className="absolute right-2 w-1.5 h-1.5 rounded-full bg-white/80" />}
               </Link>
             );
           })}
+
+          {/* Bouton Admin — visible uniquement pour les admins */}
+          {isAdmin && (
+            <Link to="/admin" onClick={() => setMobileOpen(false)}
+              title={collapsed ? 'Admin' : undefined}
+              className={cn(
+                'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group relative mt-1',
+                location.pathname === '/admin'
+                  ? 'bg-amber-500/20 text-amber-400 shadow-[0_0_16px_rgba(245,158,11,0.3)]'
+                  : 'text-amber-500/70 hover:text-amber-400 hover:bg-amber-500/10'
+              )}
+            >
+              <Shield size={17} className="shrink-0" />
+              <AnimatePresence>
+                {!collapsed && (
+                  <motion.span
+                    initial={{ opacity: 0, width: 0 }}
+                    animate={{ opacity: 1, width: 'auto' }}
+                    exit={{ opacity: 0, width: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="truncate overflow-hidden whitespace-nowrap"
+                  >
+                    Admin
+                  </motion.span>
+                )}
+              </AnimatePresence>
+              {collapsed && (
+                <div className="absolute left-full ml-2 px-2 py-1 rounded-lg text-xs font-medium bg-card border border-border shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                  Admin
+                </div>
+              )}
+              {location.pathname === '/admin' && <div className="absolute right-2 w-1.5 h-1.5 rounded-full bg-amber-400/80" />}
+            </Link>
+          )}
         </nav>
 
         {/* Toggle mode affichage */}
@@ -357,48 +384,33 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       </motion.aside>
 
       {/* ── CONTENU PRINCIPAL ──────────────────────────────────── */}
-      <motion.main
-        className="flex-1 min-w-0 w-full"
-        style={{ marginLeft: 0 }}
-      >
+      <motion.main className="flex-1 min-w-0 w-full" style={{ marginLeft: 0 }}>
         <div className="hidden lg:block" style={{ height: 0 }} />
         <style>{`@media (min-width: 1024px) { .main-content { margin-left: ${sidebarWidth}px !important; transition: margin-left 0.28s ease-in-out; } }`}</style>
         <div className="main-content">
-        {/* Header mobile */}
-        <header className="lg:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-3 border-b border-border"
-          style={{ background: 'rgba(10,13,22,0.9)', backdropFilter: 'blur(20px)' }}>
-          <button onClick={() => setMobileOpen(true)} className="text-foreground p-1">
-            <Menu size={22} />
-          </button>
-          <span className="gradient-text font-black text-lg tracking-tight">Pro MITrad</span>
-          <div className="w-8 h-8 rounded-full gradient-primary flex items-center justify-center text-xs font-bold text-white">
-            {user.name.charAt(0)}
-          </div>
-        </header>
-
-        {/* Page content */}
-        <motion.div
-          key={location.pathname}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="p-4 md:p-8 max-w-[1400px] mx-auto pb-24"
-        >
-          {children}
-        </motion.div>
+          <header className="lg:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-3 border-b border-border"
+            style={{ background: 'rgba(10,13,22,0.9)', backdropFilter: 'blur(20px)' }}>
+            <button onClick={() => setMobileOpen(true)} className="text-foreground p-1">
+              <Menu size={22} />
+            </button>
+            <span className="gradient-text font-black text-lg tracking-tight">Pro MITrad</span>
+            <div className="w-8 h-8 rounded-full gradient-primary flex items-center justify-center text-xs font-bold text-white">
+              {user.name.charAt(0)}
+            </div>
+          </header>
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="p-4 md:p-8 max-w-[1400px] mx-auto pb-24"
+          >
+            {children}
+          </motion.div>
         </div>
       </motion.main>
 
-      {/* Floating Mentor-X */}
       <CoachAlphaFloat />
     </div>
   );
 }
-
-
-
-
-
-
-
-
