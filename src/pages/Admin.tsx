@@ -220,8 +220,9 @@ export default function Admin() {
       });
       if (res.status === 403) { setError("Accès refusé — tu n'es pas admin."); return; }
       const data = await res.json();
-      setDiscord(data.discord || []);
-      setClassic(data.classic || []);
+      console.log('📦 fetchUsers data:', data);
+      setDiscord([...( data.discord || [])]);
+      setClassic([...(data.classic || [])]);
     } catch {
       setError("Erreur de connexion à l'API.");
     } finally {
