@@ -395,7 +395,7 @@ export default function Login() {
 
             <p className="text-center text-sm text-muted-foreground mt-4">
               Pas encore de compte ?{' '}
-              <a href="/register" className="text-primary font-semibold hover:underline">Créer un compte</a>
+              <Link to="/register" className="text-primary font-semibold hover:underline">Créer un compte</Link>
             </p>
 
             {/* Séparateur */}
