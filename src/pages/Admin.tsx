@@ -230,33 +230,32 @@ export default function Admin() {
 
   useEffect(() => { fetchUsers(); }, []);
 
-  const executeAction = async () => {
-    if (!pendingAction) return;
-    const { type, user } = pendingAction;
-    try {
-      if (type === 'delete') {
-        await fetch(`${API_URL}/admin/users/${user.id}`, {
-          method: 'DELETE',
-          headers: { Authorization: `Bearer ${getToken()}` },
-        });
-      } else {
-        const payload =
-          type === 'toggle_active' ? { is_active: !user.is_active } :
-          type === 'toggle_public' ? { is_public: !user.is_public } :
-          { is_admin: !user.is_admin };
-        await fetch(`${API_URL}/admin/users/${user.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
-          body: JSON.stringify(payload),
-        });
-      }
-      fetchUsers();
-    } catch (e) {
-      console.error('executeAction error:', e);
-    } finally {
-      setPendingAction(null);
+ const executeAction = async () => {
+  if (!pendingAction) return;
+  const { type, user } = pendingAction;
+  setPendingAction(null); // ferme la popup d'abord
+  try {
+    if (type === 'delete') {
+      await fetch(`${API_URL}/admin/users/${user.id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+    } else {
+      const payload =
+        type === 'toggle_active' ? { is_active: !user.is_active } :
+        type === 'toggle_public' ? { is_public: !user.is_public } :
+        { is_admin: !user.is_admin };
+      await fetch(`${API_URL}/admin/users/${user.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+        body: JSON.stringify(payload),
+      });
     }
-  };
+    await fetchUsers();
+  } catch (e) {
+    console.error('executeAction error:', e);
+  }
+};
 
   const users = tab === 'discord' ? discord : classic;
 
