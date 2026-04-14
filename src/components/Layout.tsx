@@ -12,7 +12,7 @@ import {
   CalendarDays, FileText, Trophy, User, Calculator, Settings,
   LogOut, Menu, X, Bot, BookOpen, Award, Target,
   ChevronDown, Wallet, Check, Upload, HeadphonesIcon,
-  ChevronLeft, ChevronRight, Sun, Moon, Shield,
+  ChevronLeft, ChevronRight, Sun, Moon, Shield, CreditCard,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -28,7 +28,8 @@ const NAV_ITEMS = [
   { path: '/successes',      label: 'Mes Succès',      icon: Award },
   { path: '/profile',        label: 'Mon Profil',      icon: User },
   { path: '/import',         label: 'Importer',        icon: Upload },
-  { path: '/support',        label: 'Support',         icon: HeadphonesIcon },
+  { path: '/pricing?renew=1', label: 'Nos Offres',     icon: CreditCard },
+{ path: '/support',         label: 'Support',         icon: HeadphonesIcon },
   { path: '/settings',       label: 'Paramètres',      icon: Settings },
 ];
 

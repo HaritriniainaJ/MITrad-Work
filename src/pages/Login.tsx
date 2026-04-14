@@ -176,6 +176,7 @@ export default function Login() {
     setTimeout(async () => {
       const result = await login(email, password);
         if (result.ok) { window.location.href = '/analytics'; }
+        else if (result.message?.includes('attente')) { window.location.href = '/pricing?inactive=1'; }
         else { setError(result.message || 'Email ou mot de passe incorrect'); }
       setLoading(false);
     }, 600);
@@ -396,6 +397,8 @@ export default function Login() {
             <p className="text-center text-sm text-muted-foreground mt-4">
               Pas encore de compte ?{' '}
               <Link to="/register" className="text-primary font-semibold hover:underline">Créer un compte</Link>
+              {' · '}
+              <Link to="/pricing" className="text-muted-foreground hover:text-foreground hover:underline text-xs">Voir les offres</Link>
             </p>
 
             {/* Séparateur */}
