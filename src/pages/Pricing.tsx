@@ -77,14 +77,17 @@ export default function Pricing() {
     }
     if (!selectedPlan) return;
 
+    const action = isRenew ? 'renouveler' : "souscrire a";
+
     const message = encodeURIComponent(
-      `Bonjour MITrad ! 👋\n\nJe souhaite ${isRenew ? 'renouveler' : 'souscrire à'} l'offre suivante :\n\n` +
-      `📦 Offre : ${selectedPlan.name}\n` +
-      `💰 Prix : ${selectedPlan.priceLabel}\n` +
-      `💳 Paiement via : ${payment}\n` +
-      `📱 Numéro : ${phone}\n\n` +
-      `👤 Nom : ${name}\n` +
-      `📧 Email : ${email}\n\n` +
+      `Bonjour MITrad !\n\n` +
+      `Je souhaite ${action} l'offre suivante :\n\n` +
+      `Offre : ${selectedPlan.name}\n` +
+      `Prix : ${selectedPlan.priceLabel}\n` +
+      `Paiement via : ${payment}\n` +
+      `Numero : ${phone}\n\n` +
+      `Nom : ${name}\n` +
+      `Email : ${email}\n\n` +
       `Merci de confirmer ma souscription.`
     );
 
@@ -198,10 +201,8 @@ export default function Pricing() {
               </div>
             )}
 
-            {/* Plan name */}
             <div style={{ fontSize: 18, fontWeight: 700, color: '#fff' }}>{plan.name}</div>
 
-            {/* Price */}
             <div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
                 <span style={{ fontSize: 32, fontWeight: 700, color: '#fff' }}>{plan.priceLabel}</span>
@@ -230,20 +231,14 @@ export default function Pricing() {
 
             <div style={{ height: 1, background: 'rgba(255,255,255,0.06)' }} />
 
-            {/* Features */}
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
               {features.map((f, i) => (
                 <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13, color: '#AABCCC' }}>
                   <span style={{
-                    width: 18,
-                    height: 18,
-                    borderRadius: '50%',
+                    width: 18, height: 18, borderRadius: '50%',
                     background: 'rgba(34,197,94,0.15)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                    marginTop: 1,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    flexShrink: 0, marginTop: 1,
                   }}>
                     <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
                       <polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#4ADE80" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -254,20 +249,13 @@ export default function Pricing() {
               ))}
             </ul>
 
-            {/* CTA */}
             <button
               onClick={() => openModal(plan)}
               style={{
-                width: '100%',
-                padding: '13px',
-                borderRadius: 12,
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: 14,
-                fontWeight: 700,
+                width: '100%', padding: '13px', borderRadius: 12, border: 'none',
+                cursor: 'pointer', fontSize: 14, fontWeight: 700,
                 background: plan.featured ? '#1A6BFF' : 'rgba(255,255,255,0.08)',
-                color: '#fff',
-                transition: 'opacity 0.15s',
+                color: '#fff', transition: 'opacity 0.15s',
               }}
               onMouseOver={e => (e.currentTarget.style.opacity = '0.85')}
               onMouseOut={e => (e.currentTarget.style.opacity = '1')}
@@ -278,7 +266,6 @@ export default function Pricing() {
         ))}
       </div>
 
-      {/* Payment note */}
       <p style={{ textAlign: 'center', fontSize: 12, color: '#556070' }}>
         Paiement accepté via MVola · Orange Money · Airtel Money
       </p>
@@ -288,23 +275,14 @@ export default function Pricing() {
         <div
           onClick={(e) => { if (e.target === e.currentTarget) closeModal(); }}
           style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.7)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 999,
-            padding: 20,
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 999, padding: 20,
           }}
         >
           <div style={{
-            background: '#131825',
-            border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: 20,
-            padding: '32px 28px',
-            width: '100%',
-            maxWidth: 420,
+            background: '#131825', border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: 20, padding: '32px 28px', width: '100%', maxWidth: 420,
           }}>
             <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4, color: '#fff' }}>
               {ctaLabel} — {selectedPlan.name}
@@ -315,40 +293,53 @@ export default function Pricing() {
 
             <label style={labelStyle}>Votre nom complet</label>
             <input
-              type="text"
-              placeholder="Prénom et nom"
-              value={name}
-              onChange={e => setName(e.target.value)}
+              type="text" placeholder="Prénom et nom"
+              value={name} onChange={e => setName(e.target.value)}
               style={inputStyle}
             />
 
             <label style={labelStyle}>Votre email</label>
             <input
-              type="email"
-              placeholder="email@exemple.com"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
+              type="email" placeholder="email@exemple.com"
+              value={email} onChange={e => setEmail(e.target.value)}
               style={inputStyle}
             />
 
             <label style={labelStyle}>Moyen de paiement</label>
-            <select
-              value={payment}
-              onChange={e => setPayment(e.target.value)}
-              style={inputStyle}
-            >
-              <option value="">Choisir...</option>
-              <option>MVola</option>
-              <option>Orange Money</option>
-              <option>Airtel Money</option>
-            </select>
+            {/* ===== Boutons radio custom au lieu du select ===== */}
+            <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+              {['MVola', 'Orange Money', 'Airtel Money'].map(opt => (
+                <button
+                  key={opt}
+                  type="button"
+                  onClick={() => setPayment(opt)}
+                  style={{
+                    flex: 1,
+                    padding: '10px 6px',
+                    borderRadius: 10,
+                    border: payment === opt
+                      ? '2px solid #1A6BFF'
+                      : '1px solid rgba(255,255,255,0.12)',
+                    background: payment === opt
+                      ? 'rgba(26,107,255,0.15)'
+                      : 'rgba(255,255,255,0.04)',
+                    color: '#fff',           // texte blanc sur fond sombre
+                    fontSize: 12,
+                    fontWeight: payment === opt ? 700 : 500,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s',
+                    textAlign: 'center',
+                  }}
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
 
             <label style={labelStyle}>Numéro de téléphone</label>
             <input
-              type="tel"
-              placeholder="034 XX XXX XX"
-              value={phone}
-              onChange={e => setPhone(e.target.value)}
+              type="tel" placeholder="034 XX XXX XX"
+              value={phone} onChange={e => setPhone(e.target.value)}
               style={{ ...inputStyle, marginBottom: error ? 8 : 24 }}
             />
 
@@ -360,15 +351,10 @@ export default function Pricing() {
               <button
                 onClick={closeModal}
                 style={{
-                  flex: 1,
-                  padding: '12px',
-                  borderRadius: 10,
+                  flex: 1, padding: '12px', borderRadius: 10,
                   border: '1px solid rgba(255,255,255,0.12)',
-                  background: 'transparent',
-                  color: '#8899AA',
-                  cursor: 'pointer',
-                  fontSize: 13,
-                  fontWeight: 600,
+                  background: 'transparent', color: '#8899AA',
+                  cursor: 'pointer', fontSize: 13, fontWeight: 600,
                 }}
               >
                 Annuler
@@ -376,15 +362,9 @@ export default function Pricing() {
               <button
                 onClick={handleSubmit}
                 style={{
-                  flex: 2,
-                  padding: '12px',
-                  borderRadius: 10,
-                  border: 'none',
-                  background: '#1A6BFF',
-                  color: '#fff',
-                  cursor: 'pointer',
-                  fontSize: 13,
-                  fontWeight: 700,
+                  flex: 2, padding: '12px', borderRadius: 10,
+                  border: 'none', background: '#1A6BFF', color: '#fff',
+                  cursor: 'pointer', fontSize: 13, fontWeight: 700,
                 }}
               >
                 Envoyer via Messenger
