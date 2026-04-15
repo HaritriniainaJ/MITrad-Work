@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Eye, EyeOff, TrendingUp, Shield, Zap, BarChart2, Target,
@@ -11,7 +11,7 @@ const FEATURES = [
   { icon: BarChart2,  title: 'Analytiques avancées', desc: 'KPIs, equity curve, drawdown, profit factor en temps réel.', color: '#1A6BFF' },
   { icon: Target,     title: 'Plan de trading',       desc: 'Définis tes règles, illustre-les, suivi rigoureux.',        color: '#7C3AED' },
   { icon: Shield,     title: 'Discipline de fer',     desc: 'Score de discipline, alertes émotionnelles, Mentor-X.',    color: '#00D4AA' },
-  { icon: Zap,        title: 'Multi-comptes',         desc: 'Personnel, Funded, Démo, Propfirm – tout en un.',          color: '#F59E0B' },
+  { icon: Zap,        title: 'Multi-comptes',         desc: 'Personnel, Funded, Démo, Propfirm — tout en un.',          color: '#F59E0B' },
   { icon: TrendingUp, title: 'Suivi de croissance',   desc: 'Capital réel, P&L cumulé, progression visuelle.',          color: '#EC4899' },
 ];
 
@@ -59,24 +59,69 @@ function StatBadge({ label, value, color, delay = 0, style, IconComp }: { label:
 
 function ParticleCanvas() {
   const ref = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const c = ref.current; if (!c) return;
+    const ctx = c.getContext('2d')!;
+    c.width = window.innerWidth; c.height = window.innerHeight;
+    const ps = Array.from({ length: 60 }, () => ({
+      x: Math.random() * c.width, y: Math.random() * c.height,
+      r: Math.random() * 1.5 + 0.5, vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3,
+      alpha: Math.random() * 0.4 + 0.1,
+    }));
+    let raf: number;
+    const draw = () => {
+      ctx.clearRect(0, 0, c.width, c.height);
+      ps.forEach(p => {
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0) p.x = c.width; if (p.x > c.width) p.x = 0;
+        if (p.y < 0) p.y = c.height; if (p.y > c.height) p.y = 0;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(26,107,255,${p.alpha})`; ctx.fill();
+      });
+      raf = requestAnimationFrame(draw);
+    };
+    draw();
+    return () => cancelAnimationFrame(raf);
+  }, []);
   return <canvas ref={ref} className="absolute inset-0 w-full h-full pointer-events-none" />;
 }
 
+function AnimatedCounter({ target, prefix = '', suffix = '' }: { target: number; prefix?: string; suffix?: string }) {
+  const [val, setVal] = useState(0);
+  useEffect(() => {
+    const start = performance.now();
+    const frame = (now: number) => {
+      const p = Math.min((now - start) / 1500, 1);
+      const e = 1 - Math.pow(1 - p, 3);
+      setVal(Math.round(e * target));
+      if (p < 1) requestAnimationFrame(frame);
+    };
+    requestAnimationFrame(frame);
+  }, [target]);
+  return <>{prefix}{val}{suffix}</>;
+}
+
 export default function Register() {
-  const [name,      setName]      = useState('');
-  const [email,     setEmail]     = useState('');
-  const [password,  setPassword]  = useState('');
-  const [confirm,   setConfirm]   = useState('');
-  const [showPw,    setShowPw]    = useState(false);
-  const [showCf,    setShowCf]    = useState(false);
-  const [error,     setError]     = useState('');
-  const [loading,   setLoading]   = useState(false);
-  const [nameFoc,   setNameFoc]   = useState(false);
-  const [emailFoc,  setEmailFoc]  = useState(false);
-  const [passFoc,   setPassFoc]   = useState(false);
-  const [confFoc,   setConfFoc]   = useState(false);
+  const [name,     setName]     = useState('');
+  const [email,    setEmail]    = useState('');
+  const [password, setPassword] = useState('');
+  const [confirm,  setConfirm]  = useState('');
+  const [showPw,   setShowPw]   = useState(false);
+  const [showCf,   setShowCf]   = useState(false);
+  const [error,    setError]    = useState('');
+  const [loading,  setLoading]  = useState(false);
+  const [nameFoc,  setNameFoc]  = useState(false);
+  const [emailFoc, setEmailFoc] = useState(false);
+  const [passFoc,  setPassFoc]  = useState(false);
+  const [confFoc,  setConfFoc]  = useState(false);
+  const [featIdx,  setFeatIdx]  = useState(0);
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const t = setInterval(() => setFeatIdx(i => (i + 1) % FEATURES.length), 3500);
+    return () => clearInterval(t);
+  }, []);
 
   const mx = useMotionValue(0);
   const my = useMotionValue(0);
@@ -125,9 +170,7 @@ export default function Register() {
       const data = await response.json();
 
       if (!response.ok) {
-        const msg = data?.message
-          || data?.errors?.email?.[0]
-          || 'Une erreur est survenue. Réessaie.';
+        const msg = data?.message || data?.errors?.email?.[0] || 'Une erreur est survenue. Réessaie.';
         setError(msg);
         return;
       }
@@ -143,12 +186,14 @@ export default function Register() {
     }
   };
 
+  const feat = FEATURES[featIdx];
+
   return (
-    <div
-      className="min-h-screen flex items-center justify-center relative overflow-hidden"
-      style={{ background: 'radial-gradient(ellipse at 40% 0%, rgba(26,107,255,0.18) 0%, rgba(9,11,20,1) 55%), hsl(218 65% 6%)' }}
-    >
-      {/* Grid background */}
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden"
+      style={{ background: 'radial-gradient(ellipse at 40% 0%, rgba(26,107,255,0.18) 0%, rgba(9,11,20,1) 55%), hsl(218 65% 6%)' }}>
+
+      <ParticleCanvas />
+
       <div className="absolute inset-0 pointer-events-none"
         style={{ backgroundImage: 'linear-gradient(rgba(26,107,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(26,107,255,0.04) 1px,transparent 1px)', backgroundSize: '48px 48px' }} />
       <div className="absolute top-[-10%] left-[-5%] w-[500px] h-[500px] rounded-full pointer-events-none"
@@ -166,8 +211,10 @@ export default function Register() {
 
       <div className="relative z-10 w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_440px] gap-10 lg:gap-16 items-center py-8 lg:py-16 px-4 sm:px-8 lg:px-12">
 
-        {/* Left column */}
-        <motion.div initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.7, ease: 'easeOut' }} className="hidden lg:flex flex-col gap-8">
+        {/* Colonne gauche */}
+        <motion.div initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.7, ease: 'easeOut' }}
+          className="hidden lg:flex flex-col gap-8">
+
           <div className="flex items-center gap-3">
             <img src="/logo.png" alt="Logo" className="w-10 h-10 object-contain" />
             <div>
@@ -191,26 +238,46 @@ export default function Register() {
             </p>
           </div>
 
-          {/* Features */}
+          {/* Carousel animé — identique au Login */}
           <div className="glass rounded-2xl p-5 border border-white/6 relative overflow-hidden" style={{ background: 'rgba(255,255,255,0.03)' }}>
-            <div className="absolute top-0 left-0 w-full h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(26,107,255,0.6),transparent)' }} />
-            <div className="flex flex-col gap-3">
-              {FEATURES.map((f, i) => (
-                <div key={i} className="flex items-start gap-4">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${f.color}18`, border: `1px solid ${f.color}30` }}>
-                    <f.icon size={16} style={{ color: f.color }} />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-foreground text-sm">{f.title}</h3>
-                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{f.desc}</p>
-                  </div>
-                </div>
+            <div className="absolute top-0 left-0 w-full h-px" style={{ background: `linear-gradient(90deg,transparent,${feat.color}60,transparent)` }} />
+            <div className="flex items-center gap-2 mb-4">
+              {FEATURES.map((_, i) => (
+                <button key={i} onClick={() => setFeatIdx(i)} className="transition-all duration-300 rounded-full"
+                  style={{ width: i === featIdx ? 20 : 6, height: 6, background: i === featIdx ? feat.color : 'rgba(255,255,255,0.15)' }} />
               ))}
             </div>
+            <AnimatePresence mode="wait">
+              <motion.div key={featIdx} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }} className="flex items-start gap-4">
+                <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${feat.color}18`, border: `1px solid ${feat.color}30` }}>
+                  <feat.icon size={20} style={{ color: feat.color }} />
+                </div>
+                <div>
+                  <h3 className="font-bold text-foreground text-base">{feat.title}</h3>
+                  <p className="text-sm text-muted-foreground mt-0.5 leading-relaxed">{feat.desc}</p>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* KPIs */}
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { label: 'Trades suivis',   target: 10000, suffix: '+', prefix: '',  color: '#1A6BFF' },
+              { label: 'Traders actifs',  target: 500,   suffix: '+', prefix: '',  color: '#7C3AED' },
+              { label: 'Gain moyen/mois', target: 82,    suffix: '%', prefix: '+', color: '#00D4AA' },
+            ].map(kpi => (
+              <div key={kpi.label} className="glass rounded-xl p-3 border text-center" style={{ borderColor: `${kpi.color}20` }}>
+                <div className="text-xl font-black" style={{ color: kpi.color }}>
+                  <AnimatedCounter target={kpi.target} prefix={kpi.prefix} suffix={kpi.suffix} />
+                </div>
+                <div className="text-[10px] text-muted-foreground mt-0.5">{kpi.label}</div>
+              </div>
+            ))}
           </div>
         </motion.div>
 
-        {/* Right column – Form */}
+        {/* Colonne droite — Formulaire */}
         <motion.div
           style={{ rotateX: sRotX, rotateY: sRotY, transformPerspective: 1200 }}
           onMouseMove={handleMouseMove}
@@ -224,7 +291,7 @@ export default function Register() {
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-32 pointer-events-none"
               style={{ background: 'radial-gradient(ellipse at 50% 0%,rgba(26,107,255,0.2) 0%,transparent 70%)' }} />
 
-            {/* Logo */}
+            {/* Logo animé avec anneaux */}
             <div className="text-center mb-8 relative">
               <div className="relative flex items-center justify-center w-32 h-32 mx-auto mb-4">
                 <motion.div className="absolute w-24 h-24 rounded-full pointer-events-none"
@@ -249,7 +316,6 @@ export default function Register() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Name */}
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Nom d'utilisateur</label>
                 <div className="relative">
@@ -260,7 +326,6 @@ export default function Register() {
                 </div>
               </div>
 
-              {/* Email */}
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Email</label>
                 <div className="relative">
@@ -271,7 +336,6 @@ export default function Register() {
                 </div>
               </div>
 
-              {/* Password */}
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Mot de passe</label>
                 <div className="relative">
@@ -286,7 +350,6 @@ export default function Register() {
                 </div>
               </div>
 
-              {/* Confirm password */}
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Confirmer le mot de passe</label>
                 <div className="relative">
