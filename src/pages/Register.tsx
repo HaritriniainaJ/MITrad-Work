@@ -1,29 +1,38 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
+import NProgress from 'nprogress';
 import {
   Eye, EyeOff, TrendingUp, Shield, Zap, BarChart2, Target,
-  ArrowRight, Mail, Lock, User,
+  ArrowRight, Mail, MessageCircle, Lock, User, Phone,
 } from 'lucide-react';
 import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from 'framer-motion';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.mitradacademy.mg/api';
+
 const FEATURES = [
   { icon: BarChart2,  title: 'Analytiques avancées', desc: 'KPIs, equity curve, drawdown, profit factor en temps réel.', color: '#1A6BFF' },
   { icon: Target,     title: 'Plan de trading',       desc: 'Définis tes règles, illustre-les, suivi rigoureux.',        color: '#7C3AED' },
-  { icon: Shield,     title: 'Discipline de fer',     desc: 'Score de discipline, alertes émotionnelles, Mentor-X.',    color: '#00D4AA' },
-  { icon: Zap,        title: 'Multi-comptes',         desc: 'Personnel, Funded, Démo, Propfirm — tout en un.',          color: '#F59E0B' },
-  { icon: TrendingUp, title: 'Suivi de croissance',   desc: 'Capital réel, P&L cumulé, progression visuelle.',          color: '#EC4899' },
+  { icon: Shield,     title: 'Discipline de fer',     desc: 'Score de discipline, alertes émotionnelles, Mentor-X.',     color: '#00D4AA' },
+  { icon: Zap,        title: 'Multi-comptes',         desc: 'Personnel, Funded, Démo, Propfirm — tout en un.',           color: '#F59E0B' },
+  { icon: TrendingUp, title: 'Suivi de croissance',   desc: 'Capital réel, P&L cumulé, progression visuelle.',           color: '#EC4899' },
+];
+
+const CONTACTS = [
+  { label: 'Email',    icon: Mail,          href: 'https://mail.google.com/mail/?view=cm&to=Investhari04@gmail.com' },
+  { label: 'WhatsApp', icon: MessageCircle, href: 'https://wa.me/261345628584' },
 ];
 
 const CHART_DATA = [{ v:0 },{ v:1.2 },{ v:0.8 },{ v:2.1 },{ v:1.9 },{ v:3.4 },{ v:2.8 },{ v:4.1 },{ v:3.7 },{ v:5.2 }];
 
-function FloatingChart({ delay = 0, style }: { delay?: number; style?: React.CSSProperties }) {
+function FloatingChart({ delay=0, style }: { delay?: number; style?: React.CSSProperties }) {
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay, duration: 1 }} style={style} className="absolute pointer-events-none">
-      <motion.div animate={{ y: [0, -8, 0] }} transition={{ repeat: Infinity, duration: 4 + delay, ease: 'easeInOut' }} className="glass rounded-2xl p-3 border border-white/8" style={{ backdropFilter: 'blur(16px)', minWidth: 200 }}>
-        <div style={{ height: 80 }}>
+    <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ delay, duration:1 }} style={style} className="absolute pointer-events-none">
+      <motion.div animate={{ y:[0,-8,0] }} transition={{ repeat:Infinity, duration:4+delay, ease:'easeInOut' }} className="glass rounded-2xl p-3 border border-white/8" style={{ backdropFilter:'blur(16px)', minWidth:200 }}>
+        <div style={{ height:80 }}>
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={CHART_DATA} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
+            <AreaChart data={CHART_DATA} margin={{ top:4, right:4, left:4, bottom:0 }}>
               <defs>
                 <linearGradient id={`fg${delay}`} x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="#1A6BFF" stopOpacity={0.5} />
@@ -43,10 +52,10 @@ function FloatingChart({ delay = 0, style }: { delay?: number; style?: React.CSS
   );
 }
 
-function StatBadge({ label, value, color, delay = 0, style, IconComp }: { label: string; value: string; color: string; delay?: number; style?: React.CSSProperties; IconComp: React.ElementType }) {
+function StatBadge({ label, value, color, delay=0, style, IconComp }: { label:string; value:string; color:string; delay?:number; style?: React.CSSProperties; IconComp: React.ElementType }) {
   return (
-    <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay, duration: 0.6, type: 'spring' }} style={style} className="absolute pointer-events-none">
-      <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 3.5 + delay, ease: 'easeInOut' }} className="glass rounded-xl px-3 py-2 border flex items-center gap-2" style={{ borderColor: `${color}30`, backdropFilter: 'blur(16px)' }}>
+    <motion.div initial={{ opacity:0, scale:0.8 }} animate={{ opacity:1, scale:1 }} transition={{ delay, duration:0.6, type:'spring' }} style={style} className="absolute pointer-events-none">
+      <motion.div animate={{ y:[0,-5,0] }} transition={{ repeat:Infinity, duration:3.5+delay, ease:'easeInOut' }} className="glass rounded-xl px-3 py-2 border flex items-center gap-2" style={{ borderColor:`${color}30`, backdropFilter:'blur(16px)' }}>
         <IconComp size={14} style={{ color }} />
         <div>
           <div className="text-[9px] text-muted-foreground">{label}</div>
@@ -57,40 +66,11 @@ function StatBadge({ label, value, color, delay = 0, style, IconComp }: { label:
   );
 }
 
-function ParticleCanvas() {
-  const ref = useRef<HTMLCanvasElement>(null);
-  useEffect(() => {
-    const c = ref.current; if (!c) return;
-    const ctx = c.getContext('2d')!;
-    c.width = window.innerWidth; c.height = window.innerHeight;
-    const ps = Array.from({ length: 60 }, () => ({
-      x: Math.random() * c.width, y: Math.random() * c.height,
-      r: Math.random() * 1.5 + 0.5, vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3,
-      alpha: Math.random() * 0.4 + 0.1,
-    }));
-    let raf: number;
-    const draw = () => {
-      ctx.clearRect(0, 0, c.width, c.height);
-      ps.forEach(p => {
-        p.x += p.vx; p.y += p.vy;
-        if (p.x < 0) p.x = c.width; if (p.x > c.width) p.x = 0;
-        if (p.y < 0) p.y = c.height; if (p.y > c.height) p.y = 0;
-        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(26,107,255,${p.alpha})`; ctx.fill();
-      });
-      raf = requestAnimationFrame(draw);
-    };
-    draw();
-    return () => cancelAnimationFrame(raf);
-  }, []);
-  return <canvas ref={ref} className="absolute inset-0 w-full h-full pointer-events-none" />;
-}
-
-function AnimatedCounter({ target, prefix = '', suffix = '' }: { target: number; prefix?: string; suffix?: string }) {
+function AnimatedCounter({ target, prefix='', suffix='' }: { target:number; prefix?:string; suffix?:string }) {
   const [val, setVal] = useState(0);
   useEffect(() => {
     const start = performance.now();
-    const frame = (now: number) => {
+    const frame = (now:number) => {
       const p = Math.min((now - start) / 1500, 1);
       const e = 1 - Math.pow(1 - p, 3);
       setVal(Math.round(e * target));
@@ -101,39 +81,66 @@ function AnimatedCounter({ target, prefix = '', suffix = '' }: { target: number;
   return <>{prefix}{val}{suffix}</>;
 }
 
-export default function Register() {
-  const [name,     setName]     = useState('');
-  const [email,    setEmail]    = useState('');
-  const [password, setPassword] = useState('');
-  const [confirm,  setConfirm]  = useState('');
-  const [showPw,   setShowPw]   = useState(false);
-  const [showCf,   setShowCf]   = useState(false);
-  const [error,    setError]    = useState('');
-  const [loading,  setLoading]  = useState(false);
-  const [nameFoc,  setNameFoc]  = useState(false);
-  const [emailFoc, setEmailFoc] = useState(false);
-  const [passFoc,  setPassFoc]  = useState(false);
-  const [confFoc,  setConfFoc]  = useState(false);
-  const [featIdx,  setFeatIdx]  = useState(0);
+function ParticleCanvas() {
+  const ref = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const c = ref.current; if (!c) return;
+    const ctx = c.getContext('2d')!;
+    c.width = window.innerWidth; c.height = window.innerHeight;
+    const ps = Array.from({ length:60 }, () => ({
+      x:Math.random()*c.width, y:Math.random()*c.height,
+      r:Math.random()*1.5+0.5, vx:(Math.random()-0.5)*0.3, vy:(Math.random()-0.5)*0.3,
+      alpha:Math.random()*0.4+0.1,
+    }));
+    let raf: number;
+    const draw = () => {
+      ctx.clearRect(0,0,c.width,c.height);
+      ps.forEach(p => {
+        p.x+=p.vx; p.y+=p.vy;
+        if(p.x<0) p.x=c.width; if(p.x>c.width) p.x=0;
+        if(p.y<0) p.y=c.height; if(p.y>c.height) p.y=0;
+        ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        ctx.fillStyle=`rgba(26,107,255,${p.alpha})`; ctx.fill();
+      });
+      raf=requestAnimationFrame(draw);
+    };
+    draw();
+    return () => cancelAnimationFrame(raf);
+  }, []);
+  return <canvas ref={ref} className="absolute inset-0 w-full h-full pointer-events-none" />;
+}
 
+export default function Register() {
+  const [name,      setName]      = useState('');
+  const [email,     setEmail]     = useState('');
+  const [password,  setPassword]  = useState('');
+  const [confirm,   setConfirm]   = useState('');
+  const [error,     setError]     = useState('');
+  const [success,   setSuccess]   = useState('');
+  const [showPw,    setShowPw]    = useState(false);
+  const [showCf,    setShowCf]    = useState(false);
+  const [loading,   setLoading]   = useState(false);
+  const [featIdx,   setFeatIdx]   = useState(0);
+  const [nameFoc,   setNameFoc]   = useState(false);
+  const [emailFoc,  setEmailFoc]  = useState(false);
+  const [passFoc,   setPassFoc]   = useState(false);
+  const [confFoc,   setConfFoc]   = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const t = setInterval(() => setFeatIdx(i => (i + 1) % FEATURES.length), 3500);
+    const t = setInterval(() => setFeatIdx(i => (i+1)%FEATURES.length), 3500);
     return () => clearInterval(t);
   }, []);
 
-  const mx = useMotionValue(0);
-  const my = useMotionValue(0);
-  const rotX = useTransform(my, [-200, 200], [4, -4]);
-  const rotY = useTransform(mx, [-200, 200], [-4, 4]);
-  const sRotX = useSpring(rotX, { stiffness: 120, damping: 20 });
-  const sRotY = useSpring(rotY, { stiffness: 120, damping: 20 });
+  const mx = useMotionValue(0); const my = useMotionValue(0);
+  const rotX = useTransform(my, [-200,200], [4,-4]);
+  const rotY = useTransform(mx, [-200,200], [-4,4]);
+  const sRotX = useSpring(rotX, { stiffness:120, damping:20 });
+  const sRotY = useSpring(rotY, { stiffness:120, damping:20 });
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const r = e.currentTarget.getBoundingClientRect();
-    mx.set(e.clientX - r.left - r.width / 2);
-    my.set(e.clientY - r.top - r.height / 2);
+    mx.set(e.clientX-r.left-r.width/2); my.set(e.clientY-r.top-r.height/2);
   };
   const handleMouseLeave = () => { mx.set(0); my.set(0); };
 
@@ -145,7 +152,7 @@ export default function Register() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError(''); setSuccess('');
 
     if (password !== confirm) {
       setError('Les mots de passe ne correspondent pas.');
@@ -157,32 +164,35 @@ export default function Register() {
     }
 
     setLoading(true);
+    NProgress.start();
+
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/register`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify({ name, email, password, password_confirmation: confirm }),
-        }
-      );
+      const res = await fetch(`${API_URL}/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+          password_confirmation: confirm,
+        }),
+      });
+      const data = await res.json();
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        const msg = data?.message || data?.errors?.email?.[0] || 'Une erreur est survenue. Réessaie.';
-        setError(msg);
-        return;
+      if (res.ok) {
+        NProgress.done();
+        navigate('/pricing');
+      } else {
+        const msg = data?.message || data?.errors
+          ? Object.values(data.errors || {}).flat().join(' ')
+          : 'Une erreur est survenue.';
+        setError(typeof msg === 'string' ? msg : 'Erreur lors de l\'inscription.');
       }
-
-      localStorage.setItem('mitrad_token', data.token);
-      localStorage.setItem('mitrad_user', JSON.stringify(data.user));
-
-      navigate('/pricing');
-    } catch {
-      setError('Une erreur est survenue. Réessaie.');
+    } catch (err) {
+      setError('Impossible de contacter le serveur.');
     } finally {
       setLoading(false);
+      NProgress.done();
     }
   };
 
@@ -190,31 +200,28 @@ export default function Register() {
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden"
-      style={{ background: 'radial-gradient(ellipse at 40% 0%, rgba(26,107,255,0.18) 0%, rgba(9,11,20,1) 55%), hsl(218 65% 6%)' }}>
-
+      style={{ background:'radial-gradient(ellipse at 40% 0%, rgba(26,107,255,0.18) 0%, rgba(9,11,20,1) 55%), hsl(218 65% 6%)' }}>
       <ParticleCanvas />
-
       <div className="absolute inset-0 pointer-events-none"
-        style={{ backgroundImage: 'linear-gradient(rgba(26,107,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(26,107,255,0.04) 1px,transparent 1px)', backgroundSize: '48px 48px' }} />
+        style={{ backgroundImage:'linear-gradient(rgba(26,107,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(26,107,255,0.04) 1px,transparent 1px)', backgroundSize:'48px 48px' }} />
       <div className="absolute top-[-10%] left-[-5%] w-[500px] h-[500px] rounded-full pointer-events-none"
-        style={{ background: 'radial-gradient(circle,rgba(26,107,255,0.12) 0%,transparent 65%)', filter: 'blur(40px)' }} />
+        style={{ background:'radial-gradient(circle,rgba(26,107,255,0.12) 0%,transparent 65%)', filter:'blur(40px)' }} />
       <div className="absolute bottom-[-10%] right-[-5%] w-[400px] h-[400px] rounded-full pointer-events-none"
-        style={{ background: 'radial-gradient(circle,rgba(124,58,237,0.12) 0%,transparent 65%)', filter: 'blur(40px)' }} />
+        style={{ background:'radial-gradient(circle,rgba(124,58,237,0.12) 0%,transparent 65%)', filter:'blur(40px)' }} />
 
-      {/* Floating elements */}
-      <div className="hidden xl:block" style={{ position: 'fixed', top: 0, left: 0, width: '22%', height: '100vh', pointerEvents: 'none', zIndex: 5, overflow: 'visible' }}>
-        <FloatingChart delay={0.2} style={{ top: '10%', left: '8px' }} />
-        <FloatingChart delay={0.5} style={{ bottom: '14%', left: '4px' }} />
-        <StatBadge label="Win Rate"    value="67.4%" color="#00D4AA" delay={0.3} style={{ top: '38%', left: '12px' }} IconComp={Target} />
-        <StatBadge label="P&L Mensuel" value="+8.4R" color="#1A6BFF" delay={0.6} style={{ bottom: '34%', left: '20px' }} IconComp={TrendingUp} />
+      {/* Éléments flottants gauche */}
+      <div className="hidden xl:block" style={{ position:'fixed', top:0, left:0, width:'22%', height:'100vh', pointerEvents:'none', zIndex:5, overflow:'visible' }}>
+        <FloatingChart delay={0.2} style={{ top:'10%', left:'8px' }} />
+        <FloatingChart delay={0.5} style={{ bottom:'14%', left:'4px' }} />
+        <StatBadge label="Win Rate"    value="67.4%"  color="#00D4AA" delay={0.3} style={{ top:'38%', left:'12px' }} IconComp={Target} />
+        <StatBadge label="P&L Mensuel" value="+8.4R"  color="#1A6BFF" delay={0.6} style={{ bottom:'34%', left:'20px' }} IconComp={TrendingUp} />
       </div>
 
-      <div className="relative z-10 w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_440px] gap-10 lg:gap-16 items-center py-8 lg:py-16 px-4 sm:px-8 lg:px-12">
+      <div className="relative z-10 w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-10 lg:gap-16 items-center py-8 lg:py-16 px-4 sm:px-8 lg:px-12">
 
         {/* Colonne gauche */}
-        <motion.div initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.7, ease: 'easeOut' }}
+        <motion.div initial={{ opacity:0, x:-40 }} animate={{ opacity:1, x:0 }} transition={{ duration:0.7, ease:'easeOut' }}
           className="hidden lg:flex flex-col gap-8">
-
           <div className="flex items-center gap-3">
             <img src="/logo.png" alt="Logo" className="w-10 h-10 object-contain" />
             <div>
@@ -228,29 +235,29 @@ export default function Register() {
 
           <div>
             <h1 className="text-5xl xl:text-6xl font-black leading-[1.08] tracking-tight">
-              <span className="gradient-text">Commence</span> <span className="text-foreground">ton</span><br />
-              <span className="text-foreground">parcours.</span> <span className="gradient-text">Rejoins</span><br />
-              <span className="text-foreground">les meilleurs.</span>
+              <span className="gradient-text">Rejoins</span> <span className="text-foreground">les</span><br />
+              <span className="text-foreground">meilleurs</span> <span className="gradient-text">traders</span><br />
+              <span className="text-foreground">africains.</span>
             </h1>
             <p className="text-muted-foreground mt-5 text-lg leading-relaxed max-w-xl">
-              Crée ton compte MITrad et accède au journal de trading professionnel pensé pour les traders africains.
-              <span className="text-foreground font-medium"> Tout en un.</span>
+              Crée ton compte et accède au journal de trading professionnel
+              pensé pour performer — <span className="text-foreground font-medium">dès aujourd'hui.</span>
             </p>
           </div>
 
-          {/* Carousel animé — identique au Login */}
-          <div className="glass rounded-2xl p-5 border border-white/6 relative overflow-hidden" style={{ background: 'rgba(255,255,255,0.03)' }}>
-            <div className="absolute top-0 left-0 w-full h-px" style={{ background: `linear-gradient(90deg,transparent,${feat.color}60,transparent)` }} />
+          {/* Carousel features */}
+          <div className="glass rounded-2xl p-5 border border-white/6 relative overflow-hidden" style={{ background:'rgba(255,255,255,0.03)' }}>
+            <div className="absolute top-0 left-0 w-full h-px" style={{ background:`linear-gradient(90deg,transparent,${feat.color}60,transparent)` }} />
             <div className="flex items-center gap-2 mb-4">
-              {FEATURES.map((_, i) => (
+              {FEATURES.map((_,i) => (
                 <button key={i} onClick={() => setFeatIdx(i)} className="transition-all duration-300 rounded-full"
-                  style={{ width: i === featIdx ? 20 : 6, height: 6, background: i === featIdx ? feat.color : 'rgba(255,255,255,0.15)' }} />
+                  style={{ width:i===featIdx?20:6, height:6, background:i===featIdx?feat.color:'rgba(255,255,255,0.15)' }} />
               ))}
             </div>
             <AnimatePresence mode="wait">
-              <motion.div key={featIdx} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }} className="flex items-start gap-4">
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${feat.color}18`, border: `1px solid ${feat.color}30` }}>
-                  <feat.icon size={20} style={{ color: feat.color }} />
+              <motion.div key={featIdx} initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-10 }} transition={{ duration:0.3 }} className="flex items-start gap-4">
+                <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background:`${feat.color}18`, border:`1px solid ${feat.color}30` }}>
+                  <feat.icon size={20} style={{ color:feat.color }} />
                 </div>
                 <div>
                   <h3 className="font-bold text-foreground text-base">{feat.title}</h3>
@@ -263,69 +270,72 @@ export default function Register() {
           {/* KPIs */}
           <div className="grid grid-cols-3 gap-3">
             {[
-              { label: 'Trades suivis',   target: 10000, suffix: '+', prefix: '',  color: '#1A6BFF' },
-              { label: 'Traders actifs',  target: 500,   suffix: '+', prefix: '',  color: '#7C3AED' },
-              { label: 'Gain moyen/mois', target: 82,    suffix: '%', prefix: '+', color: '#00D4AA' },
+              { label:'Trades suivis',   target:10000, suffix:'+', prefix:'',  color:'#1A6BFF' },
+              { label:'Traders actifs',  target:500,   suffix:'+', prefix:'',  color:'#7C3AED' },
+              { label:'Gain moyen/mois', target:82,    suffix:'%', prefix:'+', color:'#00D4AA' },
             ].map(kpi => (
-              <div key={kpi.label} className="glass rounded-xl p-3 border text-center" style={{ borderColor: `${kpi.color}20` }}>
-                <div className="text-xl font-black" style={{ color: kpi.color }}>
+              <div key={kpi.label} className="glass rounded-xl p-3 border text-center" style={{ borderColor:`${kpi.color}20` }}>
+                <div className="text-xl font-black" style={{ color:kpi.color }}>
                   <AnimatedCounter target={kpi.target} prefix={kpi.prefix} suffix={kpi.suffix} />
                 </div>
                 <div className="text-[10px] text-muted-foreground mt-0.5">{kpi.label}</div>
               </div>
             ))}
           </div>
+
+          {/* Contacts */}
+          <div className="flex items-center gap-4">
+            {CONTACTS.map(c => (
+              <motion.a key={c.label} href={c.href} target="_blank" rel="noopener noreferrer" whileHover={{ scale:1.15, y:-2 }} title={c.label}
+                className="w-9 h-9 rounded-xl glass border border-white/8 flex items-center justify-center text-muted-foreground transition-colors">
+                <c.icon size={16} />
+              </motion.a>
+            ))}
+            <span className="text-xs text-muted-foreground">Nous contacter</span>
+          </div>
         </motion.div>
 
         {/* Colonne droite — Formulaire */}
-        <motion.div
-          style={{ rotateX: sRotX, rotateY: sRotY, transformPerspective: 1200 }}
-          onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="w-full"
-        >
+        <motion.div style={{ rotateX:sRotX, rotateY:sRotY, transformPerspective:1200 }}
+          onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave}
+          initial={{ opacity:0, y:30 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.6, delay:0.2 }} className="w-full">
           <div className="glass rounded-3xl p-5 sm:p-8 md:p-10 border border-white/8 shadow-[0_32px_80px_rgba(0,0,0,0.6)] relative overflow-hidden">
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-32 pointer-events-none"
-              style={{ background: 'radial-gradient(ellipse at 50% 0%,rgba(26,107,255,0.2) 0%,transparent 70%)' }} />
+              style={{ background:'radial-gradient(ellipse at 50% 0%,rgba(26,107,255,0.2) 0%,transparent 70%)' }} />
 
-            {/* Logo animé avec anneaux */}
-            <div className="text-center mb-8 relative">
-              <div className="relative flex items-center justify-center w-32 h-32 mx-auto mb-4">
+            {/* Logo animé */}
+            <div className="text-center mb-6 relative">
+              <div className="relative flex items-center justify-center w-24 h-24 mx-auto mb-3">
+                <motion.div className="absolute w-20 h-20 rounded-full pointer-events-none"
+                  style={{ border:'1px solid rgba(26,107,255,0.2)' }}
+                  animate={{ rotate:360 }} transition={{ repeat:Infinity, duration:8, ease:'linear' }} />
                 <motion.div className="absolute w-24 h-24 rounded-full pointer-events-none"
-                  style={{ border: '1px solid rgba(26,107,255,0.2)' }}
-                  animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 8, ease: 'linear' }} />
-                <motion.div className="absolute w-32 h-32 rounded-full pointer-events-none"
-                  style={{ border: '1px solid rgba(124,58,237,0.15)' }}
-                  animate={{ rotate: -360 }} transition={{ repeat: Infinity, duration: 12, ease: 'linear' }} />
-                <motion.div
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ duration: 0.6, type: 'spring', bounce: 0.3 }}
-                  className="relative z-10"
-                  style={{ borderRadius: '50%', boxShadow: '0 0 0 1px rgba(26,107,255,0.3),0 0 32px rgba(26,107,255,0.25),0 0 64px rgba(124,58,237,0.15)' }}
-                >
-                  <img src="/logo.png" alt="Logo" className="w-20 h-20 object-cover rounded-full"
-                    style={{ filter: 'drop-shadow(0 0 20px rgba(26,107,255,0.6))', boxShadow: '0 0 0 2px rgba(26,107,255,0.4), 0 0 32px rgba(26,107,255,0.3)' }} />
+                  style={{ border:'1px solid rgba(124,58,237,0.15)' }}
+                  animate={{ rotate:-360 }} transition={{ repeat:Infinity, duration:12, ease:'linear' }} />
+                <motion.div initial={{ scale:0.8, opacity:0 }} animate={{ scale:1, opacity:1 }}
+                  transition={{ duration:0.6, type:'spring', bounce:0.3 }} className="relative z-10"
+                  style={{ borderRadius:'50%', boxShadow:'0 0 0 1px rgba(26,107,255,0.3),0 0 32px rgba(26,107,255,0.25),0 0 64px rgba(124,58,237,0.15)' }}>
+                  <img src="/logo.png" alt="Logo" className="w-16 h-16 object-cover rounded-full"
+                    style={{ filter:'drop-shadow(0 0 20px rgba(26,107,255,0.6))', boxShadow:'0 0 0 2px rgba(26,107,255,0.4), 0 0 32px rgba(26,107,255,0.3)' }} />
                 </motion.div>
               </div>
               <h2 className="text-2xl font-black gradient-text">Créer un compte</h2>
-              <p className="text-muted-foreground text-sm mt-1">Rejoins MITrad Journal dès aujourd'hui</p>
+              <p className="text-muted-foreground text-sm mt-1">Rejoins l'espace de trading MITrad</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-3">
+              {/* Nom */}
               <div>
-                <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Nom d'utilisateur</label>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Nom complet</label>
                 <div className="relative">
                   <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
                   <input type="text" value={name} onChange={e => setName(e.target.value)}
                     onFocus={() => setNameFoc(true)} onBlur={() => setNameFoc(false)}
-                    className="input-dark pl-10" placeholder="Ton nom ou pseudo" required style={inputStyle(nameFoc)} />
+                    className="input-dark pl-10" placeholder="Ton nom" required style={inputStyle(nameFoc)} />
                 </div>
               </div>
 
+              {/* Email */}
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Email</label>
                 <div className="relative">
@@ -336,13 +346,14 @@ export default function Register() {
                 </div>
               </div>
 
+              {/* Mot de passe */}
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Mot de passe</label>
                 <div className="relative">
                   <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-                  <input type={showPw ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
+                  <input type={showPw?'text':'password'} value={password} onChange={e => setPassword(e.target.value)}
                     onFocus={() => setPassFoc(true)} onBlur={() => setPassFoc(false)}
-                    className="input-dark pl-10 pr-10" placeholder="Minimum 8 caractères" required style={inputStyle(passFoc)} />
+                    className="input-dark pl-10 pr-10" placeholder="••••••••" required style={inputStyle(passFoc)} />
                   <button type="button" onClick={() => setShowPw(!showPw)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
                     {showPw ? <EyeOff size={17} /> : <Eye size={17} />}
@@ -350,13 +361,14 @@ export default function Register() {
                 </div>
               </div>
 
+              {/* Confirmation */}
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Confirmer le mot de passe</label>
                 <div className="relative">
                   <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-                  <input type={showCf ? 'text' : 'password'} value={confirm} onChange={e => setConfirm(e.target.value)}
+                  <input type={showCf?'text':'password'} value={confirm} onChange={e => setConfirm(e.target.value)}
                     onFocus={() => setConfFoc(true)} onBlur={() => setConfFoc(false)}
-                    className="input-dark pl-10 pr-10" placeholder="Répète ton mot de passe" required style={inputStyle(confFoc)} />
+                    className="input-dark pl-10 pr-10" placeholder="••••••••" required style={inputStyle(confFoc)} />
                   <button type="button" onClick={() => setShowCf(!showCf)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
                     {showCf ? <EyeOff size={17} /> : <Eye size={17} />}
@@ -364,45 +376,57 @@ export default function Register() {
                 </div>
               </div>
 
+              {/* Erreur */}
               <AnimatePresence>
                 {error && (
-                  <motion.p initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                  <motion.p initial={{ opacity:0, y:-6 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0 }}
                     className="text-destructive text-sm text-center bg-destructive/10 py-2 rounded-lg border border-destructive/20">
                     {error}
                   </motion.p>
                 )}
               </AnimatePresence>
 
+              {/* Succès */}
+              <AnimatePresence>
+                {success && (
+                  <motion.p initial={{ opacity:0, y:-6 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0 }}
+                    className="text-emerald-400 text-sm text-center bg-emerald-400/10 py-2 rounded-lg border border-emerald-400/20">
+                    {success}
+                  </motion.p>
+                )}
+              </AnimatePresence>
+
+              {/* Bouton */}
               <motion.button type="submit" disabled={loading}
-                whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                whileHover={{ scale:1.02 }} whileTap={{ scale:0.98 }}
                 className="gradient-btn w-full py-3.5 text-base font-bold flex items-center justify-center gap-2 mt-2">
                 {loading ? (
-                  <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Création du compte...</>
+                  <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Inscription...</>
                 ) : (
                   <>Créer mon compte <ArrowRight size={16} /></>
                 )}
               </motion.button>
             </form>
 
-            <div className="h-px bg-white/8 my-5" />
-
-            {/* Info box */}
-            <div className="rounded-xl p-3" style={{ background: 'rgba(26,107,255,0.08)', border: '1px solid rgba(26,107,255,0.2)', borderRadius: 12 }}>
-              <div className="flex items-start gap-2">
-                <Zap size={14} style={{ color: '#1A6BFF', marginTop: 2, flexShrink: 0 }} />
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Après inscription, tu seras redirigé vers la page des offres pour choisir ton abonnement.
-                  Ton compte sera activé par notre équipe dès réception du paiement.
-                </p>
-              </div>
-            </div>
-
-            <div className="h-px bg-white/8 my-4" />
-
-            <p className="text-center text-sm text-muted-foreground">
+            {/* Lien login */}
+            <p className="text-center text-sm text-muted-foreground mt-4">
               Déjà un compte ?{' '}
-              <a href="/login" className="text-primary font-semibold hover:underline">Se connecter</a>
+              <Link to="/login" className="text-primary font-semibold hover:underline">Se connecter</Link>
+              {' · '}
+              <Link to="/pricing" className="text-muted-foreground hover:text-foreground hover:underline text-xs">Voir les offres</Link>
             </p>
+
+            {/* Note compte en attente */}
+            <div className="h-px bg-white/8 my-4" />
+            <div className="rounded-xl p-3" style={{ background:'rgba(26,107,255,0.08)', border:'1px solid rgba(26,107,255,0.2)', borderRadius:12 }}>
+              <div className="flex items-center gap-1.5 mb-1">
+                <Shield size={14} style={{ color:'#1A6BFF' }} />
+                <span className="text-xs font-semibold text-primary">Activation manuelle</span>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Après inscription, ton compte sera activé par notre équipe une fois le paiement confirmé. Tu seras redirigé vers les offres.
+              </p>
+            </div>
           </div>
         </motion.div>
       </div>
