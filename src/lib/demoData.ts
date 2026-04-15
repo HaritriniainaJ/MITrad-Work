@@ -247,7 +247,7 @@ export const DEMO_PLAN_RULES = [
 ];
 
 // ─── OBJECTIFS ────────────────────────────────────────────────────────────────
-export const DEMO_GOALS = [
+export const DEMO_OBJECTIVES = [
   { id: 'goal-1', title: 'Atteindre 70% de winrate sur 30 trades', progress: 72, target: 70, unit: '%' },
   { id: 'goal-2', title: 'Maintenir RR moyen > 2.0', progress: 2.18, target: 2.0, unit: 'RR' },
   { id: 'goal-3', title: 'Ne pas dépasser 5% drawdown mensuel', progress: 3.2, target: 5, unit: '%' },
@@ -255,7 +255,7 @@ export const DEMO_GOALS = [
 ];
 
 // ─── SUCCÈS ───────────────────────────────────────────────────────────────────
-export const DEMO_ACHIEVEMENTS = [
+export const DEMO_SUCCESSES = [
   { id: 'ach-1', title: 'Série de 5 wins consécutifs', date: daysAgo(5).split('T')[0], icon: '🔥' },
   { id: 'ach-2', title: 'RR > 2.5 atteint 3 fois ce mois', date: daysAgo(10).split('T')[0], icon: '🎯' },
   { id: 'ach-3', title: '0 trade FOMO pendant 7 jours', date: daysAgo(15).split('T')[0], icon: '🧘' },
