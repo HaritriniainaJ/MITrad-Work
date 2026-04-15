@@ -1,4 +1,4 @@
-﻿// demoData.ts — Données fictives enrichies pour le mode démo
+// demoData.ts — Données fictives enrichies pour le mode démo
 import { Trade, DailyAnalysis } from '@/types/trading';
 
 // ─── Helper : date relative à aujourd'hui ────────────────────────────────────
@@ -201,6 +201,9 @@ export const DEMO_TRADES: Trade[] = [
     imageUrl: '', tags: ['OB', 'BOS', 'Running'],
   },
 ];
+
+// ─── Alias pour useFilteredTrades ─────────────────────────────────────────────
+export const DEMO_TRADES_SHIFTED = DEMO_TRADES;
 
 // ─── ANALYSES QUOTIDIENNES ────────────────────────────────────────────────────
 export const DEMO_ANALYSES: DailyAnalysis[] = [
